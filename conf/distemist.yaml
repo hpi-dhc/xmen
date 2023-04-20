@@ -1,0 +1,19 @@
+name : distemist
+
+dict:
+  custom:
+    lang: 
+      - es
+    distemist_path: temp/dictionary_distemist.tsv
+
+linker:
+    candidate_generation:
+        ngram:
+          expand_abbreviations: true
+          index_base_path: ${work_dir}/index/ngrams/
+          k: 100
+        sapbert:
+          embedding_model_name: cambridgeltl/SapBERT-UMLS-2020AB-all-lang-from-XLMR
+          expand_abbreviations: true
+          index_base_path: ${work_dir}/index/sapbert
+          k: 1000

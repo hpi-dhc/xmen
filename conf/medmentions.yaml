@@ -1,0 +1,95 @@
+name: medmentions
+
+work_dir: ${oc.env:HOME}/xmen/work/medmentions
+
+dict:
+  umls:
+    lang: 
+      - en
+    meta_path: ${oc.env:UMLS_HOME}/2017AA/META
+    version: 2017AA
+    semantic_types:
+      - T005
+      - T007
+      - T017
+      - T022
+      - T031
+      - T033
+      - T037
+      - T038
+      - T058
+      - T062
+      - T074
+      - T082
+      - T091
+      - T092
+      - T097
+      - T098
+      - T103
+      - T168
+      - T170
+      - T201
+      - T204
+    sabs:
+      - CPT
+      - FMA
+      - GO
+      - HGNC
+      - HPO
+      - ICD10
+      - ICD10CM
+      - ICD9CM
+      - MDR
+      - MSH
+      - MTH
+      - NCBI
+      - NCI
+      - NDDF
+      - NDFRT
+      - OMIM
+      - RXNORM
+      - SNOMEDCT_US
+      
+linker:
+    dataset: medmentions_st21pv
+    preprocessing:
+        detect_abbreviations: true
+    candidate_generation:
+        k: 64
+        ngram:
+          expand_abbreviations: true
+          index_base_path: ${work_dir}/index/ngrams
+          k: 100
+        random_seed: 42
+        sapbert:
+          embedding_model_name: cambridgeltl/SapBERT-from-PubMedBERT-fulltext
+          expand_abbreviations: true
+          index_base_path: ${work_dir}/index/SapBERT-from-PubMedBERT-fulltext
+          k: 1000
+    reranking:
+        cross_encoder:
+          context_length: 128
+          expand_abbreviations: true
+          masking: false
+          training:
+            fp16: true
+            model_name: cambridgeltl/SapBERT-from-PubMedBERT-fulltext
+            num_train_epochs: 10
+            warmup_steps: 1000
+            label_smoothing: 0.0
+            softmax_loss: true
+            score_regularization: true
+            
+        list_wise:
+          context_length: 256
+          expand_abbreviations: true
+          training:
+            fp16: true
+            label_smoothing_factor: 0
+            learning_rate: 1e-5
+            model_name: cambridgeltl/SapBERT-from-PubMedBERT-fulltext
+            num_train_epochs: 5
+            per_device_eval_batch_size: 4
+            per_device_train_batch_size: 4
+            warmup_steps: 200
+            weight_decay: 0.0
