@@ -79,17 +79,3 @@ linker:
             label_smoothing: 0.0
             softmax_loss: true
             score_regularization: true
-            
-        list_wise:
-          context_length: 256
-          expand_abbreviations: true
-          training:
-            fp16: true
-            label_smoothing_factor: 0
-            learning_rate: 1e-5
-            model_name: cambridgeltl/SapBERT-from-PubMedBERT-fulltext
-            num_train_epochs: 5
-            per_device_eval_batch_size: 4
-            per_device_train_batch_size: 4
-            warmup_steps: 200
-            weight_decay: 0.0

@@ -1,0 +1,10 @@
+name: test
+
+dict:
+  custom:
+    dic_path: dummy_dict/custom_concepts.txt
+    lang:
+      - eng
+    sem:
+      - chem
+    

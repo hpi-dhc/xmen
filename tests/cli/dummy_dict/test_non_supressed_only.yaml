@@ -1,0 +1,6 @@
+name: test
+
+dict:
+  umls:
+    meta_path: dummy_dict/META
+    non_supressed_only: True

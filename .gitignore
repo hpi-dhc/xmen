@@ -166,3 +166,4 @@ outputs
 wandb
 temp_*
 tmp_*
+temp

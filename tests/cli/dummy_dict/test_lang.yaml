@@ -1,0 +1,7 @@
+ls name: test
+
+dict:
+  umls:
+    meta_path: dummy_dict/META
+    lang: 
+      - GER

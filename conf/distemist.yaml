@@ -1,19 +1,23 @@
 name : distemist
 
+cache_dir: ${oc.env:HOME}/.cache/xmen/
+
 dict:
-  custom:
-    lang: 
+  umls:
+    lang:
       - es
-    distemist_path: temp/dictionary_distemist.tsv
+      - en
+    meta_path: ${oc.env:UMLS_HOME}/2022AA/META
+    version: 2022AA
 
 linker:
-    candidate_generation:
-        ngram:
-          expand_abbreviations: true
-          index_base_path: ${work_dir}/index/ngrams/
-          k: 100
-        sapbert:
-          embedding_model_name: cambridgeltl/SapBERT-UMLS-2020AB-all-lang-from-XLMR
-          expand_abbreviations: true
-          index_base_path: ${work_dir}/index/sapbert
-          k: 1000
+  candidate_generation:
+    ngram:
+      expand_abbreviations: true
+      index_base_path: ${cache_dir}/distemist/index/ngrams/
+      k: 100
+    sapbert:
+      embedding_model_name: cambridgeltl/SapBERT-UMLS-2020AB-all-lang-from-XLMR
+      expand_abbreviations: true
+      index_base_path: ${cache_dir}/distemist/index/sapbert
+      k: 1000

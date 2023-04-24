@@ -1,0 +1,11 @@
+{"concept_id": "C0000005", "aliases": ["(131)I-MAA"], "types": ["T116", "T121", "T130"], "canonical_name": "(131)I-Macroaggregated Albumin"}
+{"concept_id": "C0001361", "aliases": ["Acute tonsillitis"], "types": ["T047"], "definition": "An acute inflammation of the tonsils caused by viruses or bacteria. Signs and symptoms include fever, enlargement of the tonsils, difficulty swallowing, and enlargement of the regional lymph nodes.", "canonical_name": "Tonsillitis acute"}
+{"concept_id": "C0000074", "aliases": ["1 Alkyl 2 Acylphosphatidates"], "types": [], "canonical_name": "1-Alkyl-2-Acylphosphatidates"}
+{"concept_id": "C0000084", "aliases": ["1-Carboxyglutamic Acid"], "types": [], "canonical_name": "CARBOXYGLUTAMIC ACID 01"}
+{"concept_id": "C0000096", "aliases": ["1-Methyl-3-isobutylxanthine"], "types": [], "canonical_name": "ISOBUTYLMETHYLXANTHINE 03 01"}
+{"concept_id": "C0000097", "aliases": ["1-Methyl-4-phenyl-1,2,3,6-tetrahydropyridine"], "types": [], "canonical_name": "METHYLPHENYLTETRAHYDROPYRIDINE 01 04 01 02 03 06"}
+{"concept_id": "C0000098", "aliases": ["1-Methyl-4-phenylpyridinium"], "types": [], "canonical_name": "METHYLPHENYLPYRIDINIUM 01 04"}
+{"concept_id": "C0000102", "aliases": ["1-Naphthylamine"], "types": [], "canonical_name": "NAPHTHYLAMINE 01"}
+{"concept_id": "C0000103", "aliases": ["NAPHTHYLISOTHIOCYANATE 01"], "types": [], "canonical_name": "1-Naphthylisothiocyanate"}
+{"concept_id": "C0000107", "aliases": ["1-Sarcosine-8-Isoleucine Angiotensin II"], "types": [], "canonical_name": "1-Sar-8-Ile Angiotensin II"}
+{"concept_id": "C0000119", "aliases": ["11-Hydroxycorticosteroids"], "types": [], "canonical_name": "HYDROXYCORTICOSTEROIDS A 11"}

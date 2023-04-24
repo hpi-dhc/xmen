@@ -1,0 +1,15 @@
+name: test
+
+work_dir: dummy_index
+
+dict:
+  umls:
+    meta_path: dummy_index/META
+    
+linker:
+   candidate_generation:
+      ngram:
+          k: 100
+      sapbert:
+          embedding_model_name: cambridgeltl/SapBERT-UMLS-2020AB-all-lang-from-XLMR
+  

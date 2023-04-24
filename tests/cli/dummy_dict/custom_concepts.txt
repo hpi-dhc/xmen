@@ -1,0 +1,5 @@
+cui,lang,alias,sem
+C0001,eng,term1,chem
+C0002,eng,term2,chem
+C0002,ger,term2-ger,chem
+C0003,eng,term3,diso
