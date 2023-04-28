@@ -1,3 +1,3 @@
 from .indexed_dataset import IndexedDatasetDict, IndexedDataset
-from .dataloaders import load_dataset
+from .dataloaders import *
 from .util import *

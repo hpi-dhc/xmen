@@ -32,7 +32,7 @@ def assemble(cfg: DictConfig, output: str, custom_path=None):
 
 
 def get_concept_details(cfg, custom_path):
-     """
+    """
     Returns the concept details from UMLS or custom code.
 
     Args:

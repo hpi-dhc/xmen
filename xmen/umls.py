@@ -23,7 +23,6 @@ def read_umls_sabs(meta_path):
     Raises:
     - AssertionError: If the number of headers in the data file is not equal to the number of splits in a line.
     """
-    res = 
     res = []
     sab_filename = "MRSAB.RRF"
     headers = umls_utils.read_umls_file_headers(meta_path, sab_filename)

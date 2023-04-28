@@ -54,7 +54,8 @@ def entity_linking_error_analysis(
     res = []
     for gt, pred in zip(ground_truth, prediction):
         error_df = _get_error_df(gt["entities"], pred["entities"], allow_multiple_gold_candidates)
-        error_df["corpus_id"] = gt["corpus_id"]
+        if "corpus_id" in gt:
+            error_df["corpus_id"] = gt["corpus_id"]
         error_df["document_id"] = gt["document_id"]
         res.append(error_df)
     return pd.concat(res).reset_index().drop(columns="index")
@@ -370,7 +371,7 @@ def _to_nel_eval(
     """
     for u in units:
         entities = u["entities"]
-        unit_id = u["corpus_id"] + u["document_id"]
+        unit_id = u.get("corpus_id", "") + u["document_id"]
         annotations = []
         for e in entities:
             if "normalized" in e:
