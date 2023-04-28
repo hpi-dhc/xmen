@@ -1,0 +1,7 @@
+name : distemist_gazetteer
+
+dict:
+  custom:
+    lang: 
+      - es
+    distemist_path: temp/dictionary_distemist.tsv

@@ -1,0 +1,9 @@
+name : distemist_umls_en_es
+
+dict:
+  umls:
+    lang:
+      - es
+      - en
+    meta_path: ${oc.env:UMLS_HOME}/2022AA/META
+  version: 2022AA

@@ -3,12 +3,24 @@ name : distemist
 cache_dir: ${oc.env:HOME}/.cache/xmen/
 
 dict:
-  umls:
-    lang:
-      - es
-      - en
-    meta_path: ${oc.env:UMLS_HOME}/2022AA/META
-    version: 2022AA
+  distemist_gazetteer:
+    custom:
+      lang: 
+        - es
+      distemist_path: temp/dictionary_distemist.tsv
+  distemist_umls_es:
+    umls:
+      lang:
+        - es
+      meta_path: ${oc.env:UMLS_HOME}/2022AA/META
+      version: 2022AA
+  distemist_umls_en_es:
+    umls:
+      lang:
+        - es
+        - en
+      meta_path: ${oc.env:UMLS_HOME}/2022AA/META
+      version: 2022AA
 
 linker:
   candidate_generation:
