@@ -32,6 +32,11 @@ custom_name_help = (
     ". Use for datasets with multiple knowledge bases. The file extension is added automatically."
 )
 
+custom_key_help = (
+    "Provide the name of the key in the .yaml config file that contains the desired subconfig for"
+    " the dict."
+)
+
 sapbert_help = "Build SapBERT indices."
 ngram_help = "Build N-Gram indices."
 all_help = "Build all available indicess"
