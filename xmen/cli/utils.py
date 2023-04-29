@@ -32,7 +32,7 @@ custom_name_help = (
     ". Use for datasets with multiple knowledge bases. The file extension is added automatically."
 )
 
-custom_key_help = (
+key_help = (
     "Provide the name of the key in the .yaml config file that contains the desired subconfig for"
     " the dict."
 )
@@ -98,7 +98,7 @@ def check_and_load_config(cfg_path):
         return load_config(cfg_path)
 
 
-def can_write(file_path: str, parent_overwrite: bool) -> bool:
+def can_write(path: str, parent_overwrite: bool) -> bool:
     """
     Checks whether the files to be built (dicts or indices) already exist. If so, gives the chance to overwrite them in case it is not prohibited by parent_overwrite flag. the function prompts the user to input either 'y' or 'n' if the file already exists.
 
