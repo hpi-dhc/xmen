@@ -43,7 +43,7 @@ def assemble_kb(
         cfg.name = key
 
     # custom_name prevails over the key name of a subconfig
-    name = get_work_dir(cfg) if custom_name is not None else cfg.name
+    name = custom_name if custom_name is not None else cfg.name
     dict_dir = get_work_dir(cfg) / f"{name}.jsonl" if output is None else Path(output) / f"{name}.jsonl"
 
     if can_write(dict_dir, overwrite):
