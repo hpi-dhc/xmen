@@ -15,33 +15,6 @@ class EnsembleLinker(EntityLinker):
     - linkers_k (Dict[str, int]): a dictionary of integers representing the number of top entities to keep for each linker
     - linker_thresholds (Dict[str, float]): a dictionary of floats representing the score threshold to use for each linker
     - linker_weigths (Dict[str, float]): a dictionary of floats representing the weight to give to each linker during combination
-
-    Methods:
-    - add_linker(name: str, linker: EntityLinker, k: int = 1, threshold: float = 0.0, weight: float = 1.0) -> None:
-        Adds a new linker to the ensemble.
-        Args:
-        - name: a unique name to associate with the linker
-        - linker: an instance of the EntityLinker class
-        - k: an integer representing the number of top entities to keep for this linker (default is 1)
-        - threshold: a float representing the score threshold to use for this linker (default is 0.0)
-        - weight: a float representing the weight to give to this linker during combination (default is 1.0)
-    - add_linker_fn(name: str, linker_fn: Callable[[], EntityLinker], k: int = 1, threshold: float = 0.0, weight: float = 1.0) -> None:
-        Adds a new linker function to the ensemble.
-        Args:
-        - name: a unique name to associate with the linker
-        - linker_fn: a function that returns an instance of the EntityLinker class
-        - k: an integer representing the number of top entities to keep for this linker (default is 1)
-        - threshold: a float representing the score threshold to use for this linker (default is 0.0)
-        - weight: a float representing the weight to give to this linker during combination (default is 1.0)
-    - predict_batch(dataset: Dataset, batch_size: int, top_k: Optional[int] = None, reuse_preds: Optional[Dict[str, Dataset]] = None) -> Dict[str, Dataset]:
-        Runs the ensemble on a dataset in batches.
-        Args:
-        - dataset: a dataset of documents to run entity linking on
-        - batch_size: an integer representing the batch size to use
-        - top_k: an optional integer representing the number of top entities to keep per document
-        - reuse_preds: an optional dictionary of precomputed predictions for each linker
-        Returns:
-        - a dictionary containing the predicted entities for each document in the dataset
     """
     # Ignore caching when using dataset.map
     def __getstate__(self):
@@ -56,6 +29,7 @@ class EnsembleLinker(EntityLinker):
     def add_linker(self, name, linker, k=1, threshold=0.0, weight=1.0):
         """
         Adds a new linker to the ensemble.
+
         Args:
         - name: a unique name to associate with the linker
         - linker: an instance of the EntityLinker class
@@ -68,6 +42,7 @@ class EnsembleLinker(EntityLinker):
     def add_linker_fn(self, name, linker_fn, k=1, threshold=0.0, weight=1.0):
         """
         Adds a new linker function to the ensemble.
+
         Args:
         - name: a unique name to associate with the linker
         - linker_fn: a function that returns an instance of the EntityLinker class
@@ -82,13 +57,14 @@ class EnsembleLinker(EntityLinker):
 
     def predict_batch(self, dataset, batch_size, top_k=None, reuse_preds=None):
         """
-        predict_batch(dataset: Dataset, batch_size: int, top_k: Optional[int] = None, reuse_preds: Optional[Dict[str, Dataset]] = None) -> Dict[str, Dataset]:
         Runs the ensemble on a dataset in batches.
+
         Args:
         - dataset: a dataset of documents to run entity linking on
         - batch_size: an integer representing the batch size to use
         - top_k: an optional integer representing the number of top entities to keep per document
         - reuse_preds: an optional dictionary of precomputed predictions for each linker
+
         Returns:
         - a dictionary containing the predicted entities for each document in the dataset
         """

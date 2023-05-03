@@ -31,17 +31,6 @@ class DenseIndexer(object):
     - buffer_size (int): The maximum number of data points to hold in memory while indexing.
     - index_id_to_db_id (list): A list that maps the index ID to the original database ID.
     - index (faiss.IndexFlatIP): The Faiss index.
-
-    Methods:
-    - serialize(index_file: str) -> None:
-        Serializes the index to a file.
-        Args:
-        - index_file (str): The path to the file where the serialized index will be stored.
-
-    - deserialize_from(index_file: str) -> None:
-        Deserializes the index from a file.
-        Args:
-        - index_file (str): The path to the file containing the serialized index.
     """
     
     def __init__(self, buffer_size: int = 50000):
@@ -58,6 +47,7 @@ class DenseIndexer(object):
     def serialize(self, index_file: str):
         """
         Serializes the index to a file.
+
         Args:
         - index_file (str): The path to the file where the serialized index will be stored.
         """
@@ -66,7 +56,8 @@ class DenseIndexer(object):
 
     def deserialize_from(self, index_file: str):
         """
-         Deserializes the index from a file.
+        Deserializes the index from a file.
+
         Args:
         - index_file (str): The path to the file containing the serialized index.
         """
@@ -88,23 +79,6 @@ class DenseFlatIndexer(DenseIndexer):
 
     Attributes:
     - index: An instance of faiss.IndexFlatIP initialized with vector_sz.
-
-    Methods:
-    - index_data(data, show_progress=False):
-        Indexes the given data using the IndexFlatIP index.
-        Args:
-        - data (np.array): The input data to be indexed.
-        - show_progress (bool): If True, shows progress bar while indexing. Default is False.
-        
-    - search_knn(query_vectors, top_k):
-        Searches the indexed data for the nearest neighbors of the given query vectors.
-        Args:
-        - query_vectors (np.array): The query vectors for which nearest neighbors are to be found.
-        - top_k (int): The number of nearest neighbors to be returned.
-        
-        Returns:
-        - scores (np.array): The similarity scores of the nearest neighbors.
-        - indexes (np.array): The indexes of the nearest neighbors in the indexed data.
     """
     def __init__(self, vector_sz: int = 1, buffer_size: int = 50000):
         super(DenseFlatIndexer, self).__init__(buffer_size=buffer_size)
@@ -113,6 +87,7 @@ class DenseFlatIndexer(DenseIndexer):
     def index_data(self, data: np.array, show_progress=False):
         """
         Indexes the given data using the IndexFlatIP index.
+
         Args:
         - data (np.array): The input data to be indexed.
         - show_progress (bool): If True, shows progress bar while indexing. Default is False.
@@ -132,6 +107,7 @@ class DenseFlatIndexer(DenseIndexer):
     def search_knn(self, query_vectors, top_k):
         """
         Searches the indexed data for the nearest neighbors of the given query vectors.
+
         Args:
         - query_vectors (np.array): The query vectors for which nearest neighbors are to be found.
         - top_k (int): The number of nearest neighbors to be returned.
@@ -156,9 +132,6 @@ class DenseHNSWFlatIndexer(DenseIndexer):
     - store_n (int): Number of vectors to store per index. Default is 128.
     - ef_search (int): Number of neighbors to consider during search. Default is 256.
     - ef_construction (int): Number of neighbors to consider during index construction. Default is 200.
-
-    Raises:
-    - RuntimeError: If the indexer has already indexed some data, indexing again with new data can lead to unpredictable results.
 
     Attributes:
     - index: Faiss IndexHNSWFlat object for indexing vectors.

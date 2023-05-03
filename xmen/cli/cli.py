@@ -22,8 +22,22 @@ def assemble_kb(
     overwrite: bool = typer.Option(default=False, help=overwrite_help, show_default=True),
     custom_name: str = typer.Option(default=None, help=custom_name_help, show_default=True),
 ):
-    """Builds a .jsonl dictionary with the given configuration for UMLS or custom knowledge bases."""
+    """
+    Builds a .jsonl dictionary with the given configuration for UMLS or custom knowledge bases.
 
+    Args:
+    - cfg_path (str): Path to the configuration file.
+    - code (Optional[str]): Path to the custom parsing script.
+    - output (Optional[str]): Path to the output directory.
+    - key (Optional[str]): Name of the subconfig.
+    - log_file (Optional[str]): Path to the log file.
+    - overwrite (bool): Flag indicating whether to overwrite the existing file in the output directory.
+    - custom_name (Optional[str]): Name of the custom knowledge base.
+
+    Raises:
+    - typer.Exit: If the provided config file does not contain `umls` nor `custom` keys nested within `dict`,
+            and no key is provided with --key.
+    """
     if log_file is not None:
         add_file_logger(log_file)
     logger.debug("\n \n NEW DICT RUN")
@@ -86,8 +100,23 @@ def build_ngram_sapbert(
     ngram: bool = typer.Option(default=False, help=ngram_help, show_default=True),
     all: bool = typer.Option(default=False, help=all_help, show_default=True),
 ):
-    """Builds N-Gram and SAPBert indices from a .jsonl dict with the given configuration."""
+    """
+    Builds N-Gram and SAPBert indices from a .jsonl dict with the given configuration.
 
+    Args:
+    - cfg_path (str): Path to the configuration file.
+    - gpu_id (int): Index of the GPU to be used for building the SAPBert indices.
+    - output (str): Path to the directory where the indices will be stored. If None, the work directory will be used.
+    - log_file (str): Path to the file where logs will be written. If None, logs will be printed to console.
+    - dict (str): Path to the .jsonl dictionary. If None, the work directory and configuration file name will be used to search for the dictionary.
+    - overwrite (bool): Whether to overwrite existing indices or not.
+    - sapbert (bool): Whether to build SAPBert indices or not.
+    - ngram (bool): Whether to build N-Gram indices or not.
+    - all (bool): Whether to build both SAPBert and N-Gram indices or not.
+
+    Raises:
+    - typer.Exit: If neither sapbert nor ngram nor all is set to True.
+    """
     if log_file is not None:
         add_file_logger(log_file)
     logger.debug("\n \n NEW INDEX RUN")

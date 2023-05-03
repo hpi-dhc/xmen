@@ -20,6 +20,24 @@ _SAP_BERT_EN = "cambridgeltl/SapBERT-from-PubMedBERT-fulltext"
 _EMBED_DIM = 768
 
 class SapBERTLinker(EntityLinker):
+    """
+    A class that performs entity linking using the SapBERT model.
+
+    Args:
+    - index_base_path (Union[Path, str]): Path to the directory where the index files are located.
+    - kb_name (str): The name of the knowledge base to use.
+    - cuda (bool): Whether to use the GPU for inference or not.
+    - gpu_batch_size (int): Batch size for inference on GPU.
+    - k (int): The number of closest neighbors to retrieve from the index.
+    - threshold (float): A threshold value for filtering out candidate entities based on their similarity score.
+    - filter_types (bool): Whether to filter out candidate entities based on their semantic type.
+    - embedding_model_name (str): Name of the embedding model to use.
+    - consider_n_grams (list): A list of integers representing the number of grams to consider when generating candidate entities.
+    - remove_duplicates (bool): Whether to remove duplicate candidate entities or not.
+    - expand_abbreviations (bool): Whether to expand abbreviations or not.
+    - approximate (bool): Whether to use the hierarchical index for faster inference or not.
+    - unique_aliases_only (bool): Whether to use only unique aliases of entities for linking or not.
+    """
     # Global state
     instance = None
     model_wrapper = None
@@ -49,6 +67,18 @@ class SapBERTLinker(EntityLinker):
         batch_size=2048 * 6,
         write_flat = False,
     ):
+        """
+        Write index files to disk.
+
+        Args:
+        - index_base_path (Union[str, Path]): Path to the directory where the index files will be written.
+        - term_dict (dict): A dictionary containing the terms to include in the index.
+        - embedding_model_name (str): Name of the embedding model to use.
+        - cuda (bool): Whether to use the GPU for inference or not.
+        - subtract_mean (bool): Whether to subtract the mean from the embeddings or not.
+        - batch_size (int): Batch size for embedding generation.
+        - write_flat (bool): Whether to write the flat index to disk or not.
+        """
         index_base_path = Path(index_base_path)
 
         index_base_path.mkdir(exist_ok=True, parents=True)
@@ -141,6 +171,20 @@ class SapBERTLinker(EntityLinker):
         self.valid = True
 
     def predict_batch(self, dataset, batch_size):
+        """
+        Perform entity linking on a batch of sentences.
+
+        Args:
+        - dataset (Dataset): A `Dataset` object containing the sentences to link entities in.
+        - batch_size (int): The batch size to use for linking.
+
+        Returns:
+        - List of lists of tuples: A list of lists of tuples. Each tuple contains information about a linked entity,
+        - including its URI, label, score, and span in the sentence.
+
+        Raises:
+        - Exception: If `SapBERTLinker` instance has been cleared, the linker instance is in an inconsistent state.
+        """
         if not self.valid:
             raise Exception("SapBERT instance has been cleared, this linker instance is in an inconsistent state.")
         expand_abbreviations = self.expand_abbreviations
