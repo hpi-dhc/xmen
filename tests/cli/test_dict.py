@@ -49,7 +49,7 @@ def test_custom_dict():
     assert len(concept_details["C0001"]["types"]) == 1
 
 
-# UMLS DICT TESTs (4)
+# UMLS DICT TESTs (5)
 def test_lang():
     yaml = data_dir / "test_lang.yaml"
     cfg = OmegaConf.load(yaml)
@@ -139,3 +139,27 @@ def test_non_supressed_only():
 
     assert len(concept_details["C0000005"]["aliases"]) == 1
     assert len(concept_details["C0000005"]["types"]) == 3
+
+
+def test_subconfig():
+    yaml = data_dir / "test_subconfig.yaml"
+
+    # first subconfig
+    cfg = OmegaConf.load(yaml)
+    cfg.dict = cfg.dict["key1"]
+    cfg.name = "test"
+    concept_details = get_concept_details(cfg, custom_path=None)
+
+    assert len(concept_details) == 1
+    assert len(concept_details["C0001361"]["aliases"]) == 0
+    assert len(concept_details["C0001361"]["types"]) == 1
+
+    # first subconfig
+    cfg = OmegaConf.load(yaml)
+    cfg.dict = cfg.dict["key2"]
+    cfg.name = "test"
+    concept_details = get_concept_details(cfg, custom_path=None)
+
+    assert len(concept_details) == 1
+    assert len(concept_details["C0001361"]["aliases"]) == 0
+    assert len(concept_details["C0001361"]["types"]) == 1

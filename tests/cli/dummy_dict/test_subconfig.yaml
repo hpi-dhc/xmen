@@ -1,0 +1,14 @@
+name: test
+
+dict:
+  key1:
+    umls:
+      meta_path: dummy_dict/META
+      lang:
+        - fre
+  key2:
+    umls:
+      meta_path: dummy_dict/META
+      lang:
+        - ger
+    

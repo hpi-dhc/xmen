@@ -17,6 +17,7 @@ def assemble_kb(
     cfg_path: str = typer.Argument(..., help=cfg_path_help, show_default=False),
     code: str = typer.Option(default=None, help=code_help, show_default=True),
     output: str = typer.Option(default=None, help=output_help, show_default=True),
+    key: str = typer.Option(default=None, help=key_help, show_default=True),
     log_file: str = typer.Option(default=None, help=log_file_help, show_default=True),
     overwrite: bool = typer.Option(default=False, help=overwrite_help, show_default=True),
     custom_name: str = typer.Option(default=None, help=custom_name_help, show_default=True),
@@ -27,6 +28,21 @@ def assemble_kb(
         add_file_logger(log_file)
     logger.debug("\n \n NEW DICT RUN")
     cfg = check_and_load_config(cfg_path)
+
+    # make sure there is umls or custom or subconfig key in dict
+    if 'umls' not in cfg.dict and 'custom' not in cfg.dict and not key:
+        logger.error(
+            "The provided config file does not contain `umls` nor `custom` keys nested within `dict`."
+            "If you are attempting to use one of multiple subconfigs, provided it's key name with --key."
+        )
+        raise typer.Exit()
+
+    # if a subconfig key is given, prune the rest of them out
+    if key:
+        cfg.dict = cfg.dict[key]
+        cfg.name = key
+
+    # custom_name prevails over the key name of a subconfig
     name = custom_name if custom_name is not None else cfg.name
     dict_dir = get_work_dir(cfg) / f"{name}.jsonl" if output is None else Path(output) / f"{name}.jsonl"
 
