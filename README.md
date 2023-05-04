@@ -44,7 +44,7 @@ xMEN provides a convenient command line interface to prepare entity linking pipe
 
 Run `xmen help` to get an overview of the available commands.
 
-### xmen dict
+### :closed_book: Creating Dictionaties
 
 The `dict` command is used to create dictionaries. The most common use case is to create subsets of the UMLS.
 It also supports passing custom parser scripts for non-UMLS dictionaries.
@@ -150,7 +150,7 @@ linker:
 
 Run `xmen index my_config.yaml --ngram` or `xmen index my_config.yaml --all` to create the index.
 
-Example usage: see `notebooks/BioASQ_DisTEMIST.ipynb`
+Example usage: see [notebooks/BioASQ_DisTEMIST.ipynb](notebooks/BioASQ_DisTEMIST.ipynb)
 
 ### SapBERT
 
@@ -168,24 +168,26 @@ linker:
 
 Run `xmen index my_config.yaml --sapbert` or `xmen index my_config.yaml --all` to create the [FAISS](https://github.com/facebookresearch/faiss) index.
 
-Example usage: see `notebooks/BioASQ_DisTEMIST.ipynb`
+Example usage: see [notebooks/BioASQ_DisTEMIST.ipynb](notebooks/BioASQ_DisTEMIST.ipynb)
 
 ### Ensemble
 
 TODO
 
-Example usage: see `notebooks/BioASQ_DisTEMIST.ipynb`
+Example usage: see [notebooks/BioASQ_DisTEMIST.ipynb](notebooks/BioASQ_DisTEMIST.ipynb)
 
 ## Rerankers
 
-TODO: Describe available Rerankers
+### Cross-Encoder Reranker
 
-Example usage: see `notebooks/BioASQ_DisTEMIST.ipynb`
+TODO
+
+Example usage:see [notebooks/BioASQ_DisTEMIST.ipynb](notebooks/BioASQ_DisTEMIST.ipynb)
 
 
-## Pre-Processing
+## Pre- and Post-Processing
 
-We support various preprocessing steps for transforming input data:
+We support various optional components for transforming input data and result sets:
 
 - [Sampling](xmen/preprocessing/sampling.py)
 - [Abbrevation expansion](xmen/preprocessing/abbrevations.py)
