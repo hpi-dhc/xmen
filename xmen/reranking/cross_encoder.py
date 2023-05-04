@@ -82,6 +82,31 @@ def cross_encoder_predict(cross_encoder, cross_enc_dataset, show_progress_bar=Tr
 
     return pred_scores
 
+class CrossEncoderTrainingArgs:
+    
+    def __init__(self, args : dict):
+        self.args = args
+    
+    def __init__(self,
+           model_name : str,
+           num_train_epochs : int,
+           fp16 : bool = True,
+           label_smoothing : bool = False,
+           score_regularization : bool = False,
+           train_layers : list  = None,
+           softmax_loss : bool = True,
+        ):
+        self.args = {}
+        self.args["model_name"] = model_name
+        self.args["num_train_epochs"] = num_train_epochs
+        self.args["fp16"] = fp16
+        self.args["label_smoothing"] = label_smoothing
+        self.args["score_regularization"] = score_regularization
+        self.args["train_layers"] = train_layers
+        self.args["softmax_loss"] = softmax_loss
+        
+    def __getitem__(self, key):
+        return self.args[key]
 
 class CrossEncoderReranker(Reranker):
     def __init__(self, model=None):
@@ -99,8 +124,8 @@ class CrossEncoderReranker(Reranker):
         ground_truth,
         kb,
         context_length: int,
-        expand_abbreviations: bool,
-        masking: bool,
+        expand_abbreviations: bool = False,
+        masking: bool = False,
         **kwargs,
     ):
         print("Context length:", context_length)
@@ -136,18 +161,16 @@ class CrossEncoderReranker(Reranker):
         train_dataset,
         val_dataset,
         output_dir: Union[str, Path],
+        training_args: CrossEncoderTrainingArgs,
         train_continue=False,
-        softmax_loss=True,
         loss_fct=None,
         callback=None,
         add_special_tokens=True,
         max_length=512,
-        fp16=False,
-        eval_callback=None,
-        **training_args,
+        eval_callback=None
     ):
-        print('FP16:', fp16)
-        print('Softmax:', softmax_loss)
+        for k, v in training_args.args.items():
+            print(k, ':=', v)
         if not self.model:
             self.model = ScoredCrossEncoder(training_args["model_name"], num_labels=1, max_length=max_length)
             if add_special_tokens:
@@ -158,7 +181,7 @@ class CrossEncoderReranker(Reranker):
             print("Continue training")
 
         if not loss_fct:
-            if softmax_loss:
+            if training_args["softmax_loss"]:
                 loss_fct = nn.CrossEntropyLoss()
             else:
                 loss_fct = None
@@ -187,7 +210,7 @@ class CrossEncoderReranker(Reranker):
             warmup_steps=100,
             output_path=output_dir,
             callback=callback,
-            use_amp=True,
+            use_amp=training_args["fp16"],
             label_smoothing=training_args["label_smoothing"],
             score_regularization=training_args["score_regularization"],
             train_layers=training_args["train_layers"]

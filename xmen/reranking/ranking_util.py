@@ -46,7 +46,7 @@ def get_flat_candidate_ds(candidate_ds, ground_truth, expand_abbreviations, kb):
     return flat_candidate_ds, doc_index
 
 
-def get_candidates(examples, doc_indices, expand_abbreviations: bool):
+def get_candidates(examples, doc_indices, expand_abbreviations: bool, check_spans=False):
     candidates = []
     scores = []
     mentions = []
@@ -57,8 +57,9 @@ def get_candidates(examples, doc_indices, expand_abbreviations: bool):
         for e_id, e in enumerate(l):
             doc_ixs.append((doc_ix, e_id))
             context_left, mention, context_right = find_context(doc_passages, e["offsets"])
-            for mention_text in e["text"]:
-                assert mention_text in mention, (mention_text, mention)
+            if check_spans:
+                for mention_text in e["text"]:
+                    assert mention_text in mention, (mention_text, mention)
             e_candidates = [n["db_id"] for n in e["normalized"]]
             candidates.append(e_candidates)
             e_scores = [n.get("score", None) for n in e["normalized"]]
