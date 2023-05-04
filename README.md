@@ -13,6 +13,27 @@ xMEN is available through PyPi:
 
 We use [Poetry](https://python-poetry.org/) for building, testing and dependency management (see [pyproject.toml](pyproject.toml)).
 
+## Data Loading
+
+Usually, BigBIO compatible datasets can just be loaded from the Hugging Face Hub:
+
+```
+from datasets import load_dataset
+dataset = load_dataset("distemist", "distemist_linking_bigbio_kb")
+```
+
+## Integration with NER Tools
+
+To use xMEN with existing NER pipelines, you can also create a dataset at runtime.
+
+### spaCy
+
+```
+from xmen.data import from_spacy
+docs = ... #  list of spaCy docs with entity spans
+dataset = from_spacy(docs)
+```
+
 ## Configuration
 
 The configuration is done through `.yaml` files. For examples, see the [conf](/conf) folder.
@@ -161,21 +182,6 @@ TODO: Describe available Rerankers
 
 Example usage: see `notebooks/BioASQ_DisTEMIST.ipynb`
 
-## Data Loading
-
-xMEN works with any [BigBIO](https://github.com/bigscience-workshop/biomedical) dataset. 
-Usually, these can just be loaded from the Hugging Face Hub:
-
-```
-from datasets import load_dataset
-load_dataset("distemist", "distemist_linking_bigbio_kb")
-```
-
-To integrate xMEN with existing NER pipelines, you can also create a dataset at runtime.
-
-### spaCy
-
-TODO
 
 ## Pre-Processing
 
