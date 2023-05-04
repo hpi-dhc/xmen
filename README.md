@@ -3,7 +3,7 @@
 MEN is an extensible toolkit for Cross-lingual (**x**) **M**edical **E**ntity **N**ormalization.
 Through its compatibility with the [BigBIO (BigScience Biomedical)](https://github.com/bigscience-workshop/biomedical) schema, it works for many biomedical datasets.
 
-## Installation
+## :star: Installation
 
 xMEN is available through PyPi:
 
@@ -13,7 +13,7 @@ xMEN is available through PyPi:
 
 We use [Poetry](https://python-poetry.org/) for building, testing and dependency management (see [pyproject.toml](pyproject.toml)).
 
-## Data Loading
+## :open_file_folder: Data Loading
 
 Usually, BigBIO compatible datasets can just be loaded from the Hugging Face Hub:
 
@@ -22,7 +22,7 @@ from datasets import load_dataset
 dataset = load_dataset("distemist", "distemist_linking_bigbio_kb")
 ```
 
-## Integration with NER Tools
+### Integration with NER Tools
 
 To use xMEN with existing NER pipelines, you can also create a dataset at runtime.
 
@@ -34,22 +34,22 @@ docs = ... #  list of spaCy docs with entity spans
 dataset = from_spacy(docs)
 ```
 
-## Configuration
+## :wrench: Configuration
 
 The configuration is done through `.yaml` files. For examples, see the [conf](/conf) folder.
 
-## xMEN CLI
+## :computer: xMEN CLI
 
 xMEN provides a convenient command line interface to prepare entity linking pipelines through creation of dictionaries and index computation.
 
 Run `xmen help` to get an overview of the available commands.
 
-### :closed_book: Creating Dictionaties
+## :closed_book: Creating Dictionaties
 
 The `dict` command is used to create dictionaries. The most common use case is to create subsets of the UMLS.
 It also supports passing custom parser scripts for non-UMLS dictionaries.
 
-#### UMLS Subset:
+### UMLS Subsets
 
 YAML file (configuration for [Medmentions](https://github.com/chanzuckerberg/MedMentions)):
 
@@ -107,7 +107,7 @@ dict:
 
 Running `xmen --dict conf/medmentions.yaml` creates a `.jsonl` file from the described UMLS subset.
 
-#### Custom Dictionaries:
+### Using custom Dictionaries
 
 YAML file (configuration for [DisTEMIST](https://temu.bsc.es/distemist/)):
 
@@ -123,14 +123,10 @@ dict:
 
 Running `xmen dict conf/distemist.yaml --code dicts/distemist.py` creates a `.jsonl` file from the custom DisTEMIST gazetteer.
 
-### xmen index
+## :mag_right: Candidate Generation
 
 The `xmen index` command is used to compute term indices from a dictionary created through the `dict` command.
-As the resulting indices are used for different candidate generators, please refer the [Candidate Generation](#candidate-generation) section.
-
 If an index already exists, you will be prompted to overwrite the existing file (or pass `--overwrite`).
-
-## Candidate Generation
 
 xMEN provides implementations of different neural and non-neural candidate generators
 
@@ -176,7 +172,7 @@ TODO
 
 Example usage: see [notebooks/BioASQ_DisTEMIST.ipynb](notebooks/BioASQ_DisTEMIST.ipynb)
 
-## Rerankers
+## :cyclone: Rerankers
 
 ### Cross-Encoder Reranker
 
@@ -184,8 +180,7 @@ TODO
 
 Example usage:see [notebooks/BioASQ_DisTEMIST.ipynb](notebooks/BioASQ_DisTEMIST.ipynb)
 
-
-## Pre- and Post-Processing
+## :bulb: Pre- and Post-Processing
 
 We support various optional components for transforming input data and result sets:
 
@@ -195,13 +190,12 @@ We support various optional components for transforming input data and result se
 - [Filtering by UMLS semantic types](xmen/preprocessing/semantic_types.py)
 - [Replacement of retired CUIS](xmen/preprocessing/retired_cuis.py)
 
-
-## Evaluation
+## :bar_chart: Evaluation
 
 xMEN provides implementations of common entity linking metrics (e.g., a wrapper for [neleval](https://github.com/wikilinks/neleval))
 
-Example usage: see `notebooks/BioASQ_DisTEMIST.ipynb`
+Example usage: see [notebooks/BioASQ_DisTEMIST.ipynb](notebooks/BioASQ_DisTEMIST.ipynb)
 
-## Benchmark Results
+## :chart_with_upwards_trend: Benchmark Results
 
 TODO
