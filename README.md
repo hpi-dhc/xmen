@@ -1,6 +1,6 @@
 # xMEN
 
-MEN is an extensible toolkit for Cross-lingual (**x**) **M**edical **E**ntity **N**ormalization.
+xMEN is an extensible toolkit for Cross-lingual (**x**) **M**edical **E**ntity **N**ormalization.
 Through its compatibility with the [BigBIO (BigScience Biomedical)](https://github.com/bigscience-workshop/biomedical) framework, it can be used out-of-the box with many open biomedical datasets.
 
 ## :star: Installation
