@@ -1,7 +1,7 @@
 # xMEN
 
 MEN is an extensible toolkit for Cross-lingual (**x**) **M**edical **E**ntity **N**ormalization.
-Through its compatibility with the [BigBIO (BigScience Biomedical)](https://github.com/bigscience-workshop/biomedical) schema, it works for many biomedical datasets.
+Through its compatibility with the [BigBIO (BigScience Biomedical)](https://github.com/bigscience-workshop/biomedical) framework, it can be used out-of-the box with many open biomedical datasets.
 
 ## :star: Installation
 
@@ -15,7 +15,7 @@ We use [Poetry](https://python-poetry.org/) for building, testing and dependency
 
 ## :open_file_folder: Data Loading
 
-Usually, BigBIO compatible datasets can just be loaded from the Hugging Face Hub:
+Usually, BigBIO-compatible datasets can just be loaded from the Hugging Face Hub:
 
 ```
 from datasets import load_dataset
@@ -34,24 +34,23 @@ docs = ... #  list of spaCy docs with entity spans
 dataset = from_spacy(docs)
 ```
 
-## :wrench: Configuration
+## :wrench: Configuration and CLI
 
-The configuration is done through `.yaml` files. For examples, see the [conf](/conf) folder.
-
-## :computer: xMEN CLI
-
-xMEN provides a convenient command line interface to prepare entity linking pipelines through creation of dictionaries and index computation.
+xMEN provides a convenient command line interface to prepare entity linking pipelines by creating target dictionaries pre-computing indices.
 
 Run `xmen help` to get an overview of the available commands.
 
-## :closed_book: Creating Dictionaties
+Configuration is done through `.yaml` files. For examples, see the [conf](/conf) folder.
 
-The `dict` command is used to create dictionaries. The most common use case is to create subsets of the UMLS.
-It also supports passing custom parser scripts for non-UMLS dictionaries.
+## :closed_book: Creating Dictionaries
+
+Run `xmen dict` to create dictionaries. Although the most common use case is to create subsets of the UMLS, it also supports passing custom parser scripts for non-UMLS dictionaries.
+
+**Note**: Creating UMLS subsets requires a local installation of the [UMLS metathesaurus](https://www.nlm.nih.gov/research/umls/licensedcontent/umlsknowledgesources.html) (not only MRCONSO.RRF). In the examples, we assume that the environment variable `$UMLS_HOME` points to the installation path. You can either set this variable, or replace the path with your local installation.
 
 ### UMLS Subsets
 
-YAML file (configuration for [Medmentions](https://github.com/chanzuckerberg/MedMentions)):
+Example configuration for [Medmentions](https://github.com/chanzuckerberg/MedMentions):
 
 ```
 name: medmentions
@@ -107,9 +106,11 @@ dict:
 
 Running `xmen --dict conf/medmentions.yaml` creates a `.jsonl` file from the described UMLS subset.
 
-### Using custom Dictionaries
+### Using Custom Dictionaries
 
-YAML file (configuration for [DisTEMIST](https://temu.bsc.es/distemist/)):
+Parsing scripts for custom dictionaries can be provided with the `--code` option (examples are given in [dicts](/dicts) folder)
+
+Example configuration for [DisTEMIST](https://temu.bsc.es/distemist/):
 
 ```
 name: distemist
@@ -121,7 +122,7 @@ dict:
     distemist_path: path/to/dictionary_distemist.tsv
 ```
 
-Running `xmen dict conf/distemist.yaml --code dicts/distemist.py` creates a `.jsonl` file from the custom DisTEMIST gazetteer.
+Running `xmen dict conf/distemist.yaml --code dicts/distemist.py --key distemist_gazetteer` creates a `.jsonl` file from the custom DisTEMIST gazetteer.
 
 ## :mag_right: Candidate Generation
 
