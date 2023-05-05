@@ -1,9 +1,9 @@
-# xMEN
+# :heavy_multiplication_x:MEN
 
-MEN is an extensible toolkit for Cross-lingual (**x**) **M**edical **E**ntity **N**ormalization.
+xMEN is an extensible toolkit for Cross-lingual (**x**) **M**edical **E**ntity **N**ormalization.
 Through its compatibility with the [BigBIO (BigScience Biomedical)](https://github.com/bigscience-workshop/biomedical) framework, it can be used out-of-the box with many open biomedical datasets.
 
-## :star: Installation
+### Installation
 
 xMEN is available through PyPi:
 
@@ -44,7 +44,7 @@ Configuration is done through `.yaml` files. For examples, see the [conf](/conf)
 
 ## :closed_book: Creating Dictionaries
 
-Run `xmen dict` to create dictionaries. Although the most common use case is to create subsets of the UMLS, it also supports passing custom parser scripts for non-UMLS dictionaries.
+Run `xmen dict` to create dictionaries to link against. Although the most common use case is to create subsets of the UMLS, it also supports passing custom parser scripts for non-UMLS dictionaries.
 
 **Note**: Creating UMLS subsets requires a local installation of the [UMLS metathesaurus](https://www.nlm.nih.gov/research/umls/licensedcontent/umlsknowledgesources.html) (not only MRCONSO.RRF). In the examples, we assume that the environment variable `$UMLS_HOME` points to the installation path. You can either set this variable, or replace the path with your local installation.
 
