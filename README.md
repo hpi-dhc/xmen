@@ -5,9 +5,7 @@ Through its compatibility with the [BigBIO (BigScience Biomedical)](https://gith
 
 ### Installation
 
-xMEN is available through PyPi:
-
-`pip install xmen`
+xMEN is available through PyPi: `pip install xmen`
 
 ### Development
 
@@ -36,7 +34,7 @@ dataset = from_spacy(docs)
 
 ## :wrench: Configuration and CLI
 
-xMEN provides a convenient command line interface to prepare entity linking pipelines by creating target dictionaries pre-computing indices.
+xMEN provides a convenient command line interface to prepare entity linking pipelines by creating target dictionaries and pre-computing indices to link to concepts in them.
 
 Run `xmen help` to get an overview of the available commands.
 
@@ -108,7 +106,7 @@ Running `xmen --dict conf/medmentions.yaml` creates a `.jsonl` file from the des
 
 ### Using Custom Dictionaries
 
-Parsing scripts for custom dictionaries can be provided with the `--code` option (examples are given in [dicts](/dicts) folder)
+Parsing scripts for custom dictionaries can be provided with the `--code` option (examples can be found in the [dicts](/dicts) folder).
 
 Example configuration for [DisTEMIST](https://temu.bsc.es/distemist/):
 
