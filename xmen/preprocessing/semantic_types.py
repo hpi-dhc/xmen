@@ -2,6 +2,18 @@ from xmen.umls import get_sem_type_tree, expand_tuis
 from typing import Dict
 
 class SemanticTypeFilter:
+    """
+    A class to filter out examples based on semantic types.
+
+    Args:
+    - type_to_tui (Dict): A dictionary that maps a semantic type to a set of TUIs.
+    - kb: A knowledge base object.
+
+    Attributes:
+    - type_to_tui (Dict): A dictionary that maps a semantic type to a set of TUIs.
+    - kb: A knowledge base object.
+    - tree: A semantic type tree object.
+    """
     def __init__(self, type_to_tui : Dict, kb):
         self.type_to_tui = type_to_tui
         self.kb = kb
@@ -11,9 +23,27 @@ class SemanticTypeFilter:
         return {}
 
     def get_tuis(self, cui):
+        """
+        Returns the set of TUIs associated with a given CUI.
+
+        Args:
+        - cui (str): A CUI string.
+
+        Returns:
+        - tuis (set): A set of TUIs associated with the given CUI.
+        """
         return self.kb.cui_to_entity[cui].types
     
     def filter_semantic_groups(self, example):
+        """
+        Filters out normalized entities from the given example that are not associated with any of the valid TUIs.
+
+        Args:
+        - example (dict): A dictionary representing a single example, with keys "text" and "entities".
+
+        Returns:
+        - filtered_example (dict): A dictionary representing the filtered example, with key "entities".
+        """
         entities = example["entities"]
         for e in entities:
             valid_tuis = self.type_to_tui[e["type"]]
@@ -27,4 +57,13 @@ class SemanticTypeFilter:
         return {"entities": entities}
 
     def transform_batch(self, ds):
+        """
+        Transforms the given dataset by applying the filter_semantic_groups method to each example in the dataset.
+    
+        Args:
+        - ds (tf.data.Dataset): A dataset of examples.
+        
+        Returns:
+        - transformed_ds (tf.data.Dataset): A transformed dataset of examples.
+        """
         return ds.map(lambda e: self.filter_semantic_groups(e), load_from_cache_file=False)

@@ -7,9 +7,6 @@ def filter_and_apply_threshold(input_pred, k: int, threshold: float):
     - k (int): The number of top entities to keep after filtering.
     - threshold (float): The score threshold below which entities will be removed.
 
-    Raises:
-    - AssertionError: If k is less than zero.
-
     Returns:
     - list: A list of filtered and thresholded predicted entities.
     """
