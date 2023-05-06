@@ -29,16 +29,17 @@ logger = logging.getLogger(__name__)
 from typing import Union, List
 
 
-def flat_ds_to_cross_enc_dataset(flat_candidate_ds, doc_index, context_length, mask_mention):
-    print('Masking:', mask_mention)
+def flat_ds_to_cross_enc_dataset(flat_candidate_ds, doc_index, context_length, mask_mention, encode_sem_type):
     res = []
     res_index = []
     for doc, idx in zip(tqdm(flat_candidate_ds), doc_index):
         l_ctx, m, r_ctx = doc["context_left"], doc["mention"], doc["context_right"]
         mention = f"{l_ctx[-context_length:] if context_length else ''} [START] {m if not mask_mention else '[MASK]'} [END] {r_ctx[:context_length] if context_length else ''}"
         batch = []
-        for c, score, syns in zip(doc["candidates"], doc["scores"], doc["synonyms"]):
+        for c, score, syns, semtype in zip(doc["candidates"], doc["scores"], doc["synonyms"], doc["types"]):
             candidate = syns[0] + " [TITLE] " + " [SEP] ".join(syns[1:])
+            if encode_sem_type:
+                candidate = ",".join(semtype) + " [TYPE] " + candidate
             label = 1 if c in doc["label"] else 0
             batch.append(ScoredInputExample(texts=[mention, candidate], label=label, score=score))
         if batch:
@@ -47,14 +48,14 @@ def flat_ds_to_cross_enc_dataset(flat_candidate_ds, doc_index, context_length, m
     return res, res_index
 
 
-def create_cross_enc_dataset(candidate_ds, ground_truth, kb, context_length: int, expand_abbreviations: bool, masking: bool):
+def create_cross_enc_dataset(candidate_ds, ground_truth, kb, context_length: int, expand_abbreviations: bool, encode_sem_type: bool, masking: bool):
     flat_candidate_ds, doc_index = get_flat_candidate_ds(
         candidate_ds, ground_truth, expand_abbreviations=expand_abbreviations, kb=kb
     )
-    return flat_ds_to_cross_enc_dataset(flat_candidate_ds, doc_index, context_length, mask_mention=masking)
+    return flat_ds_to_cross_enc_dataset(flat_candidate_ds, doc_index, context_length, mask_mention=masking, encode_sem_type=encode_sem_type)
 
 
-def cross_encoder_predict(cross_encoder, cross_enc_dataset, show_progress_bar=True, convert_to_numpy=True):
+def _cross_encoder_predict(cross_encoder, cross_enc_dataset, show_progress_bar, convert_to_numpy):
     inp_dataloader = torch.utils.data.DataLoader(
         BatchedCrossEncoderDataset(cross_enc_dataset), num_workers=0, batch_size=None
     )
@@ -81,6 +82,22 @@ def cross_encoder_predict(cross_encoder, cross_enc_dataset, show_progress_bar=Tr
         pred_scores = [score.cpu().detach().numpy() for score in pred_scores]
 
     return pred_scores
+
+def rerank(doc, index, doc_idx, ranking, reject_nil=False):
+    entities = []   
+    for ei, e in enumerate(doc["entities"]):
+        mask = (np.array(doc_idx) == [index,ei]).all(axis=1)
+        ranking_idx = mask.argmax()
+        if mask[ranking_idx] == False:
+            assert len(e["normalized"]) == 0
+        else:
+            rank = ranking[ranking_idx]
+            assert len(e["normalized"]) == len(rank), (len(e["normalized"]), len(rank))
+            for n, r in zip(e["normalized"], rank):
+                n["score"] = r
+            e["normalized"].sort(key=lambda k: k["score"], reverse=True)
+        entities.append(e)
+    return {"entities": entities}
 
 class CrossEncoderTrainingArgs:
     
@@ -125,6 +142,7 @@ class CrossEncoderReranker(Reranker):
         kb,
         context_length: int,
         expand_abbreviations: bool = False,
+        encode_sem_type: bool = False,
         masking: bool = False,
         **kwargs,
     ):
@@ -141,6 +159,7 @@ class CrossEncoderReranker(Reranker):
                     kb,
                     context_length,
                     expand_abbreviations,
+                    encode_sem_type,
                     masking
                 )
                 res[split] = IndexedDataset(ds, doc_index)
@@ -152,6 +171,7 @@ class CrossEncoderReranker(Reranker):
                 kb,
                 context_length,
                 expand_abbreviations,
+                encode_sem_type,
                 masking,
             )
             return IndexedDataset(ds, doc_index)
@@ -216,9 +236,13 @@ class CrossEncoderReranker(Reranker):
             train_layers=training_args["train_layers"]
         )
 
-    def rerank_batch(self):
-        pass
-
+    def rerank_batch(self, candidates, cross_enc_dataset, show_progress_bar=True, convert_to_numpy=True):
+        predictions = _cross_encoder_predict(self.model, cross_enc_dataset.dataset, show_progress_bar, convert_to_numpy)
+        return candidates.map(
+            lambda d, i: rerank(d, i, cross_enc_dataset.index, predictions),
+            with_indices=True,
+            load_from_cache_file=False,
+        )
 
 class EntityLinkingEvaluator:
     def __init__(self, el_dataset, name="-", show_progress_bar: bool = False, eval_callback=None, k_max: int = 64):
@@ -238,7 +262,7 @@ class EntityLinkingEvaluator:
             out_txt = ":"
 
         logger.info("EntityLinkingEvaluator: Evaluating the model on " + self.name + " dataset" + out_txt)
-        model_pred_scores = cross_encoder_predict(
+        model_pred_scores = _cross_encoder_predict(
             model,
             self.el_dataset,
             show_progress_bar=self.show_progress_bar,

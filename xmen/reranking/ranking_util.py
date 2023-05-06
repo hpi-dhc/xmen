@@ -1,5 +1,5 @@
 from tqdm.autonotebook import tqdm
-
+import datasets
 
 def find_context(passages, offsets):
     m_start, m_end = min([o[0] for o in offsets]), max([o[1] for o in offsets])
@@ -15,34 +15,43 @@ def find_context(passages, offsets):
 
 
 def get_flat_candidate_ds(candidate_ds, ground_truth, expand_abbreviations, kb):
-    flat_candidate_ds = candidate_ds.map(
-        lambda e, i: get_candidates(e, i, expand_abbreviations),
-        batched=True,
-        remove_columns=candidate_ds.column_names,
-        with_indices=True,
-        load_from_cache_file=False,
-    )
+    try:
+        datasets.disable_progress_bar()
+        flat_candidate_ds = candidate_ds.map(
+            lambda e, i: get_candidates(e, i, expand_abbreviations),
+            batched=True,
+            remove_columns=candidate_ds.column_names,
+            with_indices=True,
+            load_from_cache_file=False,
+        )
 
-    doc_index = flat_candidate_ds["doc_index"]
-    flat_candidate_ds = flat_candidate_ds.remove_columns(["doc_index"])
+        doc_index = flat_candidate_ds["doc_index"]
+        flat_candidate_ds = flat_candidate_ds.remove_columns(["doc_index"])
 
-    flat_ground_truth = ground_truth.map(
-        lambda e, i: get_candidates(e, i, False),
-        batched=True,
-        remove_columns=candidate_ds.column_names,
-        with_indices=True,
-        load_from_cache_file=False,
-    )
-    flat_ground_truth = flat_ground_truth.rename_column("candidates", "label")
+        flat_ground_truth = ground_truth.map(
+            lambda e, i: get_candidates(e, i, False),
+            batched=True,
+            remove_columns=candidate_ds.column_names,
+            with_indices=True,
+            load_from_cache_file=False,
+        )
+        flat_ground_truth = flat_ground_truth.rename_column("candidates", "label")
 
-    synonyms = [
-        [[kb.cui_to_entity[cui].canonical_name] + kb.cui_to_entity[cui].aliases for cui in entry]
-        for entry in tqdm(flat_candidate_ds["candidates"])
-    ]
-    flat_candidate_ds = flat_candidate_ds.add_column("synonyms", synonyms)
+        synonyms = [
+            [[kb.cui_to_entity[cui].canonical_name] + kb.cui_to_entity[cui].aliases for cui in entry]
+            for entry in tqdm(flat_candidate_ds["candidates"])
+        ]
+        semantic_types = [
+            [kb.cui_to_entity[cui].types for cui in entry]
+            for entry in tqdm(flat_candidate_ds["candidates"])
+        ]
+        flat_candidate_ds = flat_candidate_ds.add_column("synonyms", synonyms)
+        flat_candidate_ds = flat_candidate_ds.add_column("types", semantic_types)
 
-    flat_candidate_ds = flat_candidate_ds.add_column("label", flat_ground_truth["label"])
-
+        flat_candidate_ds = flat_candidate_ds.add_column("label", flat_ground_truth["label"])
+    finally:
+        datasets.enable_progress_bar()
+        
     return flat_candidate_ds, doc_index
 
 
