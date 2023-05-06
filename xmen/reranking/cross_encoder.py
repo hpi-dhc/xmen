@@ -30,6 +30,23 @@ from typing import Union, List
 
 
 def flat_ds_to_cross_enc_dataset(flat_candidate_ds, doc_index, context_length, mask_mention):
+    """
+    Convert a flat candidate dataset to a cross-encoding dataset.
+
+    Args:
+    - flat_candidate_ds (list): A list of dictionaries where each dictionary represents a single training example. The keys
+                                of each dictionary are "context_left", "mention", "context_right", "candidates", "scores",
+                                "synonyms", and "label".
+    - doc_index (list): A list of indices for each document in the dataset.
+    - context_length (int): The number of tokens to include in the context before and after the mention. If set to 0, the
+                            context will not be truncated.
+    - mask_mention (bool): Whether or not to mask the mention in the generated mention-candidate pairs.
+
+    Returns:
+    - res (list): A list of batches, where each batch is a list of ScoredInputExamples. Each ScoredInputExample represents a
+                  single mention-candidate pair with a label and a score.
+    - res_index (list): A list of indices corresponding to the batches in res.
+    """
     print('Masking:', mask_mention)
     res = []
     res_index = []
@@ -48,6 +65,27 @@ def flat_ds_to_cross_enc_dataset(flat_candidate_ds, doc_index, context_length, m
 
 
 def create_cross_enc_dataset(candidate_ds, ground_truth, kb, context_length: int, expand_abbreviations: bool, masking: bool):
+    """
+    Create a cross-encoding dataset from a candidate dataset.
+
+    Args:
+    - candidate_ds (list): A list of dictionaries where each dictionary represents a single candidate. The keys of each
+                           dictionary are "entity", "context", and "mention".
+    - ground_truth (dict): A dictionary where the keys are mentions and the values are lists of entities that are valid
+                           candidates for that mention.
+    - kb (KnowledgeBase): A KnowledgeBase object that contains information about valid entity types and relations between
+                          entities.
+    - context_length (int): The number of tokens to include in the context before and after the mention. If set to 0, the
+                            context will not be truncated.
+    - expand_abbreviations (bool): Whether or not to expand abbreviations in the context before and after the mention.
+    - masking (bool): Whether or not to mask the mention in the generated mention-candidate pairs.
+
+    Returns:
+    - res (list): A list of batches, where each batch is a list of ScoredInputExamples. Each ScoredInputExample represents a
+                  single mention-candidate pair with a label and a score.
+    - res_index (list): A list of indices corresponding to the batches in res.
+    """
+
     flat_candidate_ds, doc_index = get_flat_candidate_ds(
         candidate_ds, ground_truth, expand_abbreviations=expand_abbreviations, kb=kb
     )
@@ -55,6 +93,23 @@ def create_cross_enc_dataset(candidate_ds, ground_truth, kb, context_length: int
 
 
 def cross_encoder_predict(cross_encoder, cross_enc_dataset, show_progress_bar=True, convert_to_numpy=True):
+    """
+    Generate cross-encoder predictions for a cross-encoder and a cross-encoding dataset.
+
+    Args:
+    - cross_encoder (CrossEncoder): A CrossEncoder object that will be used to generate predictions.
+    - cross_enc_dataset (list): A list of batches, where each batch is a list of ScoredInputExamples. Each ScoredInputExample
+                                represents a single mention-candidate pair with a label and a score.
+    - show_progress_bar (bool): Whether or not to display a progress bar while generating predictions. If None, the default
+                                behavior is to show the progress bar if the logger's effective level is set to INFO or
+                                DEBUG.
+    - convert_to_numpy (bool): Whether or not to convert the generated predictions to numpy arrays.
+
+    Returns:
+    - pred_scores (list): A list of tensors, where each tensor represents the predicted scores for a single mention-candidate
+                          pair.
+    """
+
     inp_dataloader = torch.utils.data.DataLoader(
         BatchedCrossEncoderDataset(cross_enc_dataset), num_workers=0, batch_size=None
     )
@@ -84,11 +139,25 @@ def cross_encoder_predict(cross_encoder, cross_enc_dataset, show_progress_bar=Tr
 
 
 class CrossEncoderReranker(Reranker):
+    """
+    Reranker that uses a cross-encoder to score a set of candidate passages against a query.
+    Inherits from the abstract class Reranker.
+    """
     def __init__(self, model=None):
         self.model = model
 
     @staticmethod
     def load(checkpoint, device):
+        """
+        Loads a pre-trained model from a checkpoint and returns a new instance of CrossEncoderReranker.
+
+        Args:
+        - checkpoint: The path to the checkpoint file to load.
+        - device: The device to load the model onto.
+
+        Returns:
+        - new instance of CrossEncoderReranker.
+        """
         model = CrossEncoder(checkpoint)
         model.model.to(torch.device(device))
         return CrossEncoderReranker(model)
@@ -103,6 +172,20 @@ class CrossEncoderReranker(Reranker):
         masking: bool,
         **kwargs,
     ):
+        """
+        Prepares the data for training or evaluation.
+
+        Args:
+        - candidates: A Dataset or DatasetDict containing the candidate passages to score.
+        - ground_truth: A Dataset or DatasetDict containing the ground-truth passages.
+        - kb: The knowledge base to use for context enrichment.
+        - context_length: The maximum length of the context to use for scoring.
+        - expand_abbreviations: Whether to expand abbreviations in the passages.
+        - masking: Whether to mask entities in the passages.
+
+        Returns:
+        - IndexedDataset or IndexedDatasetDict containing the encoded passages.
+        """
         print("Context length:", context_length)
 
         if type(candidates) == DatasetDict:
@@ -146,6 +229,29 @@ class CrossEncoderReranker(Reranker):
         eval_callback=None,
         **training_args,
     ):
+        """
+        Fits the model using the given training and validation datasets.
+
+        Args:
+        - train_dataset (List[InputExample]): The list of InputExample objects representing the training dataset.
+        - val_dataset (List[InputExample]): The list of InputExample objects representing the validation dataset.
+        - output_dir (Union[str, Path]): The directory where the trained model will be saved.
+        - train_continue (bool, optional): If True, the training will be continued from the current state of the model. Defaults to False.
+        - softmax_loss (bool, optional): If True, uses CrossEntropyLoss as the loss function. Otherwise, no loss function is used. Defaults to True.
+        - loss_fct (optional): The loss function to be used. If None, the function will be automatically set based on the value of softmax_loss. Defaults to None.
+        - callback (optional): A callback function to be called at the end of each epoch. Defaults to None.
+        - add_special_tokens (bool, optional): If True, additional special tokens are added to the tokenizer. Defaults to True.
+        - max_length (int, optional): The maximum length of the input sequence. Defaults to 512.
+        - fp16 (bool, optional): If True, uses mixed-precision training. Defaults to False.
+        - eval_callback (optional): A callback function to be called during evaluation. Defaults to None.
+        - **training_args: A dictionary containing the training arguments to be passed to the ScoredCrossEncoder model.
+
+        Raises:
+        - AssertionError: If train_continue is False and the model already exists.
+
+        Returns:
+        - None
+        """
         print('FP16:', fp16)
         print('Softmax:', softmax_loss)
         if not self.model:
@@ -198,6 +304,19 @@ class CrossEncoderReranker(Reranker):
 
 
 class EntityLinkingEvaluator:
+    """
+    Evaluates a model on an entity linking dataset and returns the accuracy.
+
+    Args:
+    - el_dataset (Dataset): The entity linking dataset to evaluate on.
+    - name (str): The name of the dataset being evaluated. Defaults to "-".
+    - show_progress_bar (bool): Whether to show a progress bar during evaluation. Defaults to False.
+    - eval_callback (function): A callback function to call during evaluation. Defaults to None.
+    - k_max (int): The maximum value of k to calculate accuracy at. Defaults to 64.
+
+    Returns:
+    - float: The accuracy of the model on the entity linking dataset.
+    """
     def __init__(self, el_dataset, name="-", show_progress_bar: bool = False, eval_callback=None, k_max: int = 64):
         self.name = name
         self.el_dataset = el_dataset
@@ -263,6 +382,12 @@ class EntityLinkingEvaluator:
 
 
 class BatchedCrossEncoderDataset(torch.utils.data.Dataset):
+    """
+    A PyTorch Dataset class for batched cross-encoder data.
+
+    Args:
+    - cross_enc_data (list): The batched cross-encoder data.
+    """
     def __init__(self, cross_enc_data):
         self.cross_enc_data = cross_enc_data
 

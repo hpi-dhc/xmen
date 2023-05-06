@@ -4,6 +4,18 @@ from xmen.reranking import Reranker
 
 
 class RuleBasedReranker(Reranker):
+    """
+    Reranks a dataset using a list of rules.
+
+    Args:
+    - rules (List[Mapping]): A list of mappings representing the rules to be applied.
+
+    Attributes:
+    - rules (List[Mapping]): A list of mappings representing the rules to be applied.
+
+    Returns:
+    - The reranked dataset.
+    """
     def __init__(self, rules: List[Mapping]) -> None:
         self.rules = rules
 

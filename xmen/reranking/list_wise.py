@@ -15,6 +15,18 @@ from transformers import (
 
 
 def index_of(val, in_list):
+    """
+    Returns the index of the first occurrence of the specified value in the given list.
+    If the value is not found, returns 0.
+
+    Args:
+    - val: the value to search for
+    - in_list: the list to search in
+
+    Returns:
+    - The index of the first occurrence of the specified value in the given list.
+      If the value is not found, returns 0.
+    """
     try:
         return in_list.index(val) + 1
     except ValueError:
@@ -22,6 +34,25 @@ def index_of(val, in_list):
 
 
 def preprocess_el_dataset(examples, tokenizer, context_length: int, n_candidates: int, encode_positions : bool = False):
+    """
+    Preprocesses a dataset of examples for entity linking, converting them to tokenized input
+    suitable for use with a neural network model. Each example consists of a mention and a list of
+    candidate entities, represented as their synonyms.
+
+    Args:
+    - examples: a dictionary containing the "mention", "synonyms", "context_left", and "context_right"
+               fields for each example.
+    - tokenizer: the tokenizer to use for tokenizing the input
+    - context_length: the maximum length of context to include on either side of the mention, in tokens
+    - n_candidates: the number of candidates to include for each mention
+    - encode_positions: if True, includes position encoding in the output tokens
+
+    Returns:
+    - A dictionary containing the tokenized examples, split into inputs for each mention and its
+    corresponding candidate entities. The keys are the names of the inputs ("input_ids",
+    "attention_mask", "token_type_ids"), and the values are lists of lists, where each inner list
+    corresponds to the inputs for a single mention and its candidate entities.
+    """
     actual_n_candidates = n_candidates + 1  # if candidate not included
     mentions = [
         [f"{l_ctx[-context_length:] if context_length > 0 else ''} [START] {m} [END] {r_ctx[:context_length] if context_length > 0 else ''}"] * actual_n_candidates
@@ -53,6 +84,24 @@ def create_multiple_choice_dataset(
     k: int,
     expand_abbreviations: bool,
 ):
+    """
+    Creates a multiple choice dataset suitable for training a neural network model for entity linking.
+    The dataset consists of a list of mentions and their corresponding candidate entities, where one of
+    the candidates is the correct entity for the mention. The dataset is tokenized and indexed, ready for
+    use with a neural network.
+
+    Args:
+    - candidate_ds: the dataset of candidate entities for each mention
+    - ground_truth: the correct entity for each mention
+    - kb: the knowledge base to use for entity linking
+    - tokenizer: the tokenizer to use for tokenizing the input
+    - context_length: the maximum length of context to include on either side of the mention, in tokens
+    - k: the number of candidates to include for each mention
+    - expand_abbreviations: if True, expands abbreviations in the dataset using the knowledge base
+
+    Returns:
+    - An IndexedDataset object containing the tokenized and indexed multiple choice dataset.
+    """
     flat_candidate_ds, doc_index = ranking_util.get_flat_candidate_ds(
         candidate_ds, ground_truth, expand_abbreviations, kb
     )
@@ -87,6 +136,25 @@ class ListWiseReranker(Reranker):
         expand_abbreviations: bool,
         **kwargs,
     ):
+        """
+        Given a list of candidates, their corresponding ground truth labels, a knowledge base (kb), a tokenizer, and other optional arguments, creates a dataset that can be used to train a listwise reranker. Returns an IndexedDatasetDict containing train, validation, and/or test datasets depending on the input types.
+
+        Args:
+        - candidates: Union[DatasetDict, List[Dict[str, Union[str, List[str]]]]] - A dataset or list of dictionaries containing the candidates, their labels, and optionally other metadata.
+        - ground_truth: Optional[DatasetDict] - A dataset containing the ground truth labels for the candidates. Only necessary if candidates is a DatasetDict.
+        - kb: Union[Path, str] - A path to a file or directory containing the knowledge base for the task.
+        - tokenizer: PreTrainedTokenizerBase - A tokenizer object to use for tokenizing the candidates and ground truth labels.
+        - context_length: int - The maximum number of tokens to include in the context of each candidate during tokenization.
+        - k: int - The number of candidates to consider in each listwise comparison.
+        - expand_abbreviations: bool - Whether to expand abbreviations in the candidates and ground truth labels during tokenization.
+        - **kwargs: Additional optional keyword arguments to pass to create_multiple_choice_dataset().
+
+        Returns:
+        - res: IndexedDatasetDict - An IndexedDatasetDict containing the train, validation, and/or test datasets.
+
+        Raises:
+        - AssertionError if `candidates` is not a DatasetDict
+        """
         print("Context length:", context_length)
         print("n candidates:", k)
         if type(candidates) == DatasetDict:
@@ -124,6 +192,19 @@ class ListWiseReranker(Reranker):
         output_dir: Union[str, Path],
         **training_args,
     ):
+        """
+        Given train and validation datasets, a tokenizer, an output directory, and other optional training arguments, creates a Trainer object that can be used to train a listwise reranker. Returns the Trainer object.
+
+        Args:
+        - train_dataset: Dataset - A dataset containing the training examples.
+        - val_dataset: Dataset - A dataset containing the validation examples.
+        - tokenizer: PreTrainedTokenizerBase - A tokenizer object to use for tokenizing the examples.
+        - output_dir: Union[Path, str] - The path to the output directory where the trained model will be saved.
+        - **training_args: Additional optional keyword arguments to pass to the Trainer object.
+
+        Returns:
+        - trainer: Trainer - A Trainer object that can be used to train a listwise reranker.
+        """
         model = AutoModelForMultipleChoice.from_pretrained(training_args["model_name"])
 
         training_args = TrainingArguments(

@@ -12,10 +12,37 @@ from typing import Optional, Union, Dict
 
 
 def simple_accuracy(preds, labels):
+    """
+    Computes the simple accuracy of predictions.
+
+    Args:
+    - preds (Union[List, np.ndarray]): List or array of predicted labels.
+    - labels (Union[List, np.ndarray]): List or array of true labels.
+
+    Returns:
+    - float: Simple accuracy of predictions.
+    """
     return (preds == labels).mean()
 
 
 def top_1_metrics(preds, labels):
+    """
+    Computes top-1 metrics for a given set of predictions.
+
+    Args:
+    - preds (np.ndarray): Array of predicted labels.
+    - labels (np.ndarray): Array of true labels.
+
+    Returns:
+    - Dict[str, float]: A dictionary containing the following metrics:
+        - pr_nil: Precision for predicting NIL entities.
+        - re_nil: Recall for predicting NIL entities.
+        - f1_nil: F1 score for predicting NIL entities.
+        - pr: Precision for predicting all entities.
+        - re: Recall for predicting all entities.
+        - f1: F1 score for predicting all entities.
+
+    """
     tp_nil = tp = tp_no_nil = fp = fn_nil = fn = fn_no_nil = fp_no_nil = 0
     for p, l in zip(preds, labels):
         if p[0] == 0 and l == 0:
@@ -51,6 +78,22 @@ def top_1_metrics(preds, labels):
 
 
 def compute_entity_linking_metrics(p: EvalPrediction) -> Dict:
+    """
+    Computes entity linking metrics for a given set of predictions.
+
+    Args:
+    - p (EvalPrediction): Object containing predictions and labels.
+
+    Returns:
+    - Dict[str, float]: A dictionary containing the following metrics:
+        - pr_nil: Precision for predicting NIL entities.
+        - re_nil: Recall for predicting NIL entities.
+        - f1_nil: F1 score for predicting NIL entities.
+        - pr: Precision for predicting all entities.
+        - re: Recall for predicting all entities.
+        - f1: F1 score for predicting all entities.
+        - acc: Simple accuracy of predictions.
+    """
     preds = np.argsort(p.predictions, axis=1)[:, -1::-1]
 
     metrics = top_1_metrics(preds, p.label_ids)
@@ -62,6 +105,21 @@ def compute_entity_linking_metrics(p: EvalPrediction) -> Dict:
 class DataCollatorForMultipleChoice:
     """
     Data collator that will dynamically pad the inputs for multiple choice received.
+
+    Args:
+    - tokenizer (:obj:`PreTrainedTokenizerBase`): The tokenizer used for encoding the data.
+    - padding (:obj:`Union[bool, str, PaddingStrategy]`, optional, defaults to True):
+         Select a padding strategy. Default strategy is to pad to the longest sample in the batch.
+    - max_length (:obj:`int`, optional):
+         The maximum length of the tokenized input sequences. Will truncate all samples longer than this.
+    - pad_to_multiple_of (:obj:`int`, optional):
+         If set, the input sequences will be padded to a length that is a multiple of the given value.
+
+    Returns:
+    - A dictionary with the following key-value pairs:
+        - input_ids (:obj:`torch.Tensor`): The input token ids.
+        - attention_mask (:obj:`torch.Tensor`): The input attention mask.
+        - token_type_ids (:obj:`torch.Tensor`, optional): The token type
     """
 
     tokenizer: PreTrainedTokenizerBase

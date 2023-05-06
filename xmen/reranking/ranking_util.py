@@ -2,6 +2,18 @@ from tqdm.autonotebook import tqdm
 
 
 def find_context(passages, offsets):
+    """
+    Finds the left and right context of a target span within a list of passages.
+
+    - passages: a list of passages containing text and offsets
+    - offsets: a list of start and end offsets representing the target span
+
+    Returns:
+    - The left context target span, and the right context of the target span within the passages.
+
+    Raises:
+    - AssertionError if the function fails to find the target span within the passages.
+    """
     m_start, m_end = min([o[0] for o in offsets]), max([o[1] for o in offsets])
     for p in passages:
         for t, o in zip(p["text"], p["offsets"]):
@@ -15,6 +27,19 @@ def find_context(passages, offsets):
 
 
 def get_flat_candidate_ds(candidate_ds, ground_truth, expand_abbreviations, kb):
+    """
+    Expands the given candidate dataset with additional features, and removes the irrelevant columns.
+
+    Args:
+    - candidate_ds: the original dataset containing candidates
+    - ground_truth: the ground truth dataset
+    - expand_abbreviations: a boolean flag indicating whether or not to expand abbreviations
+    - kb: the knowledge base
+
+    Returns:
+    - A flat candidate dataset with additional columns: "synonyms" and "label".
+    - A document index.
+    """
     flat_candidate_ds = candidate_ds.map(
         lambda e, i: get_candidates(e, i, expand_abbreviations),
         batched=True,
@@ -47,6 +72,17 @@ def get_flat_candidate_ds(candidate_ds, ground_truth, expand_abbreviations, kb):
 
 
 def get_candidates(examples, doc_indices, expand_abbreviations: bool):
+    """
+    Retrieves all candidate entities for each mention in the given examples.
+
+    Args:
+    - examples: a dataset containing mentions and their corresponding passages
+    - doc_indices: a list of indices that correspond to the original documents in the dataset
+    - expand_abbreviations: a boolean flag indicating whether or not to expand abbreviations
+
+    Returns:
+    - A dictionary containing information about each mention, including its candidates, scores, and context.
+    """
     candidates = []
     scores = []
     mentions = []
