@@ -74,7 +74,7 @@ class ScoredCrossEncoder(CrossEncoder):
 
         tokenized = self.tokenizer(
             *texts, padding=True, truncation="longest_first", return_tensors="pt", max_length=self.max_length
-        )        
+        )
         labels = torch.tensor(labels, dtype=torch.float if self.config.num_labels == 1 else torch.long).to(
             self._target_device
         )
@@ -109,7 +109,7 @@ class ScoredCrossEncoder(CrossEncoder):
         optimizer_params: Dict[str, object] = {"lr": 2e-5},
         weight_decay: float = 0.01,
         score_regularization: bool = True,
-        train_layers : list = [],
+        train_layers: list = [],
         label_smoothing: float = 0.0,
         evaluation_steps: int = 0,
         output_path: str = None,
@@ -145,9 +145,9 @@ class ScoredCrossEncoder(CrossEncoder):
                 `score`, `epoch`, `steps`
         :param show_progress_bar: If True, output a tqdm progress bar
         """
-        print('Using score regularization:', score_regularization)
-        print('Using label smoothing factor:', label_smoothing) 
-        
+        print("Using score regularization:", score_regularization)
+        print("Using label smoothing factor:", label_smoothing)
+
         train_dataloader.collate_fn = self.smart_batching_collate_with_scores
 
         if use_amp:
@@ -174,7 +174,7 @@ class ScoredCrossEncoder(CrossEncoder):
             },
             {"params": [p for n, p in param_optimizer if any(nd in n for nd in no_decay)], "weight_decay": 0.0},
         ]
-        
+
         if train_layers:
             print("Training only layers: ", train_layers)
             for n, param in param_optimizer:

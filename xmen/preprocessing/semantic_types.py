@@ -1,6 +1,7 @@
 from xmen.umls import get_sem_type_tree, expand_tuis
 from typing import Dict
 
+
 class SemanticTypeFilter:
     """
     A class to filter out examples based on semantic types.
@@ -14,7 +15,8 @@ class SemanticTypeFilter:
     - kb: A knowledge base object.
     - tree: A semantic type tree object.
     """
-    def __init__(self, type_to_tui : Dict, kb):
+
+    def __init__(self, type_to_tui: Dict, kb):
         self.type_to_tui = type_to_tui
         self.kb = kb
         self.tree = get_sem_type_tree()
@@ -33,7 +35,7 @@ class SemanticTypeFilter:
         - tuis (set): A set of TUIs associated with the given CUI.
         """
         return self.kb.cui_to_entity[cui].types
-    
+
     def filter_semantic_groups(self, example):
         """
         Filters out normalized entities from the given example that are not associated with any of the valid TUIs.
@@ -59,10 +61,10 @@ class SemanticTypeFilter:
     def transform_batch(self, ds):
         """
         Transforms the given dataset by applying the filter_semantic_groups method to each example in the dataset.
-    
+
         Args:
         - ds (tf.data.Dataset): A dataset of examples.
-        
+
         Returns:
         - transformed_ds (tf.data.Dataset): A transformed dataset of examples.
         """

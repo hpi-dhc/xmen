@@ -1,6 +1,7 @@
 from tqdm.autonotebook import tqdm
 import datasets
 
+
 def find_context(passages, offsets):
     """
     Finds the left and right context of a target span within a list of passages.
@@ -67,8 +68,7 @@ def get_flat_candidate_ds(candidate_ds, ground_truth, expand_abbreviations, kb):
             for entry in tqdm(flat_candidate_ds["candidates"])
         ]
         semantic_types = [
-            [kb.cui_to_entity[cui].types for cui in entry]
-            for entry in tqdm(flat_candidate_ds["candidates"])
+            [kb.cui_to_entity[cui].types for cui in entry] for entry in tqdm(flat_candidate_ds["candidates"])
         ]
         flat_candidate_ds = flat_candidate_ds.add_column("synonyms", synonyms)
         flat_candidate_ds = flat_candidate_ds.add_column("types", semantic_types)
@@ -76,7 +76,7 @@ def get_flat_candidate_ds(candidate_ds, ground_truth, expand_abbreviations, kb):
         flat_candidate_ds = flat_candidate_ds.add_column("label", flat_ground_truth["label"])
     finally:
         datasets.enable_progress_bar()
-        
+
     return flat_candidate_ds, doc_index
 
 

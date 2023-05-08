@@ -11,6 +11,7 @@ class CUIReplacer:
     Attributes:
     - retired_cuis (dict): A dictionary containing retired CUIs as keys and their replacements as values
     """
+
     def __init__(self, umls_meta_path):
         self.retired_cuis = self._load_retired_cuis(umls_meta_path)
 
@@ -24,6 +25,7 @@ class CUIReplacer:
         Returns:
         - MapDataset: The transformed dataset with replaced CUIs in the normalized entities
         """
+
         def replace_cuis(entities):
             """
             Helper function that replaces retired CUIs in normalized forms of entities with their replacements.

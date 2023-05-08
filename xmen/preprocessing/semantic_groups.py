@@ -9,6 +9,7 @@ class SemanticGroupFilter:
     - kb (EntityKnowledgeBase): The knowledge base containing the entities and their types.
     - version (str, optional): The version of the semantic group mapping to use.
     """
+
     def __init__(self, kb, version=None):
         self._kb = kb
         self._sem_groups = get_semantic_groups(version).set_index("TUI")

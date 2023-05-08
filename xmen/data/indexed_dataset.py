@@ -14,6 +14,7 @@ class IndexedDatasetDict(dict):
     - load_from_disk(folder: str) -> IndexedDatasetDict: Loads the IndexedDataset objects from the specified folder.
 
     """
+
     def save_to_disk(self, folder):
         for k, v in self.items():
             v.save_to_disk(Path(folder) / k)
@@ -40,6 +41,7 @@ class IndexedDataset:
     - load_from_disk(folder: str) -> IndexedDataset: Loads the dataset and the index from the specified folder.
     - __repr__() -> str: Returns a string representation of the IndexedDataset object.
     """
+
     def __init__(self, dataset, index):
         self.dataset = dataset
         self.index = index

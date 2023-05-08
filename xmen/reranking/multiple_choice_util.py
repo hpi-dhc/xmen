@@ -136,7 +136,7 @@ class DataCollatorForMultipleChoice:
             [{k: v[i] for k, v in feature.items()} for i in range(num_choices)] for feature in features
         ]
         flattened_features = sum(flattened_features, [])
-        
+
         batch = self.tokenizer.pad(
             flattened_features,
             padding=self.padding,
@@ -146,7 +146,7 @@ class DataCollatorForMultipleChoice:
         )
 
         batch = {k: v.view(batch_size, num_choices, -1) for k, v in batch.items()}
-        input_ids = batch['input_ids']
-        
+        input_ids = batch["input_ids"]
+
         batch["labels"] = torch.tensor(labels, dtype=torch.int64)
         return batch

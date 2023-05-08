@@ -31,6 +31,7 @@ class Concept:
     Attributes:
     - _dict (dict): A dictionary containing the 'db_id', 'target_kb', 'type', and 'score' keys.
     """
+
     def __init__(
         self,
         db_id: str = None,
@@ -60,6 +61,7 @@ class Entity:
     Attributes:
     - _dict (dict): A dictionary containing the 'id', 'text', 'offsets', 'type', and 'normalized' keys.
     """
+
     def __init__(
         self,
         offsets,

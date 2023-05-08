@@ -16,6 +16,7 @@ class RuleBasedReranker(Reranker):
     Returns:
     - The reranked dataset.
     """
+
     def __init__(self, rules: List[Mapping]) -> None:
         self.rules = rules
 

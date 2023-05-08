@@ -16,6 +16,7 @@ class EnsembleLinker(EntityLinker):
     - linker_thresholds (Dict[str, float]): a dictionary of floats representing the score threshold to use for each linker
     - linker_weigths (Dict[str, float]): a dictionary of floats representing the weight to give to each linker during combination
     """
+
     # Ignore caching when using dataset.map
     def __getstate__(self):
         return {}
@@ -68,6 +69,7 @@ class EnsembleLinker(EntityLinker):
         Returns:
         - a dictionary containing the predicted entities for each document in the dataset
         """
+
         def merge_linkers(batch, index):
             progress = utils.logging.is_progress_bar_enabled()
             try:

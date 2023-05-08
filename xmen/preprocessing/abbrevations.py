@@ -12,6 +12,7 @@ class AbbreviationExpander:
     - nlp (Language): the spaCy pipeline object.
     - ab (AbbreviationDetector): the abbreviation detector object.
     """
+
     def __init__(self, spacy_model: str = "en_core_sci_sm"):
         from scispacy.abbreviation import AbbreviationDetector
 
@@ -28,6 +29,7 @@ class AbbreviationExpander:
         Returns:
         - dict: A dictionary with "entities" key containing a list of dictionaries.
         """
+
         def get_iter(examples):
             for passages, ents in zip(examples["passages"], examples["entities"]):
                 for p in passages:

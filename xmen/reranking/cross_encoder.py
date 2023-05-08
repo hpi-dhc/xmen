@@ -65,7 +65,15 @@ def flat_ds_to_cross_enc_dataset(flat_candidate_ds, doc_index, context_length, m
     return res, res_index
 
 
-def create_cross_enc_dataset(candidate_ds, ground_truth, kb, context_length: int, expand_abbreviations: bool, encode_sem_type: bool, masking: bool):
+def create_cross_enc_dataset(
+    candidate_ds,
+    ground_truth,
+    kb,
+    context_length: int,
+    expand_abbreviations: bool,
+    encode_sem_type: bool,
+    masking: bool,
+):
     """
     Create a cross-encoding dataset from a candidate dataset.
 
@@ -89,7 +97,9 @@ def create_cross_enc_dataset(candidate_ds, ground_truth, kb, context_length: int
     flat_candidate_ds, doc_index = get_flat_candidate_ds(
         candidate_ds, ground_truth, expand_abbreviations=expand_abbreviations, kb=kb
     )
-    return flat_ds_to_cross_enc_dataset(flat_candidate_ds, doc_index, context_length, mask_mention=masking, encode_sem_type=encode_sem_type)
+    return flat_ds_to_cross_enc_dataset(
+        flat_candidate_ds, doc_index, context_length, mask_mention=masking, encode_sem_type=encode_sem_type
+    )
 
 
 def _cross_encoder_predict(cross_encoder, cross_enc_dataset, show_progress_bar, convert_to_numpy):
@@ -136,6 +146,7 @@ def _cross_encoder_predict(cross_encoder, cross_enc_dataset, show_progress_bar, 
 
     return pred_scores
 
+
 def rerank(doc, index, doc_idx, ranking, reject_nil=False):
     """
     Re-ranks entities in a given document based on their normalized scores.
@@ -154,9 +165,9 @@ def rerank(doc, index, doc_idx, ranking, reject_nil=False):
     Returns:
     - A dictionary containing the re-ranked entities in the given document.
     """
-    entities = []   
+    entities = []
     for ei, e in enumerate(doc["entities"]):
-        mask = (np.array(doc_idx) == [index,ei]).all(axis=1)
+        mask = (np.array(doc_idx) == [index, ei]).all(axis=1)
         ranking_idx = mask.argmax()
         if mask[ranking_idx] == False:
             assert len(e["normalized"]) == 0
@@ -169,6 +180,7 @@ def rerank(doc, index, doc_idx, ranking, reject_nil=False):
         entities.append(e)
     return {"entities": entities}
 
+
 class CrossEncoderTrainingArgs:
     """
     A class to store arguments for training a CrossEncoder model.
@@ -179,18 +191,20 @@ class CrossEncoderTrainingArgs:
     Attributes:
     - args (dict): A dictionary containing the arguments for training, which can also be set individually.
     """
-    def __init__(self, args : dict):
+
+    def __init__(self, args: dict):
         self.args = args
-    
-    def __init__(self,
-           model_name : str,
-           num_train_epochs : int,
-           fp16 : bool = True,
-           label_smoothing : bool = False,
-           score_regularization : bool = False,
-           train_layers : list  = None,
-           softmax_loss : bool = True,
-        ):
+
+    def __init__(
+        self,
+        model_name: str,
+        num_train_epochs: int,
+        fp16: bool = True,
+        label_smoothing: bool = False,
+        score_regularization: bool = False,
+        train_layers: list = None,
+        softmax_loss: bool = True,
+    ):
         self.args = {}
         self.args["model_name"] = model_name
         self.args["num_train_epochs"] = num_train_epochs
@@ -199,15 +213,17 @@ class CrossEncoderTrainingArgs:
         self.args["score_regularization"] = score_regularization
         self.args["train_layers"] = train_layers
         self.args["softmax_loss"] = softmax_loss
-        
+
     def __getitem__(self, key):
         return self.args[key]
+
 
 class CrossEncoderReranker(Reranker):
     """
     Reranker that uses a cross-encoder to score a set of candidate passages against a query.
     Inherits from the abstract class Reranker.
     """
+
     def __init__(self, model=None):
         self.model = model
 
@@ -260,13 +276,7 @@ class CrossEncoderReranker(Reranker):
             for split, cand in candidates.items():
                 gt = ground_truth[split]
                 ds, doc_index = create_cross_enc_dataset(
-                    cand,
-                    gt,
-                    kb,
-                    context_length,
-                    expand_abbreviations,
-                    encode_sem_type,
-                    masking
+                    cand, gt, kb, context_length, expand_abbreviations, encode_sem_type, masking
                 )
                 res[split] = IndexedDataset(ds, doc_index)
             return res
@@ -293,7 +303,7 @@ class CrossEncoderReranker(Reranker):
         callback=None,
         add_special_tokens=True,
         max_length=512,
-        eval_callback=None
+        eval_callback=None,
     ):
         """
         Fits the model using the given training and validation datasets.
@@ -316,7 +326,7 @@ class CrossEncoderReranker(Reranker):
         - AssertionError: If train_continue is False and the model already exists.
         """
         for k, v in training_args.args.items():
-            print(k, ':=', v)
+            print(k, ":=", v)
         if not self.model:
             self.model = ScoredCrossEncoder(training_args["model_name"], num_labels=1, max_length=max_length)
             if add_special_tokens:
@@ -359,7 +369,7 @@ class CrossEncoderReranker(Reranker):
             use_amp=training_args["fp16"],
             label_smoothing=training_args["label_smoothing"],
             score_regularization=training_args["score_regularization"],
-            train_layers=training_args["train_layers"]
+            train_layers=training_args["train_layers"],
         )
 
     def rerank_batch(self, candidates, cross_enc_dataset, show_progress_bar=True, convert_to_numpy=True):
@@ -382,6 +392,7 @@ class CrossEncoderReranker(Reranker):
             load_from_cache_file=False,
         )
 
+
 class EntityLinkingEvaluator:
     """
     Evaluates a model on an entity linking dataset and returns the accuracy.
@@ -396,6 +407,7 @@ class EntityLinkingEvaluator:
     Returns:
     - float: The accuracy of the model on the entity linking dataset.
     """
+
     def __init__(self, el_dataset, name="-", show_progress_bar: bool = False, eval_callback=None, k_max: int = 64):
         self.name = name
         self.el_dataset = el_dataset
@@ -440,18 +452,20 @@ class EntityLinkingEvaluator:
         acc5 = get_accuracy(model_pred_scores, 5)
         k_max = self.k_max
         accmax = get_accuracy(model_pred_scores, k_max)
-        
+
         logger.info(f"Accuracy: {acc}")
         logger.info(f"Accuracy @ 5: {acc5}")
         logger.info(f"Accuracy @ {k_max}: {accmax}")
-        
+
         if self.eval_callback:
-            self.eval_callback({
-                'train/epoch' : epoch,
-                f'{self.name}/accuracy_1' : acc,
-                f'{self.name}/accuracy_5' : acc5,
-                f'{self.name}/accuracy_{k_max}' : accmax,
-            })
+            self.eval_callback(
+                {
+                    "train/epoch": epoch,
+                    f"{self.name}/accuracy_1": acc,
+                    f"{self.name}/accuracy_5": acc5,
+                    f"{self.name}/accuracy_{k_max}": accmax,
+                }
+            )
 
         baseline_pred_scores = np.array([[0]] * len(self.el_dataset))
         baseline_acc = get_accuracy(baseline_pred_scores, 1)
@@ -467,6 +481,7 @@ class BatchedCrossEncoderDataset(torch.utils.data.Dataset):
     Args:
     - cross_enc_data (list): The batched cross-encoder data.
     """
+
     def __init__(self, cross_enc_data):
         self.cross_enc_data = cross_enc_data
 

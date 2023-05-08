@@ -44,7 +44,7 @@ def assemble_kb(
     cfg = check_and_load_config(cfg_path)
 
     # make sure there is umls or custom or subconfig key in dict
-    if 'umls' not in cfg.dict and 'custom' not in cfg.dict and not key:
+    if "umls" not in cfg.dict and "custom" not in cfg.dict and not key:
         logger.error(
             "The provided config file does not contain `umls` nor `custom` keys nested within `dict`."
             "If you are attempting to use one of multiple subconfigs, provided it's key name with --key."

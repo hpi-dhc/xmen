@@ -15,6 +15,7 @@ class Sampler:
         AssertionError: If neither n nor frac is provided.
         AssertionError: If both n and frac are provided.
     """
+
     def __init__(self, random_seed: int, n: int = None, frac: float = None):
         self.random_seed = random_seed
         self.n = n
@@ -39,6 +40,7 @@ class Sampler:
         - AssertionError: If neither n nor frac is provided.
         - AssertionError: If both n and frac are provided.
         """
+
         def _sample(ds, aligned_ds=None):
             n_samples = self.n if self.n else int(self.frac * len(ds))
             rng = np.random.default_rng(seed=52)

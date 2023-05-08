@@ -19,6 +19,7 @@ _SAP_BERT_EN = "cambridgeltl/SapBERT-from-PubMedBERT-fulltext"
 
 _EMBED_DIM = 768
 
+
 class SapBERTLinker(EntityLinker):
     """
     A class that performs entity linking using the SapBERT model.
@@ -38,6 +39,7 @@ class SapBERTLinker(EntityLinker):
     - approximate (bool): Whether to use the hierarchical index for faster inference or not.
     - unique_aliases_only (bool): Whether to use only unique aliases of entities for linking or not.
     """
+
     # Global state
     instance = None
     model_wrapper = None
@@ -65,7 +67,7 @@ class SapBERTLinker(EntityLinker):
         cuda: bool = True,
         subtract_mean=True,
         batch_size=2048 * 6,
-        write_flat = False,
+        write_flat=False,
     ):
         """
         Write index files to disk.
@@ -102,22 +104,22 @@ class SapBERTLinker(EntityLinker):
         )
         if subtract_mean:
             candidate_dense_embeds -= candidate_dense_embeds.mean(0)
-        #print('Writing embeddings to', out_embed_file)
-        #with open(out_embed_file, "wb") as f:
+        # print('Writing embeddings to', out_embed_file)
+        # with open(out_embed_file, "wb") as f:
         #    pickle.dump(candidate_dense_embeds, f)
-        
-        logger.info('Building FAISS Hierarchical Index')
+
+        logger.info("Building FAISS Hierarchical Index")
         hier_indexer = DenseHNSWFlatIndexer(candidate_dense_embeds.shape[1])
         hier_indexer.index_data(candidate_dense_embeds, show_progress=True)
-        logger.info(f'Writing FAISS Hierarchical index to {out_faiss_hier_file}')
+        logger.info(f"Writing FAISS Hierarchical index to {out_faiss_hier_file}")
         hier_indexer.serialize(str(out_faiss_hier_file))
-        
+
         if write_flat:
-            logger.info('Building FAISS Flat Index')
+            logger.info("Building FAISS Flat Index")
             flat_indexer = DenseFlatIndexer(candidate_dense_embeds.shape[1])
             flat_indexer.index_data(candidate_dense_embeds, show_progress=True)
             flat_indexer.serialize(str(out_faiss_flat_file))
-            
+
     def __init__(
         self,
         index_base_path: Union[Path, str],
@@ -136,21 +138,21 @@ class SapBERTLinker(EntityLinker):
     ):
         index_base_path = Path(index_base_path)
         term_dict_pkl = index_base_path / "dict.pickle"
-        
+
         if SapBERTLinker.instance:
             raise Exception("SapBERTLinker is a singleton")
         SapBERTLinker.model_wrapper = Model_Wrapper()
         SapBERTLinker.model_wrapper.load_model(embedding_model_name, use_cuda=cuda)
         self.cuda = cuda
         if approximate:
-            logger.info('Loading hierarchical faiss index')
+            logger.info("Loading hierarchical faiss index")
             self.indexer = DenseHNSWFlatIndexer(_EMBED_DIM)
-            self.indexer.deserialize_from(str(index_base_path / 'embed_faiss_hier.pickle'))
+            self.indexer.deserialize_from(str(index_base_path / "embed_faiss_hier.pickle"))
         else:
-            logger.info('Loading flat faiss index')
+            logger.info("Loading flat faiss index")
             self.indexer = DenseFlatIndexer(_EMBED_DIM)
-            self.indexer.deserialize_from(str(index_base_path / 'embed_faiss_flat.pickle'))
-        #with open(dict_embeddings_pkl, "rb") as f:
+            self.indexer.deserialize_from(str(index_base_path / "embed_faiss_flat.pickle"))
+        # with open(dict_embeddings_pkl, "rb") as f:
         #    get_logger().info("Loading embeddings")
         #    SapBERTLinker.candidate_dense_embeds = pickle.load(f)
         with open(term_dict_pkl, "rb") as f:
@@ -249,4 +251,7 @@ class SapBERTLinker(EntityLinker):
                     if not self.remove_duplicates or not r.cui in cuis:
                         cuis.add(r.cui)
                         concepts.append((r.cui, score))
-            yield [{"db_id": cui, "score": score, "db_name": self.kb_name} for cui, score in sorted(concepts, key=lambda p: -p[1])]
+            yield [
+                {"db_id": cui, "score": score, "db_name": self.kb_name}
+                for cui, score in sorted(concepts, key=lambda p: -p[1])
+            ]

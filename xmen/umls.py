@@ -37,8 +37,8 @@ def read_umls_sabs(meta_path):
 
 def get_semantic_groups(version: str = None):
     """
-    Retrieves the semantic groups and their corresponding TUIs (Type Unique Identifiers) from the 
-    UMLS semantic groups file "SemGroups.txt" located in the `resources` directory. 
+    Retrieves the semantic groups and their corresponding TUIs (Type Unique Identifiers) from the
+    UMLS semantic groups file "SemGroups.txt" located in the `resources` directory.
 
     Args:
     - version (str, optional): Version of the UMLS semantic groups to retrieve. Defaults to None.
@@ -58,7 +58,7 @@ def get_semantic_groups(version: str = None):
 
 def filter_semantic_groups(semantic_groups, concept_details, version=None):
     """
-    Filters the `concept_details` dictionary by keeping only the concepts whose TUIs (Type Unique Identifiers) 
+    Filters the `concept_details` dictionary by keeping only the concepts whose TUIs (Type Unique Identifiers)
     belong to the specified semantic groups.
 
     Args:
@@ -78,7 +78,7 @@ def filter_semantic_groups(semantic_groups, concept_details, version=None):
 
 def get_sem_type_tree():
     """
-    Constructs a UMLS semantic type tree from the TSV file located at the default UMLS types path 
+    Constructs a UMLS semantic type tree from the TSV file located at the default UMLS types path
     and returns it as a UmlsSemanticTypeTree object.
 
     Returns:
@@ -89,7 +89,7 @@ def get_sem_type_tree():
 
 def filter_semantic_types(tuis, expand_semantic_types, concept_details):
     """
-    Filters the `concept_details` dictionary by keeping only the concepts whose TUIs (Type Unique Identifiers) 
+    Filters the `concept_details` dictionary by keeping only the concepts whose TUIs (Type Unique Identifiers)
     belong to the specified semantic types.
 
     Args:
@@ -149,7 +149,7 @@ def _get_lang_code(lang):
 
     Returns:
     - str: ISO 639-2/B code for the specified language.
-    
+
     Raises:
     - AssertionError: If the specified language is not valid.
     """
@@ -187,7 +187,7 @@ def get_umls_concepts(
     Returns:
     - dict: A dictionary containing the UMLS concepts and related metadata, filtered according to the specified criteria.
     """
-    
+
     meta_path = Path(meta_path)
     if not langs or "all" in langs:
         langs = None

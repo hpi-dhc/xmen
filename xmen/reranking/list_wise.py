@@ -33,7 +33,7 @@ def index_of(val, in_list):
         return 0
 
 
-def preprocess_el_dataset(examples, tokenizer, context_length: int, n_candidates: int, encode_positions : bool = False):
+def preprocess_el_dataset(examples, tokenizer, context_length: int, n_candidates: int, encode_positions: bool = False):
     """
     Preprocesses a dataset of examples for entity linking, converting them to tokenized input
     suitable for use with a neural network model. Each example consists of a mention and a list of
@@ -55,7 +55,10 @@ def preprocess_el_dataset(examples, tokenizer, context_length: int, n_candidates
     """
     actual_n_candidates = n_candidates + 1  # if candidate not included
     mentions = [
-        [f"{l_ctx[-context_length:] if context_length > 0 else ''} [START] {m} [END] {r_ctx[:context_length] if context_length > 0 else ''}"] * actual_n_candidates
+        [
+            f"{l_ctx[-context_length:] if context_length > 0 else ''} [START] {m} [END] {r_ctx[:context_length] if context_length > 0 else ''}"
+        ]
+        * actual_n_candidates
         for l_ctx, m, r_ctx in zip(examples["context_left"], examples["mention"], examples["context_right"])
     ]
     mentions = sum(mentions, [])
@@ -65,7 +68,11 @@ def preprocess_el_dataset(examples, tokenizer, context_length: int, n_candidates
             e.extend([""] * (n_candidates - len(e)))
         e.insert(0, ["[UNK]"])
 
-    candidates = [(f"[POSSTART] {i} [POSEND] " if encode_positions else "") + (" [SEP] ".join(s)) for e in examples["synonyms"] for i, s in enumerate(e)]
+    candidates = [
+        (f"[POSSTART] {i} [POSEND] " if encode_positions else "") + (" [SEP] ".join(s))
+        for e in examples["synonyms"]
+        for i, s in enumerate(e)
+    ]
 
     tokenized_examples = tokenizer(mentions, candidates, truncation=True, max_length=512)
 

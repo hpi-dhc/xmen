@@ -73,6 +73,7 @@ def _get_error_df(gt_ents: list, pred_ents: list, allow_multiple_gold_candidates
     Returns:
     A Pandas DataFrame with the errors.
     """
+
     def get_items(entities):
         return [
             (
