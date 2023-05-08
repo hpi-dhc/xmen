@@ -314,9 +314,6 @@ class CrossEncoderReranker(Reranker):
 
         Raises:
         - AssertionError: If train_continue is False and the model already exists.
-
-        Returns:
-        - None
         """
         for k, v in training_args.args.items():
             print(k, ':=', v)

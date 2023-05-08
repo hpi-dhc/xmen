@@ -1,6 +1,17 @@
 import datasets
 
 def from_spacy(docs, span_key=None, doc_id_key=None):
+    """
+    Converts a list of spaCy documents into a Hugging Face Datasets dataset.
+
+    Args:
+    - docs: a list of spaCy documents.
+    - span_key: a string specifying the span attribute to use for entity spans. If None, the default 'ents' attribute is used.
+    - doc_id_key: a string specifying the key for the document ID to use. If None, document ID is assigned based on position in the input list.
+
+    Returns:
+    - a Hugging Face Datasets dataset.
+    """
     ds = []
     id_range = list(range(0, len(docs)))
     

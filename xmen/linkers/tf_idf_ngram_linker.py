@@ -36,24 +36,8 @@ class TFIDFNGramLinker(EntityLinker):
     - no_definition_threshold (float, optional): The similarity threshold for a candidate concept without a definition to be considered a match. Defaults to 0.95.
     - filter_for_definitions (bool, optional): Whether to filter out candidate concepts without a definition. Defaults to False.
     - filter_types (bool, optional): Whether to filter out candidate concepts that are not of type "Entity". Defaults to False.
-
-    Methods:
-        write_index(index_base_path: Union[str, Path], jsonl_files: List[Union[str, Path]])
-
-
-        default_scispacy()
-            Returns a ScispacyLinker object with default parameters for the candidate generator.
-
-        scispacy(expand_abbreviations: bool = None, k: int = None, threshold: float = None,
-                 no_definition_threshold: float = None, filter_for_definitions: bool = None)
-            Returns a TFIDFNGramLinker object with ScispacyLinker as candidate generator and the given parameters.
-
-        load_candidate_generator(index_base_path: Union[str, Path])
-            Loads the candidate generator object from the specified index base path.
-
-        predict(passages: list, entities: list) -> dict
-            Predicts the normalized form of the entities based on the provided passages and returns the updated entities object.
     """
+
     @staticmethod
     def write_index(index_base_path: Union[str, Path], jsonl_files: List[Union[str, Path]]):
         """

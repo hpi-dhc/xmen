@@ -14,19 +14,6 @@ class Sampler:
     Raises:
         AssertionError: If neither n nor frac is provided.
         AssertionError: If both n and frac are provided.
-
-    Methods:
-        transform_batch(dataset[, aligned_dataset]): Samples the dataset or dataset dictionary.
-
-        Args:
-            dataset (Dataset or DatasetDict): The dataset or dataset dictionary to sample.
-            aligned_dataset (DatasetDict, optional): The dataset dictionary to align with `dataset`.
-
-        Returns:
-            If `dataset` is a dataset dictionary and `aligned_dataset` is provided, a tuple of two dataset dictionaries
-            (one for `dataset` and one for `aligned_dataset`) containing the sampled data. Otherwise, a single
-            dataset or dataset dictionary with the sampled data.
-
     """
     def __init__(self, random_seed: int, n: int = None, frac: float = None):
         self.random_seed = random_seed

@@ -297,9 +297,6 @@ def evaluate(
 
     Returns:
     - A dictionary containing the evaluation results for each specified metric.
-
-    Raises:
-    - StrictMetricWarning: If there is a division by zero problem raised by neleval.
     """
     with warnings.catch_warnings():
         # Ignore division by zero problems raised by neleval
