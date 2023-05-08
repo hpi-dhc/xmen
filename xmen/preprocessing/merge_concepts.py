@@ -2,7 +2,18 @@ from itertools import groupby
 
 
 class ConceptMerger:
+    """
+    A class to merge entities in text data based on their text and offset.
+    """
+
     def transform_batch(self, dataset):
+        """
+        Merges entities in a given dataset based on their text and offset.
+
+        Args:
+        - dataset (Dataset): A dataset object from the Hugging Face datasets library.
+        """
+
         def _merge_entities(d):
             ents = d["entities"]
             merged = []

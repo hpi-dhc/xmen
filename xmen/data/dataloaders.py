@@ -39,7 +39,7 @@ def load_mantra_gsc():
 
 def _load_medmentions(config_name):
     """
-    Loads the MedMentions dataset using the _load_bigbio_dataset function with the appropriate parameters and applies a 
+    Loads the MedMentions dataset using the _load_bigbio_dataset function with the appropriate parameters and applies a
     transformation to drop the 'UMLS:' prefix in the 'db_id' field of the 'normalized' entities.
 
     Args:
@@ -48,6 +48,7 @@ def _load_medmentions(config_name):
     Returns:
     - The loaded and transformed MedMentions dataset.
     """
+
     def drop_prefix(entities):
         for e in entities:
             for n in e["normalized"]:
@@ -65,7 +66,7 @@ def _load_medmentions(config_name):
 def load_medmentions_full():
     """
     Loads the full MedMentions dataset.
-    
+
     Returns:
     - A dataset loaded from the MedMentions dataset with full bigbio knowledge base.
     """
@@ -75,7 +76,7 @@ def load_medmentions_full():
 def load_medmentions_st21pv():
     """
     Loads the MedMentions dataset with ST21PV subset.
-    
+
     Returns:
     - A dataset loaded from the MedMentions dataset with ST21PV subset and bigbio knowledge base.
     """
@@ -85,7 +86,7 @@ def load_medmentions_st21pv():
 def load_quaero():
     """
     Loads the Quaero dataset.
-    
+
     Returns:
     - A dataset loaded from the Quaero dataset with bigbio knowledge base.
     """
@@ -100,10 +101,10 @@ def load_quaero():
 def load_distemist_linking():
     """
     Loads the DistemIST Linking dataset.
-    
+
     Returns:
     - A dataset loaded from the DistemIST Linking dataset with bigbio knowledge base.
-        
+
     Raises:
     - AssertionError: If the loaded dataset has an unexpected format.
     """

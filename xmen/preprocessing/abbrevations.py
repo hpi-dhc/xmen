@@ -2,6 +2,17 @@ import spacy
 
 
 class AbbreviationExpander:
+    """
+    A class to expand abbreviations in text data.
+
+    Args:
+    - spacy_model (str): the name of the spaCy model to use. Default is "en_core_sci_sm".
+
+    Attributes:
+    - nlp (Language): the spaCy pipeline object.
+    - ab (AbbreviationDetector): the abbreviation detector object.
+    """
+
     def __init__(self, spacy_model: str = "en_core_sci_sm"):
         from scispacy.abbreviation import AbbreviationDetector
 
@@ -9,6 +20,16 @@ class AbbreviationExpander:
         ab = self.nlp.add_pipe("abbreviation_detector")
 
     def _expand_abbreviations(self, examples):
+        """
+        Expands abbreviations in a given example.
+
+        Args:
+        - examples (dict): A dictionary with "passages" and "entities" keys containing a list of dictionaries.
+
+        Returns:
+        - dict: A dictionary with "entities" key containing a list of dictionaries.
+        """
+
         def get_iter(examples):
             for passages, ents in zip(examples["passages"], examples["entities"]):
                 for p in passages:
@@ -32,4 +53,13 @@ class AbbreviationExpander:
         return {"entities": examples["entities"]}
 
     def transform_batch(self, dataset):
+        """
+        Transforms a given dataset by expanding abbreviations in it.
+
+        Args:
+        - dataset (Dataset): A dataset object from the Hugging Face datasets library.
+
+        Returns:
+        - Dataset: A transformed dataset object with the same number of examples.
+        """
         return dataset.map(self._expand_abbreviations, batched=True)

@@ -14,7 +14,7 @@ def build_ngram(cfg: DictConfig, work_dir: Path, dict_dir: Path):
     - work_dir (Path): The working directory where the index will be stored.
     - dict_dir (Path): The directory containing the dictionary file.
     """
-    
+
     # ensure the index folder exists
     work_dir.parent.mkdir(exist_ok=True, parents=True)
 
@@ -32,7 +32,7 @@ def build_sapbert(cfg: DictConfig, work_dir: Path, dict_dir: Path, gpu_id: int):
     - dict_dir (Path): Path to the directory containing the concept dictionaries.
     - gpu_id (int): ID of the GPU to be used for training. Use -1 for CPU.
     """
-    
+
     # ensure the index folder exists
     work_dir.parent.mkdir(exist_ok=True, parents=True)
     # SapBERT indices

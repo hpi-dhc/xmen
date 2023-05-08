@@ -23,7 +23,7 @@ from tqdm.autonotebook import tqdm
 class DenseIndexer(object):
     """
     A class for creating and searching a dense vector index using Faiss.
-    
+
     Args:
     - buffer_size (int): The maximum number of data points to hold in memory while indexing.
 
@@ -31,19 +31,8 @@ class DenseIndexer(object):
     - buffer_size (int): The maximum number of data points to hold in memory while indexing.
     - index_id_to_db_id (list): A list that maps the index ID to the original database ID.
     - index (faiss.IndexFlatIP): The Faiss index.
-
-    Methods:
-    - serialize(index_file: str) -> None:
-        Serializes the index to a file.
-        Args:
-        - index_file (str): The path to the file where the serialized index will be stored.
-
-    - deserialize_from(index_file: str) -> None:
-        Deserializes the index from a file.
-        Args:
-        - index_file (str): The path to the file containing the serialized index.
     """
-    
+
     def __init__(self, buffer_size: int = 50000):
         self.buffer_size = buffer_size
         self.index_id_to_db_id = []
@@ -58,6 +47,7 @@ class DenseIndexer(object):
     def serialize(self, index_file: str):
         """
         Serializes the index to a file.
+
         Args:
         - index_file (str): The path to the file where the serialized index will be stored.
         """
@@ -66,15 +56,14 @@ class DenseIndexer(object):
 
     def deserialize_from(self, index_file: str):
         """
-         Deserializes the index from a file.
+        Deserializes the index from a file.
+
         Args:
         - index_file (str): The path to the file containing the serialized index.
         """
         logger.info("Loading index from %s", index_file)
         self.index = faiss.read_index(index_file)
-        logger.info(
-            "Loaded index of type %s and size %d", type(self.index), self.index.ntotal
-        )
+        logger.info("Loaded index of type %s and size %d", type(self.index), self.index.ntotal)
 
 
 # DenseFlatIndexer does exact search
@@ -88,24 +77,8 @@ class DenseFlatIndexer(DenseIndexer):
 
     Attributes:
     - index: An instance of faiss.IndexFlatIP initialized with vector_sz.
-
-    Methods:
-    - index_data(data, show_progress=False):
-        Indexes the given data using the IndexFlatIP index.
-        Args:
-        - data (np.array): The input data to be indexed.
-        - show_progress (bool): If True, shows progress bar while indexing. Default is False.
-        
-    - search_knn(query_vectors, top_k):
-        Searches the indexed data for the nearest neighbors of the given query vectors.
-        Args:
-        - query_vectors (np.array): The query vectors for which nearest neighbors are to be found.
-        - top_k (int): The number of nearest neighbors to be returned.
-        
-        Returns:
-        - scores (np.array): The similarity scores of the nearest neighbors.
-        - indexes (np.array): The indexes of the nearest neighbors in the indexed data.
     """
+
     def __init__(self, vector_sz: int = 1, buffer_size: int = 50000):
         super(DenseFlatIndexer, self).__init__(buffer_size=buffer_size)
         self.index = faiss.IndexFlatIP(vector_sz)
@@ -113,6 +86,7 @@ class DenseFlatIndexer(DenseIndexer):
     def index_data(self, data: np.array, show_progress=False):
         """
         Indexes the given data using the IndexFlatIP index.
+
         Args:
         - data (np.array): The input data to be indexed.
         - show_progress (bool): If True, shows progress bar while indexing. Default is False.
@@ -132,33 +106,32 @@ class DenseFlatIndexer(DenseIndexer):
     def search_knn(self, query_vectors, top_k):
         """
         Searches the indexed data for the nearest neighbors of the given query vectors.
+
         Args:
         - query_vectors (np.array): The query vectors for which nearest neighbors are to be found.
         - top_k (int): The number of nearest neighbors to be returned.
-        
+
         Returns:
         - scores (np.array): The similarity scores of the nearest neighbors.
         - indexes (np.array): The indexes of the nearest neighbors in the indexed data.
         """
         scores, indexes = self.index.search(query_vectors, top_k)
         return scores, indexes
-    
+
+
 # DenseHNSWFlatIndexer does approximate search
 class DenseHNSWFlatIndexer(DenseIndexer):
     """
     Efficient index for retrieval using HNSWFlat algorithm with L2 similarity.
     This indexer supports conversion from DOT product similarity space to L2 similarity space.
     Default settings are for high accuracy but also high RAM usage.
-    
+
     Args:
     - vector_sz (int): Size of input vectors.
     - buffer_size (int): Batch size for indexing. Default is 50000.
     - store_n (int): Number of vectors to store per index. Default is 128.
     - ef_search (int): Number of neighbors to consider during search. Default is 256.
     - ef_construction (int): Number of neighbors to consider during index construction. Default is 200.
-
-    Raises:
-    - RuntimeError: If the indexer has already indexed some data, indexing again with new data can lead to unpredictable results.
 
     Attributes:
     - index: Faiss IndexHNSWFlat object for indexing vectors.
@@ -196,13 +169,12 @@ class DenseHNSWFlatIndexer(DenseIndexer):
         # max norm is required before putting all vectors in the index to convert inner product similarity to L2
         if self.phi > 0:
             raise RuntimeError(
-                "DPR HNSWF index needs to index all data at once,"
-                "results will be unpredictable otherwise."
+                "DPR HNSWF index needs to index all data at once," "results will be unpredictable otherwise."
             )
         phi = 0
         for i, item in enumerate(data):
             doc_vector = item
-            norms = (doc_vector ** 2).sum()
+            norms = (doc_vector**2).sum()
             phi = max(phi, norms)
         logger.info("HNSWF DotProduct -> L2 space phi={}".format(phi))
         self.phi = 0
@@ -213,12 +185,9 @@ class DenseHNSWFlatIndexer(DenseIndexer):
         for i in tqdm(range(0, n, self.buffer_size), disable=not show_progress):
             vectors = [np.reshape(t, (1, -1)) for t in data[i : i + self.buffer_size]]
 
-            norms = [(doc_vector ** 2).sum() for doc_vector in vectors]
+            norms = [(doc_vector**2).sum() for doc_vector in vectors]
             aux_dims = [np.sqrt(phi - norm) for norm in norms]
-            hnsw_vectors = [
-                np.hstack((doc_vector, aux_dims[i].reshape(-1, 1)))
-                for i, doc_vector in enumerate(vectors)
-            ]
+            hnsw_vectors = [np.hstack((doc_vector, aux_dims[i].reshape(-1, 1))) for i, doc_vector in enumerate(vectors)]
             hnsw_vectors = np.concatenate(hnsw_vectors, axis=0)
 
             self.index.add(hnsw_vectors)

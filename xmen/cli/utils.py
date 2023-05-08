@@ -32,10 +32,7 @@ custom_name_help = (
     ". Use for datasets with multiple knowledge bases. The file extension is added automatically."
 )
 
-key_help = (
-    "Provide the name of the key in the .yaml config file that contains the desired subconfig for"
-    " the dict."
-)
+key_help = "Provide the name of the key in the .yaml config file that contains the desired subconfig for" " the dict."
 
 sapbert_help = "Build SapBERT indices."
 ngram_help = "Build N-Gram indices."
@@ -113,7 +110,7 @@ def can_write(path: str, parent_overwrite: bool) -> bool:
         return True
     else:
         # Handle differently file and directory paths (for dict and index, respectively)
-        if '.' in str(path).split('/')[-1]: # check if it is a file, os.path.isfile() works only if the path exists
+        if "." in str(path).split("/")[-1]:  # check if it is a file, os.path.isfile() works only if the path exists
             is_warnable = os.path.exists(path)
             warning = f"There already exists a file in {path}."
         else:

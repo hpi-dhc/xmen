@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 def eval_thresholds(dataset, pred, thresholds, ks, pbar=None):
     """
     Evaluates a set of predictions for different threshold values and top-k metrics.
-    
+
     Args:
     - dataset (Iterable): Iterable of dictionaries containing the ground truth entities.
     - pred (Iterable): Iterable of dictionaries containing the predicted entities.
@@ -45,13 +45,13 @@ def eval_thresholds(dataset, pred, thresholds, ks, pbar=None):
 def run_eval(dataset, preds, ks: list, thresholds: list = None):
     """
     Computes evaluation metrics and entity linking error analysis for a set of predictions.
-    
+
     Args:
     - dataset (Iterable): Iterable of dictionaries containing the ground truth entities.
     - pred (Iterable): Iterable of dictionaries containing the predicted entities.
     - ks (Iterable[int]): Iterable of integer values representing the different top-k metrics to evaluate.
     - thresholds (Iterable): Iterable of float values representing the different threshold values to evaluate. Defaults to None.
-    
+
     Returns:
     - evals: a list of dictionaries containing evaluation metrics (e.g., precision, recall, F1)
     - error_dfs: a list of error dataframes, one for each prediction, containing entity linking error analysis
@@ -78,13 +78,13 @@ def run_eval(dataset, preds, ks: list, thresholds: list = None):
 def merge_eval_df(linker_names, evals):
     """
     Merges evaluation metrics into a single dataframe.
-    
+
     Args:
     - linker_names: a list of strings representing the names of the entity linkers
     - evals: a list of dictionaries containing evaluation metrics for each linker and threshold
-    
+
     Returns:
-    - eval_df: a pandas dataframe with columns representing the evaluation metrics and index 
+    - eval_df: a pandas dataframe with columns representing the evaluation metrics and index
       containing a MultiIndex of linker names and threshold values
     """
     eval_df = []
@@ -99,14 +99,14 @@ def merge_eval_df(linker_names, evals):
 
 
 def plot_eval_results_at_k(eval_df, k_range, eval_names):
-     """
+    """
     Plots evaluation results at various values of k for a set of entity linkers.
-    
+
     Args:
     - eval_df: a pandas dataframe containing evaluation metrics for each entity linker and threshold
     - k_range: a list of integers representing the cutoffs for precision@k and recall@k
     - eval_names: a list of strings representing the names of the entity linkers
-    
+
     Returns:
     - None
     """

@@ -6,8 +6,10 @@ import pandas as pd
 from scispacy.linking_utils import KnowledgeBase, Entity
 from collections.abc import Mapping
 
-def load_kb(file_path : Union[str, Path]):
+
+def load_kb(file_path: Union[str, Path]):
     return CompositeKnowledgebase([file_path])
+
 
 class CompositeKnowledgebase(KnowledgeBase):
     """
@@ -24,6 +26,7 @@ class CompositeKnowledgebase(KnowledgeBase):
     - alias_to_cuis (defaultdict): A defaultdict containing the mapping from each entity alias to the set of CUIs it is associated with.
     - cui_to_entity (dict): A dictionary mapping each CUI to its corresponding Entity object in the CompositeKnowledgebase.
     """
+
     def __init__(
         self,
         file_paths: List[Union[str, Path]],
@@ -100,16 +103,16 @@ def create_flat_term_dict(concept_names_jsonl: List[Union[str, Path]], mappers: 
 
     Args:
     - concept_names_jsonl (List[Union[str, Path]]): A list of file paths to UMLS concept names JSON files.
-    - mappers (List[Mapping], optional): A list of mappers to apply to each JSON entry, one per JSON file. 
+    - mappers (List[Mapping], optional): A list of mappers to apply to each JSON entry, one per JSON file.
     If not provided, defaults to None.
 
     Returns:
-    - pd.DataFrame: A pandas dataframe containing UMLS term data. The columns are 'cui' (str), 'term' (str), 
-    'canonical' (str), and 'tuis' (list of str), representing the UMLS concept unique identifier, the term or alias, 
+    - pd.DataFrame: A pandas dataframe containing UMLS term data. The columns are 'cui' (str), 'term' (str),
+    'canonical' (str), and 'tuis' (list of str), representing the UMLS concept unique identifier, the term or alias,
     the canonical name, and the associated semantic types, respectively.
 
     Raises:
-    - AssertionError: If the number of mappers provided is not equal to the number of JSON files provided, or if 
+    - AssertionError: If the number of mappers provided is not equal to the number of JSON files provided, or if
     an entry does not have a canonical name.
     """
     term_dict = []

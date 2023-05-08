@@ -73,6 +73,7 @@ def _get_error_df(gt_ents: list, pred_ents: list, allow_multiple_gold_candidates
     Returns:
     A Pandas DataFrame with the errors.
     """
+
     def get_items(entities):
         return [
             (
@@ -297,9 +298,6 @@ def evaluate(
 
     Returns:
     - A dictionary containing the evaluation results for each specified metric.
-
-    Raises:
-    - StrictMetricWarning: If there is a division by zero problem raised by neleval.
     """
     with warnings.catch_warnings():
         # Ignore division by zero problems raised by neleval
