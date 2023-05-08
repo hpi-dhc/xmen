@@ -6,6 +6,8 @@ import pandas as pd
 from scispacy.linking_utils import KnowledgeBase, Entity
 from collections.abc import Mapping
 
+def load_kb(file_path : Union[str, Path]):
+    return CompositeKnowledgebase([file_path])
 
 class CompositeKnowledgebase(KnowledgeBase):
     """
