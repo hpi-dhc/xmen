@@ -170,22 +170,27 @@ def get_umls_concepts(
     semantic_group_file_version=None,
 ) -> dict:
     """
-    Reads UMLS concepts and related metadata from the specified sources and languages, and filters them by semantic groups
-    and semantic types.
+    Reads UMLS concepts and related metadata from the specified sources and languages, and filters them by semantic
+    groups and semantic types.
 
     Args:
     - meta_path (str): Path to the UMLS metathesaurus directory.
-    - langs (str): A comma-separated string of language codes to include. If `None` or `'all'`, all available languages will be included.
+    - langs (str): A comma-separated string of language codes to include. If `None` or `'all'`, all available languages
+                   will be included.
     - sabs (list): A list of source abbreviations to include. If empty, all available sources will be included.
     - sources (list): A list of source full names to include. If empty, all available sources will be included.
-    - semantic_groups (list): A list of semantic group abbreviations to include. If empty, no semantic group filtering will be performed.
-    - semantic_types (list): A list of semantic type abbreviations to include. If empty, no semantic type filtering will be performed.
+    - semantic_groups (list): A list of semantic group abbreviations to include. If empty, no semantic group filtering
+                              will be performed.
+    - semantic_types (list): A list of semantic type abbreviations to include. If empty, no semantic type filtering
+                             will be performed.
     - expand_semantic_types (bool): Whether to expand the specified semantic types to include all child types.
     - non_suppressed_only (bool): Whether to include only non-suppressed concepts.
-    - semantic_group_file_version (str): The version of the UMLS Semantic Groups file to use. If `None`, the latest version will be used.
+    - semantic_group_file_version (str): The version of the UMLS Semantic Groups file to use. If `None`, the latest
+                                         version will be used.
 
     Returns:
-    - dict: A dictionary containing the UMLS concepts and related metadata, filtered according to the specified criteria.
+    - dict: A dictionary containing the UMLS concepts and related metadata, filtered according to the specified
+            criteria.
     """
 
     meta_path = Path(meta_path)
