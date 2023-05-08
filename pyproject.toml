@@ -27,7 +27,6 @@ rich = "^12.3.0"
 torch = "^1.13.0"
 spacy = "~3.4.0"
 scispacy = {git = "https://github.com/phlobo/scispacy.git", branch = "main" }
-bigbio = {git = "https://github.com/bigscience-workshop/biomedical.git", branch="main"}
 sentence-transformers = "^2.2.2"
 faiss-gpu = "^1.7.2"
 
