@@ -400,3 +400,24 @@ def _to_nel_eval(
                         anno = Annotation(unit_id, start, end, [cand])
                         annotations.append(anno)
         yield Document(unit_id, annotations)
+
+def evaluate_at_k(ground_truth, pred, eval_k=[1,2,4,8,16,32,64], silent=False):
+    """
+    Runs evaluation for different values of k (number of candidates)
+
+    Args:
+    - ground_truth: ground truth annotations
+    - pred: predicted candidates
+    - eval_k: different values of k to evaluate
+    - silent: whether to print results to standard output
+
+    Returns:
+    - a dictionary of evaluation results for each k
+    """
+    res = {}
+    for ki in eval_k:
+        eval_res = evaluate(ground_truth, pred, top_k_predictions=ki)
+        if not silent:
+            print(f'Perf@{ki}', eval_res["strict"]['recall'])
+        res[ki] = eval_res
+    return res
