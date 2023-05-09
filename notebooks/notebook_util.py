@@ -22,6 +22,10 @@ def get_error_types(row, kb, sem_group_version):
         }
         return groups
     
+    def get_synset(scui):
+        kb_ix = kb.cui_to_entity[str(scui)]
+        return set([kb_ix.canonical_name] + kb_ix.aliases)
+    
     gold_id = row["gold_concept"]["db_id"]
     pred_id = row["pred_top"]
 
@@ -33,20 +37,28 @@ def get_error_types(row, kb, sem_group_version):
     
     if not pred_id in kb.cui_to_entity:
         return "MISSING_CUI_PRED"
-
+    
+    if get_word_len(row) >= 3:
+        return "COMPLEX_ENTITY"
+    
+    if (len(row.gt_text) == 1) and bool(
+        re.match("[A-Z]{2,3}", row.gt_text[0])
+    ):
+        return "ABBREV"
+    
+    if (
+        len(get_semantic_types(gold_id).intersection(get_semantic_types(pred_id)))
+            == 0
+        ):
+        return "WRONG_SEMANTIC_TYPE"
+    
+    
+    if len(get_synset(gold_id).intersection(get_synset(pred_id))) > 0:
+        return "SAME_SYNONYMS"
+    
     if sem_group_version:
         if len(sem_group_for_cui(gold_id).intersection(set(row.gold_type))) == 0:
             return "INVALID_SEMANTIC_GROUP"
-    
-    if row.pred_index == -1:
-        return "NOT_FOUND"
-
-    def get_synset(scui):
-        kb_ix = kb.cui_to_entity[str(scui)]
-        return set([kb_ix.canonical_name] + kb_ix.aliases)
-
-    if len(get_synset(gold_id).intersection(get_synset(pred_id))) > 0:
-        return "SAME_SYNONYMS"
 
     if sem_group_version:
         if (
@@ -55,11 +67,7 @@ def get_error_types(row, kb, sem_group_version):
         ):
             return "WRONG_SEMANTIC_GROUP"
 
-    if row.pred_top_score > 0.8 and row.pred_top_score - row.pred_index_score > 0.1:
-        return "SUSPECTED_ANNOTATION_ERROR"
-    
-    if get_word_len(row) >= 3:
-        return "COMPLEX_ENTITY"
+
 
     return "UNKNOWN_ERROR"
 
