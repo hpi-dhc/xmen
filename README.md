@@ -142,8 +142,14 @@ linker:
       k: 100
 ```
 
-
 Run `xmen index my_config.yaml --ngram` or `xmen index my_config.yaml --all` to create the index.
+
+To use the linker at runtime, pass the index folder as an argument:
+
+```
+ngram_linker = TFIDFNGramLinker(index_base_path=<path to index>, k=100)
+predictions = ngram_linker.predict_batch(dataset)
+```
 
 Example usage: see [notebooks/BioASQ_DisTEMIST.ipynb](notebooks/BioASQ_DisTEMIST.ipynb)
 
@@ -163,11 +169,46 @@ linker:
 
 Run `xmen index my_config.yaml --sapbert` or `xmen index my_config.yaml --all` to create the [FAISS](https://github.com/facebookresearch/faiss) index.
 
+To use the linker at runtime, pass the `embedding_model_name` (usually the same as was used for creating the index)  and index folder as an argument. At inference time, you have to pass a batch size, as the SapBERT linker runs on the GPU by default:
+
+```
+sapbert_linker = SapBERTLinker(
+    embedding_model_name = <name of the SapBERT model>,
+    index_base_path = <path to index>,
+    k = 1000
+)
+predictions = sapbert_linker.predict_batch(dataset, batch_size=128)
+```
+
+If you have loaded a yaml-config as a dictionary, you may also just pass it as kwargs:
+
+```
+sapbert_linker = SapBERTLinker(**config)
+```
+
 Example usage: see [notebooks/BioASQ_DisTEMIST.ipynb](notebooks/BioASQ_DisTEMIST.ipynb)
 
 ### Ensemble
 
-TODO
+Different candidate generators often work well for different kinds of entity mentions, and it can be helpful to combine their predictions.
+
+In xMEN, this can be easily achieved with an `EnsembleLinker`:
+
+```
+ensemble_linker = EnsembleLinker()
+ensemble_linker.add_linker('sapbert', sapbert_linker, k=10)
+ensemble_linker.add_linker('ngram', ngram_linker, k=10)
+```
+
+You can call `predict_batch` on the `EnsembleLinker` just as with any other linker.
+
+Sometimes, you want to compare the ensemble performance to individual linkers and already have the candidate lists. To avoid recomputation, you can use the `reuse_preds` argument:
+
+```
+prediction = ensemble_linker.predict_batch(dataset, 128, 100, reuse_preds={'sapbert' : predictions_sap, 'ngram' : predictions_ngram'})
+```
+
+Note: `reuse_preds` currently does not support Hugging Face `DatasetDict` objects, so you would have to call it on each split individually.
 
 Example usage: see [notebooks/BioASQ_DisTEMIST.ipynb](notebooks/BioASQ_DisTEMIST.ipynb)
 
@@ -175,9 +216,45 @@ Example usage: see [notebooks/BioASQ_DisTEMIST.ipynb](notebooks/BioASQ_DisTEMIST
 
 ### Cross-Encoder Reranker
 
-TODO
+When labelled training data is available, a trainable reranker can improve ranking of candidate lists a lot.
+
+To train a cross-encoder, first create a dataset of mention / candidate pairs:
+
+```
+from xmen.reranking.cross_encoder import CrossEncoderReranker, CrossEncoderTrainingArgs
+from xmen.knowledge_base import load_kb
+
+# Load a KB from a pre-computed dictionary (jsonl) to obtain synonyms for concept encoding
+kb = load_kb('path/to/my/dictionary.jsonl')
+
+candidates = ... # obtain prediction from candidate generator (see above)
+context_length = 128 # set to adjust context length for mention encoding, more context causes larger memory footprint
+
+cross_enc_ds = CrossEncoderReranker.prepare_data(candidates, dataset, kb, context_length)
+```
+
+Then you can use this dataset to train a supervised reranking model:
+
+```
+from xmen.reranking.cross_encoder import CrossEncoderReranker, CrossEncoderTrainingArgs
+
+cross_encoder_model = 'bert-base-multilingual-cased' # any BERT model, potentially language specific
+n_epochs = 10 # number of epochs to train
+output_dir = ... # Path to temp dir for writing model checkpoints
+
+train_args = CrossEncoderTrainingArgs(cross_encoder_model, n_epochs)
+
+rr = CrossEncoderReranker()
+rr.fit(cross_enc_ds['train'].dataset, cross_enc_ds['validation'].dataset, output_dir=output_dir, training_args=train_args)
+
+prediction = rr.rerank_batch(candidates['test'], cross_enc_ds['test'])
+```
 
 Example usage:see [notebooks/BioASQ_DisTEMIST.ipynb](notebooks/BioASQ_DisTEMIST.ipynb)
+
+### Rule-based Reranker
+
+TODO
 
 ## :bulb: Pre- and Post-Processing
 
