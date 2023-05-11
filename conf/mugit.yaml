@@ -1,0 +1,9 @@
+name: mugit
+
+dict:
+  custom:
+    lang:
+      - de
+    umls_meta_path: ${oc.env:UMLS_HOME}/2022AA/META
+    mugit_path: ${oc.env:HOME}/temp/
+    mugit_file: SCT-GIT_de_large.dat

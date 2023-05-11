@@ -7,7 +7,11 @@ import pandas as pd
 log = logging.getLogger(__name__)
 
 
-def get_concept_details(umls_meta_path: str, mugit_path: str, mugit_file: str) -> dict:
+def get_concept_details(cfg) -> dict:
+    umls_meta_path = cfg.dict.custom.umls_meta_path
+    mugit_path = cfg.dict.custom.mugit_path
+    mugit_file = cfg.dict.custom.mugit_file
+
     concept_details = {}
 
     log.info(">> Reading concepts ...")
