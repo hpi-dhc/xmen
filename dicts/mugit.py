@@ -1,10 +1,4 @@
-from pathlib import Path
-from scispacy import umls_utils
-import logging
 import pandas as pd
-
-
-log = logging.getLogger(__name__)
 
 
 def get_concept_details(cfg) -> dict:
