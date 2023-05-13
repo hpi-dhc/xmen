@@ -1,6 +1,6 @@
 from typing import List, Union
 from pathlib import Path
-from scispacy import umls_utils
+from ..ext.scispacy import umls_utils
 import datasets
 from bigbio.dataloader import BigBioConfigHelpers
 

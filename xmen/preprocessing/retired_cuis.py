@@ -1,4 +1,4 @@
-from scispacy import umls_utils
+from ..ext.scispacy import umls_utils
 
 
 class CUIReplacer:

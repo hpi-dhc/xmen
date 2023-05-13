@@ -1,4 +1,4 @@
-from scispacy import umls_utils
+from .ext.scispacy import umls_utils
 from scispacy import umls_semantic_type_tree
 from scispacy.linking_utils import DEFAULT_UMLS_TYPES_PATH
 from langcodes import Language
@@ -119,7 +119,7 @@ def get_alias_count(concept_details):
     return sum([len(c["aliases"]) + 1 for c in concept_details.values()])
 
 
-def _expand_tuis(tuis, sem_type_tree):
+def expand_tuis(tuis, sem_type_tree):
     """
     Recursively expands a list of UMLS semantic type abbreviations to include their child semantic types,
     using the specified semantic type tree.
