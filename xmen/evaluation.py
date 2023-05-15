@@ -2,6 +2,7 @@ import imp
 from typing import Iterable
 from itertools import groupby
 import pandas as pd
+import warnings
 
 from .ext.neleval.prepare import SelectAlternatives
 from .ext.neleval.document import Document

@@ -2,8 +2,6 @@
 "Document - group and compare annotations"
 "Adapted from https://github.com/wikilinks/neleval/blob/master/neleval/ for Python >3.10 compatibility"
 
-from __future__ import print_function
-
 from collections import OrderedDict
 import warnings
 import sys
