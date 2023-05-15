@@ -5,4 +5,5 @@ dict:
     lang:
       - de
       - en
+    # Get from: https://user.medunigraz.at/stefan.schulz/mugit/  
     mugit_path: ${oc.env:HOME}/temp/SCT-GIT_de_large.dat
