@@ -3,15 +3,11 @@ from typing import Iterable
 from itertools import groupby
 import pandas as pd
 
-import warnings
-
-with warnings.catch_warnings():
-    warnings.filterwarnings("ignore", category=DeprecationWarning)
-    from neleval.evaluate import Evaluate, StrictMetricWarning
-    from neleval.configs import get_measure
-    from neleval.annotation import Annotation, Candidate
-    from neleval.document import Document
-    from neleval.prepare import SelectAlternatives
+from .ext.neleval.prepare import SelectAlternatives
+from .ext.neleval.document import Document
+from .ext.neleval.evaluate import Evaluate, StrictMetricWarning
+from .ext.neleval.annotation import Annotation, Candidate
+from .ext.neleval.configs import get_measure
 
 # constants for interacting with different neleval measures
 _PARTIAL_EVAL_MEASURE_FMT_STRING = "overlap-maxmax:None:span+kbid"

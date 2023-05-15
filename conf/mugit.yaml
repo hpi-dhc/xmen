@@ -1,0 +1,8 @@
+name: mugit
+
+dict:
+  custom:
+    lang:
+      - de
+      - en
+    mugit_path: ${oc.env:HOME}/temp/SCT-GIT_de_large.dat

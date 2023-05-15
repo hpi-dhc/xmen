@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "xmen"
-version = "0.1.0"
+version = "0.9.0"
 description = "An extensible toolkit for Cross-lingual (x) Medical Entity Normalization."
 license = "Apache-2.0"
 authors = ["Florian Borchert <florian.borchert@hpi.de>"]
@@ -20,24 +20,17 @@ numpy = "^1.21"
 pytorch-metric-learning = "0.9.98.dev1"
 sentencepiece = "^0.1.96"
 protobuf = "^3.20.0"
-bioc = "^2.0.post3"
-hydra-core = "^1.1.1"
+omegaconf = "^2.3.0"
 langcodes = "^3.3.0"
 rich = "^12.3.0"
 torch = "^1.13.0"
-spacy = "~3.4.0"
-scispacy = "^0.5.2"
+scispacy = {git = "https://github.com/phlobo/scispacy.git", branch = "main" }
 sentence-transformers = "^2.2.2"
 faiss-gpu = "^1.7.2"
 
 [tool.poetry.dev-dependencies]
 pytest = "^4.0"
-ipykernel = "^6.10.0"
-jupyterlab = "^3.3.2"
-matplotlib = "^3.5.1"
-wandb = "^0.12.16"
 black = {extras = ["jupyter"], version = "^22.12.0"}
-ipywidgets = "^8.0.4"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]

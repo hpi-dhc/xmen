@@ -148,6 +148,7 @@ def test_subconfig():
     cfg = OmegaConf.load(yaml)
     cfg.dict = cfg.dict["key1"]
     cfg.name = "test"
+    cfg.dict.umls.meta_path = str(file_path / cfg.dict.umls.meta_path)
     concept_details = get_concept_details(cfg, custom_path=None)
 
     assert len(concept_details) == 1
@@ -158,6 +159,7 @@ def test_subconfig():
     cfg = OmegaConf.load(yaml)
     cfg.dict = cfg.dict["key2"]
     cfg.name = "test"
+    cfg.dict.umls.meta_path = str(file_path / cfg.dict.umls.meta_path)
     concept_details = get_concept_details(cfg, custom_path=None)
 
     assert len(concept_details) == 1
