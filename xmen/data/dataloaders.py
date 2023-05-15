@@ -2,7 +2,6 @@ from typing import List, Union
 from pathlib import Path
 from xmen.umls import read_umls_concepts
 import datasets
-from bigbio.dataloader import BigBioConfigHelpers
 
 
 def load_dataset(dataset: str):
@@ -33,7 +32,6 @@ def load_mantra_gsc():
         "mantra_gsc",
         lambda conf_name: conf_name.split("_")[2],
         splits=["train"],
-        use_bigbio=True,
     )
 
 
@@ -115,17 +113,11 @@ def load_distemist_linking():
         splits=["train"],
     )
 
-
-def load_bronco(bronco_150_xml_path: Union[Path, str]):
-    pass  # return load_dataset(str(data_dir / 'bronco'), bronco_150_xml_path = bronco_150_xml_path)
-
-
 def _load_bigbio_dataset(
     config_names: List[str],
     dataset_name: str,
     lang_mapper,
-    splits,
-    use_bigbio=False,
+    splits
 ):
     """
     Loads a biomedical dataset and returns a concatenated dataset for the specified splits.
@@ -135,17 +127,15 @@ def _load_bigbio_dataset(
     - dataset_name (str): The name of the dataset to load.
     - lang_mapper (function): A function that maps configuration names to language codes.
     - splits (List[str]): A list of splits to concatenate the dataset for.
-    - use_bigbio (bool): A flag that indicates whether to use BigBioConfigHelpers to load the dataset or not. Defaults to False.
 
     Returns:
     - output (datasets.DatasetDict): A concatenated dataset for the specified splits.
     """
-    if use_bigbio:
-        conhelps = BigBioConfigHelpers()
-        configs = conhelps.for_dataset(dataset_name).filtered(lambda conf: conf.is_bigbio_schema)
-        ds_map = {c.config.name: c.load_dataset() for c in configs}
-    else:
-        ds_map = {c: datasets.load_dataset(f"bigscience-biomedical/{dataset_name}", c) for c in config_names}
+    # TODO: implement loading all available configs for a dataset
+    assert config_names is not None, "Not implemented"
+        
+    
+    ds_map = {c: datasets.load_dataset(f"bigscience-biomedical/{dataset_name}", c) for c in config_names}
     ds = []
     for conf, ds_dict in ds_map.items():
         for k in ds_dict.keys():
