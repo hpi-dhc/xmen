@@ -3,8 +3,10 @@ from xmen import evaluation
 from xmen.preprocessing import ConceptMerger
 from dummy_linker import CopyLinker, NullLinker
 
-mantra_ds_raw = load_mantra_gsc()
-mantra_ds = ConceptMerger().transform_batch(mantra_ds_raw)
+import pytest
+
+#mantra_ds_raw = load_mantra_gsc()
+#mantra_ds = ConceptMerger().transform_batch(mantra_ds_raw)
 
 # "The number of final annotations was 5530" (but there are two duplicates)
 NUM_CONCEPTS_MANTRA_GSC = 5530 - 2
@@ -12,12 +14,13 @@ NUM_CONCEPTS_MANTRA_GSC = 5530 - 2
 ALL_METRICS = ["strict", "partial", "loose"]
 
 
+@pytest.mark.skip(reason="Mantra currently not on Huggingface? see: https://github.com/bigscience-workshop/biomedical/issues/891")
 def test_stats():
     assert len(mantra_ds_raw["train"]) == 1450
     assert len(get_cuis(mantra_ds_raw["train"])) == 5530
     assert len(get_cuis(mantra_ds["train"])) == NUM_CONCEPTS_MANTRA_GSC
 
-
+@pytest.mark.skip(reason="Mantra currently not on Huggingface? see: https://github.com/bigscience-workshop/biomedical/issues/891")
 def test_evaluation_identity():
     pred = CopyLinker().predict_batch(mantra_ds["train"])
 
@@ -42,7 +45,7 @@ def test_evaluation_identity():
     assert metrics["loose"]["ptp"] < n_annotations
     assert metrics["loose"]["rtp"] < n_annotations
 
-
+@pytest.mark.skip(reason="Mantra currently not on Huggingface? see: https://github.com/bigscience-workshop/biomedical/issues/891")
 def test_evaluation_null_allow_multiple_gold_candidates():
     pred = NullLinker().predict_batch(mantra_ds["train"])
 
@@ -66,7 +69,7 @@ def test_evaluation_null_allow_multiple_gold_candidates():
     assert metrics["partial"]["fn"] < n_annotations_gold
     assert metrics["loose"]["fn"] < n_annotations_gold
 
-
+@pytest.mark.skip(reason="Mantra currently not on Huggingface? see: https://github.com/bigscience-workshop/biomedical/issues/891")
 def test_evaluation_null_dont_allow_multiple_gold_candidates():
     pred = NullLinker().predict_batch(mantra_ds["train"])
 

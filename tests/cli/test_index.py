@@ -31,7 +31,7 @@ def test_ngram_indices(tmp_path):
 
 
 def test_sapbert_indices(tmp_path):
-    sapbert_folder = cfg.linker.candidate_generation.sapbert.embedding_model_name.split("/")[1]
+    sapbert_folder = 'sapbert'
 
     if not os.path.exists(tmp_path):
         print(tmp_path)
