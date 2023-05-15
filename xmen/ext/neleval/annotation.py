@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 "Representation of link standoff annotation and measures over it"
-"Adapted from https://github.com/wikilinks/neleval/blob/master/neleval/annotation.py for Python >3.10 compatibility"
+"Adapted from https://github.com/wikilinks/neleval/blob/master/neleval/ for Python >3.10 compatibility"
 
 from collections.abc import Sequence
 from collections import defaultdict

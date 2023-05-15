@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 """
 Evaluate linker performance.
+Adapted from https://github.com/wikilinks/neleval/blob/master/neleval/annotation.py for Python >3.10 compatibility
 """
 import warnings
 import json

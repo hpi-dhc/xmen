@@ -1,3 +1,5 @@
+"Adapted from https://github.com/wikilinks/neleval/blob/master/neleval/ for Python >3.10 compatibility"
+
 from collections import defaultdict
 import json
 
