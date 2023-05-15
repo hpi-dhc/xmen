@@ -248,7 +248,7 @@ class CrossEncoderReranker(Reranker):
         candidates,
         ground_truth,
         kb,
-        context_length: int,
+        context_length: int = 128,
         expand_abbreviations: bool = False,
         encode_sem_type: bool = False,
         masking: bool = False,
@@ -261,8 +261,9 @@ class CrossEncoderReranker(Reranker):
         - candidates: A Dataset or DatasetDict containing the candidate passages to score.
         - ground_truth: A Dataset or DatasetDict containing the ground-truth passages.
         - kb: The knowledge base to use for context enrichment.
-        - context_length: The maximum length of the context to use for scoring.
+        - context_length: The maximum character length of the left / right context to use for scoring (default 128 chars).
         - expand_abbreviations: Whether to expand abbreviations in the passages.
+        - encode_sem_type: Whether to include the semantic type of the concept in its representation
         - masking: Whether to mask entities in the passages.
 
         Returns:
