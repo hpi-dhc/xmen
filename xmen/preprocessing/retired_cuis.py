@@ -1,5 +1,4 @@
-from ..ext.scispacy import umls_utils
-
+from xmen.umls import read_umls_concepts
 
 class CUIReplacer:
     """

@@ -1,4 +1,4 @@
-from .ext.scispacy import umls_utils
+from xmen.ext.scispacy.umls_utils import read_umls_file_headers, read_umls_concepts
 from scispacy import umls_semantic_type_tree
 from scispacy.linking_utils import DEFAULT_UMLS_TYPES_PATH
 from langcodes import Language
