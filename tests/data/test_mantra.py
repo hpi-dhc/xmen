@@ -5,8 +5,8 @@ from dummy_linker import CopyLinker, NullLinker
 
 import pytest
 
-#mantra_ds_raw = load_mantra_gsc()
-#mantra_ds = ConceptMerger().transform_batch(mantra_ds_raw)
+mantra_ds_raw = None# load_mantra_gsc()
+mantra_ds = None# ConceptMerger().transform_batch(mantra_ds_raw)
 
 # "The number of final annotations was 5530" (but there are two duplicates)
 NUM_CONCEPTS_MANTRA_GSC = 5530 - 2

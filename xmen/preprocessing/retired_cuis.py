@@ -55,7 +55,7 @@ class CUIReplacer:
         """
         res = []
         cui_filename = "MRCUI.RRF"
-        headers = umls_utils.read_umls_file_headers(meta_path, cui_filename)
+        headers = read_umls_file_headers(meta_path, cui_filename)
         mapping = {}
         with open(f"{meta_path}/{cui_filename}") as fin:
             for line in fin:

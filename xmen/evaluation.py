@@ -146,6 +146,9 @@ def _get_error_df(gt_ents: list, pred_ents: list, allow_multiple_gold_candidates
             for gt_concept in gt_c:
                 ent_res.append(get_match_result(gt_concept))
 
+    # Initialize variables
+    gt_s = gt_c = gt_e = gt_text = None
+
     while gt_items or pred_items:
         if not gt_items:
             e_match_type = "fp"
