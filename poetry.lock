@@ -2385,13 +2385,15 @@ test = ["asv", "gmpy2", "mpmath", "pooch", "pytest", "pytest-cov", "pytest-timeo
 
 [[package]]
 name = "scispacy"
-version = "0.5.1"
+version = "0.5.2"
 description = "A full SpaCy pipeline and models for scientific/biomedical documents."
 category = "main"
 optional = false
 python-versions = ">=3.6.0"
-files = []
-develop = false
+files = [
+    {file = "scispacy-0.5.2-py3-none-any.whl", hash = "sha256:8428202fb811980b44520aaf256fad9a021ae47941c0105c6247ddd1ef5fda5d"},
+    {file = "scispacy-0.5.2.tar.gz", hash = "sha256:12bd915a81712a6dd50284ee7518088a8dd2c75d69949ea1bd3df00aee763d69"},
+]
 
 [package.dependencies]
 conllu = "*"
@@ -2402,12 +2404,6 @@ pysbd = "*"
 requests = ">=2.0.0,<3.0.0"
 scikit-learn = ">=0.20.3"
 spacy = ">=3.4.0,<3.5.0"
-
-[package.source]
-type = "git"
-url = "https://github.com/phlobo/scispacy.git"
-reference = "main"
-resolved_reference = "0c90977ca2e30f2740705faa21969289ac7d8827"
 
 [[package]]
 name = "sentence-transformers"
@@ -3364,4 +3360,4 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.8,<3.11"
-content-hash = "667f17ee8abbf20645e2d3c27dad8b311995f05cdb19567f6ab06a42711cb25c"
+content-hash = "fe20caaa74580c60648e759b913d1936396a5ea967a368f44bf84eba72eddcac"

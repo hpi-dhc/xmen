@@ -24,7 +24,7 @@ omegaconf = "^2.3.0"
 langcodes = "^3.3.0"
 rich = "^12.3.0"
 torch = "^1.13.0"
-scispacy = {git = "https://github.com/phlobo/scispacy.git", branch = "main" }
+scispacy = "^0.5.2"
 sentence-transformers = "^2.2.2"
 faiss-gpu = "^1.7.2"
 
