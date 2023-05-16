@@ -260,7 +260,7 @@ rr.fit(cross_enc_ds['train'].dataset, cross_enc_ds['validation'].dataset, output
 prediction = rr.rerank_batch(candidates['test'], cross_enc_ds['test'])
 ```
 
-Example usage:see [notebooks/BioASQ_DisTEMIST.ipynb](notebooks/BioASQ_DisTEMIST.ipynb)
+Example usage: see [notebooks/BioASQ_DisTEMIST.ipynb](notebooks/BioASQ_DisTEMIST.ipynb)
 
 ### Rule-based Reranker
 
