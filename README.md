@@ -237,7 +237,7 @@ from xmen.knowledge_base import load_kb
 # Load a KB from a pre-computed dictionary (jsonl) to obtain synonyms for concept encoding
 kb = load_kb('path/to/my/dictionary.jsonl')
 
-candidates = ... # obtain prediction from candidate generator (see above)
+candidates = linker.predict_batch(dataset) # obtain prediction from candidate generator (see above)
 context_length = 128 # set to adjust context length for mention encoding, more context causes larger memory footprint
 
 cross_enc_ds = CrossEncoderReranker.prepare_data(candidates, dataset, kb, context_length)
@@ -250,7 +250,7 @@ from xmen.reranking.cross_encoder import CrossEncoderReranker, CrossEncoderTrain
 
 cross_encoder_model = 'bert-base-multilingual-cased' # any BERT model, potentially language specific
 n_epochs = 10 # number of epochs to train
-output_dir = ... # Path to temp dir for writing model checkpoints
+output_dir = './checkpoints/' # Path to temp dir for writing model checkpoints
 
 train_args = CrossEncoderTrainingArgs(cross_encoder_model, n_epochs)
 
