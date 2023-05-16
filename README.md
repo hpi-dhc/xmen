@@ -203,6 +203,8 @@ Different candidate generators often work well for different kinds of entity men
 In xMEN, this can be easily achieved with an `EnsembleLinker`:
 
 ```
+from xmen.linkers import EnsembleLinker
+
 ensemble_linker = EnsembleLinker()
 ensemble_linker.add_linker('sapbert', sapbert_linker, k=10)
 ensemble_linker.add_linker('ngram', ngram_linker, k=10)
