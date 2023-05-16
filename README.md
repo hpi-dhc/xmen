@@ -1,3 +1,6 @@
+[![pypi Version](https://img.shields.io/pypi/v/xmen)](https://pypi.org/project/xmen/)
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg?style=flat-square)](https://github.com/ambv/black)
+
 # ✖️MEN
 
 xMEN is an extensible toolkit for Cross-lingual (**x**) **M**edical **E**ntity **N**ormalization.
@@ -5,7 +8,9 @@ Through its compatibility with the [BigBIO (BigScience Biomedical)](https://gith
 
 ### Installation
 
-xMEN is available through PyPi: `pip install xmen`
+xMEN is available through [PyPi](https://pypi.org/project/xmen/): 
+
+`pip install xmen`
 
 ### Development
 
@@ -147,7 +152,9 @@ Run `xmen index my_config.yaml --ngram` or `xmen index my_config.yaml --all` to 
 To use the linker at runtime, pass the index folder as an argument:
 
 ```
-ngram_linker = TFIDFNGramLinker(index_base_path=<path to index>, k=100)
+from xmen.linkers import TFIDFNGramLinker
+
+ngram_linker = TFIDFNGramLinker(index_base_path="/path/to/my/index/ngram", k=100)
 predictions = ngram_linker.predict_batch(dataset)
 ```
 
@@ -172,9 +179,11 @@ Run `xmen index my_config.yaml --sapbert` or `xmen index my_config.yaml --all` t
 To use the linker at runtime, pass the `embedding_model_name` (usually the same as was used for creating the index)  and index folder as an argument. To make predictions on a batch of documents, you have to pass a batch size, as the SapBERT linker runs on the GPU by default:
 
 ```
+from xmen.linkers import SapBERTLinker
+
 sapbert_linker = SapBERTLinker(
-    embedding_model_name = <name of the SapBERT model>,
-    index_base_path = <path to index>,
+    embedding_model_name = "cambridgeltl/SapBERT-UMLS-2020AB-all-lang-from-XLMR", # Name of SapBERT model
+    index_base_path = "/path/to/my/index/sapbert",
     k = 1000
 )
 predictions = sapbert_linker.predict_batch(dataset, batch_size=128)
@@ -186,6 +195,8 @@ If you have loaded a yaml-config as a dictionary, you may also just pass it as k
 sapbert_linker = SapBERTLinker(**config)
 ```
 
+By default, SapBERT assumes a CUDA device is available. If you want to disable cuda, pass `cuda=False` to the constructor.
+
 Example usage: see [notebooks/BioASQ_DisTEMIST.ipynb](notebooks/BioASQ_DisTEMIST.ipynb)
 
 ### Ensemble
@@ -195,6 +206,8 @@ Different candidate generators often work well for different kinds of entity men
 In xMEN, this can be easily achieved with an `EnsembleLinker`:
 
 ```
+from xmen.linkers import EnsembleLinker
+
 ensemble_linker = EnsembleLinker()
 ensemble_linker.add_linker('sapbert', sapbert_linker, k=10)
 ensemble_linker.add_linker('ngram', ngram_linker, k=10)
@@ -227,7 +240,7 @@ from xmen.knowledge_base import load_kb
 # Load a KB from a pre-computed dictionary (jsonl) to obtain synonyms for concept encoding
 kb = load_kb('path/to/my/dictionary.jsonl')
 
-candidates = ... # obtain prediction from candidate generator (see above)
+candidates = linker.predict_batch(dataset) # obtain prediction from candidate generator (see above)
 context_length = 128 # set to adjust context length for mention encoding, more context causes larger memory footprint
 
 cross_enc_ds = CrossEncoderReranker.prepare_data(candidates, dataset, kb, context_length)
@@ -240,7 +253,7 @@ from xmen.reranking.cross_encoder import CrossEncoderReranker, CrossEncoderTrain
 
 cross_encoder_model = 'bert-base-multilingual-cased' # any BERT model, potentially language specific
 n_epochs = 10 # number of epochs to train
-output_dir = ... # Path to temp dir for writing model checkpoints
+output_dir = './checkpoints/' # Path to temp dir for writing model checkpoints
 
 train_args = CrossEncoderTrainingArgs(cross_encoder_model, n_epochs)
 
@@ -250,7 +263,7 @@ rr.fit(cross_enc_ds['train'].dataset, cross_enc_ds['validation'].dataset, output
 prediction = rr.rerank_batch(candidates['test'], cross_enc_ds['test'])
 ```
 
-Example usage:see [notebooks/BioASQ_DisTEMIST.ipynb](notebooks/BioASQ_DisTEMIST.ipynb)
+Example usage: see [notebooks/BioASQ_DisTEMIST.ipynb](notebooks/BioASQ_DisTEMIST.ipynb)
 
 ### Rule-based Reranker
 
