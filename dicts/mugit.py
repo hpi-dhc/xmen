@@ -10,17 +10,25 @@ def get_concept_details(cfg) -> dict:
     mugit.dropna(inplace=True)
 
     # get lang from cfg. If no lang specified, use both
-    lang = cfg.dict.custom.lang if "lang" in cfg.dict.custom else ['de', 'en']
+    lang = cfg.dict.custom.lang if "lang" in cfg.dict.custom else ["de", "en"]
 
     concept_details = {}
     # both languages selected, english ones go to canonical and all different terms to alias
-    if lang == ['de', 'en']:
+    if lang == ["de", "en"]:
         for _, entry in mugit.iterrows():
             sid = entry.snomed_id
             if not sid in concept_details:
-                concept_details[sid] = {"concept_id": sid, "canonical_name": entry.en, "types": [], "aliases": [entry.de]}
+                concept_details[sid] = {
+                    "concept_id": sid,
+                    "canonical_name": entry.en,
+                    "types": [],
+                    "aliases": [entry.de],
+                }
             elif sid in concept_details:
-                if entry.en not in concept_details[sid]["aliases"] and entry.en != concept_details[sid]["canonical_name"]:
+                if (
+                    entry.en not in concept_details[sid]["aliases"]
+                    and entry.en != concept_details[sid]["canonical_name"]
+                ):
                     concept_details[sid]["aliases"].append(entry.en)
                 if entry.de not in concept_details[sid]["aliases"]:
                     concept_details[sid]["aliases"].append(entry.de)
@@ -33,7 +41,10 @@ def get_concept_details(cfg) -> dict:
             if not sid in concept_details:
                 concept_details[sid] = {"concept_id": sid, "canonical_name": entry[l], "types": [], "aliases": []}
             elif sid in concept_details:
-                if entry[l] not in concept_details[sid]["aliases"] and entry[l] != concept_details[sid]["canonical_name"]:
+                if (
+                    entry[l] not in concept_details[sid]["aliases"]
+                    and entry[l] != concept_details[sid]["canonical_name"]
+                ):
                     concept_details[sid]["aliases"].append(entry[l])
 
     else:

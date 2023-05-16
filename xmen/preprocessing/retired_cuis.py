@@ -1,5 +1,6 @@
 from xmen.ext.scispacy.umls_utils import read_umls_file_headers
 
+
 class CUIReplacer:
     """
     A class that replaces retired CUIs in normalized entities with their replacements.

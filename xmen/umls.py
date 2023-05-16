@@ -1,4 +1,9 @@
-from xmen.ext.scispacy.umls_utils import read_umls_file_headers, read_umls_concepts, read_umls_types, read_umls_definitions
+from xmen.ext.scispacy.umls_utils import (
+    read_umls_file_headers,
+    read_umls_concepts,
+    read_umls_types,
+    read_umls_definitions,
+)
 from scispacy import umls_semantic_type_tree
 from scispacy.linking_utils import DEFAULT_UMLS_TYPES_PATH
 from langcodes import Language
@@ -218,9 +223,7 @@ def get_umls_concepts(
             f'>> Reading concepts from {"all sources" if not source else source} and {"all languages" if not langs else f"languages: {langs}"}'
         )
         for lang in langs if langs else [None]:
-            read_umls_concepts(
-                meta_path, concept_details, source=source, lang=lang, non_suppressed=non_suppressed_only
-            )
+            read_umls_concepts(meta_path, concept_details, source=source, lang=lang, non_suppressed=non_suppressed_only)
 
     logger.info(">> Reading types ... ")
     read_umls_types(meta_path, concept_details)

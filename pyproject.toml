@@ -31,7 +31,7 @@ faiss-cpu = {version = "^1.7.1", markers = 'sys_platform != "linux"'}
 
 [tool.poetry.dev-dependencies]
 pytest = "^6.0"
-black = {extras = ["jupyter"], version = "^22.12.0"}
+black = "^22.12.0"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]

@@ -112,12 +112,8 @@ def load_distemist_linking():
         splits=["train"],
     )
 
-def _load_bigbio_dataset(
-    config_names: List[str],
-    dataset_name: str,
-    lang_mapper,
-    splits
-):
+
+def _load_bigbio_dataset(config_names: List[str], dataset_name: str, lang_mapper, splits):
     """
     Loads a biomedical dataset and returns a concatenated dataset for the specified splits.
 
@@ -132,8 +128,7 @@ def _load_bigbio_dataset(
     """
     # TODO: implement loading all available configs for a dataset
     assert config_names is not None, "Not implemented"
-        
-    
+
     ds_map = {c: datasets.load_dataset(f"bigscience-biomedical/{dataset_name}", c) for c in config_names}
     ds = []
     for conf, ds_dict in ds_map.items():

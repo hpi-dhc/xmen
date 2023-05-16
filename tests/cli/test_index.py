@@ -31,7 +31,7 @@ def test_ngram_indices(tmp_path):
 
 
 def test_sapbert_indices(tmp_path):
-    sapbert_folder = 'sapbert'
+    sapbert_folder = "sapbert"
 
     if not os.path.exists(tmp_path):
         print(tmp_path)
@@ -45,6 +45,6 @@ def test_sapbert_indices(tmp_path):
         assert len(df["cui"].unique()) == 11
 
     indexer = DenseHNSWFlatIndexer(768)
-    index_file = str(tmp_path / "index" / f"{sapbert_folder}" / "embed_faiss_hier.pickle")    
+    index_file = str(tmp_path / "index" / f"{sapbert_folder}" / "embed_faiss_hier.pickle")
     indexer.deserialize_from(index_file)
     assert indexer.index.ntotal == 22
