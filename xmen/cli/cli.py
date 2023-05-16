@@ -145,6 +145,12 @@ def build_ngram_sapbert(
         required_key = "linker.candidate_generation.sapbert"
         write_path = output / "index" / "sapbert"
         if is_sapbert_selected and has_correct_keys(cfg, required_key) and can_write(write_path, overwrite):
+            # check for GPUs
+            if torch.cuda.is_available():
+                logger.info(f"CUDA is available. Running on GPU with ID {gpu_id}. To select another, use --gpu-id.")
+            else:
+                gpu_id = -1
+                logger.warning("CUDA is not available on this system. Running on CPU. This can take considerably longer.")
             logger.info("Building SapBERT indices.")
             build_sapbert(cfg, output, dict, gpu_id)
         else:
