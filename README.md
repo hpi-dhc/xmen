@@ -241,9 +241,8 @@ from xmen.knowledge_base import load_kb
 kb = load_kb('path/to/my/dictionary.jsonl')
 
 candidates = linker.predict_batch(dataset) # obtain prediction from candidate generator (see above)
-context_length = 128 # set to adjust context length for mention encoding, more context causes larger memory footprint
 
-cross_enc_ds = CrossEncoderReranker.prepare_data(candidates, dataset, kb, context_length)
+cross_enc_ds = CrossEncoderReranker.prepare_data(candidates, dataset, kb)
 ```
 
 Then you can use this dataset to train a supervised reranking model:
