@@ -1,4 +1,4 @@
-# :heavy_multiplication_x:MEN
+# ✖️MEN
 
 xMEN is an extensible toolkit for Cross-lingual (**x**) **M**edical **E**ntity **N**ormalization.
 Through its compatibility with the [BigBIO (BigScience Biomedical)](https://github.com/bigscience-workshop/biomedical) framework, it can be used out-of-the box to run experiments with many open biomedical datasets. It can also be easily integrated with existing Named Entity Recognition (NER) pipelines.
@@ -11,7 +11,7 @@ xMEN is available through PyPi: `pip install xmen`
 
 We use [Poetry](https://python-poetry.org/) for building, testing and dependency management (see [pyproject.toml](pyproject.toml)).
 
-## :open_file_folder: Data Loading
+## 📂 Data Loading
 
 Usually, BigBIO-compatible datasets can just be loaded from the Hugging Face Hub:
 
@@ -32,7 +32,7 @@ docs = ... #  list of spaCy docs with entity spans
 dataset = from_spacy(docs)
 ```
 
-## :wrench: Configuration and CLI
+## 🔧 Configuration and CLI
 
 xMEN provides a convenient command line interface to prepare entity linking pipelines by creating target dictionaries and pre-computing indices to link to concepts in them.
 
@@ -40,7 +40,7 @@ Run `xmen help` to get an overview of the available commands.
 
 Configuration is done through `.yaml` files. For examples, see the [conf](/conf) folder.
 
-## :closed_book: Creating Dictionaries
+## 📕 Creating Dictionaries
 
 Run `xmen dict` to create dictionaries to link against. Although the most common use case is to create subsets of the UMLS, it also supports passing custom parser scripts for non-UMLS dictionaries.
 
@@ -122,7 +122,7 @@ dict:
 
 Running `xmen dict conf/distemist.yaml --code dicts/distemist.py --key distemist_gazetteer` creates a `.jsonl` file from the custom DisTEMIST gazetteer.
 
-## :mag_right: Candidate Generation
+## 🔎 Candidate Generation
 
 The `xmen index` command is used to compute term indices from a dictionary created through the `dict` command.
 If an index already exists, you will be prompted to overwrite the existing file (or pass `--overwrite`).
@@ -212,7 +212,7 @@ Note: `reuse_preds` currently does not support Hugging Face `DatasetDict` object
 
 Example usage: see [notebooks/BioASQ_DisTEMIST.ipynb](notebooks/BioASQ_DisTEMIST.ipynb)
 
-## :cyclone: Rerankers
+## 🌀 Rerankers
 
 ### Cross-Encoder Reranker
 
@@ -256,7 +256,7 @@ Example usage:see [notebooks/BioASQ_DisTEMIST.ipynb](notebooks/BioASQ_DisTEMIST.
 
 TODO
 
-## :bulb: Pre- and Post-Processing
+## 💡 Pre- and Post-Processing
 
 We support various optional components for transforming input data and result sets:
 
@@ -266,12 +266,12 @@ We support various optional components for transforming input data and result se
 - [Filtering by UMLS semantic types](xmen/preprocessing/semantic_types.py)
 - [Replacement of retired CUIS](xmen/preprocessing/retired_cuis.py)
 
-## :bar_chart: Evaluation
+## 📊 Evaluation
 
 xMEN provides implementations of common entity linking metrics (e.g., a wrapper for [neleval](https://github.com/wikilinks/neleval))
 
 Example usage: see [notebooks/BioASQ_DisTEMIST.ipynb](notebooks/BioASQ_DisTEMIST.ipynb)
 
-## :chart_with_upwards_trend: Benchmark Results
+## 📈 Benchmark Results
 
 TODO
