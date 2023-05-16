@@ -1,4 +1,4 @@
-from xmen.ext.scispacy.umls_utils import read_umls_file_headers, read_umls_concepts
+from xmen.ext.scispacy.umls_utils import read_umls_file_headers, read_umls_concepts, read_umls_types, read_umls_definitions
 from scispacy import umls_semantic_type_tree
 from scispacy.linking_utils import DEFAULT_UMLS_TYPES_PATH
 from langcodes import Language
@@ -25,7 +25,7 @@ def read_umls_sabs(meta_path):
     """
     res = []
     sab_filename = "MRSAB.RRF"
-    headers = umls_utils.read_umls_file_headers(meta_path, sab_filename)
+    headers = read_umls_file_headers(meta_path, sab_filename)
     with open(f"{meta_path}/{sab_filename}") as fin:
         for line in fin:
             splits = line.strip().split("|")
@@ -218,12 +218,12 @@ def get_umls_concepts(
             f'>> Reading concepts from {"all sources" if not source else source} and {"all languages" if not langs else f"languages: {langs}"}'
         )
         for lang in langs if langs else [None]:
-            umls_utils.read_umls_concepts(
+            read_umls_concepts(
                 meta_path, concept_details, source=source, lang=lang, non_suppressed=non_suppressed_only
             )
 
     logger.info(">> Reading types ... ")
-    umls_utils.read_umls_types(meta_path, concept_details)
+    read_umls_types(meta_path, concept_details)
 
     if semantic_groups:
         logger.info(f"> Number of concepts before semantic group filtering: {len(concept_details)}")
@@ -234,7 +234,7 @@ def get_umls_concepts(
         concept_details = filter_semantic_types(semantic_types, expand_semantic_types, concept_details)
 
     logger.info(">> Reading definitions ... ")
-    umls_utils.read_umls_definitions(meta_path, concept_details)
+    read_umls_definitions(meta_path, concept_details)
 
     logger.info(f"> Number of concepts before de-duplication: {len(concept_details)}")
     logger.info(f"> Number of aliases before de-duplication: {get_alias_count(concept_details)}")

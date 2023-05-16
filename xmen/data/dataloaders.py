@@ -1,6 +1,5 @@
 from typing import List, Union
 from pathlib import Path
-from xmen.umls import read_umls_concepts
 import datasets
 
 
