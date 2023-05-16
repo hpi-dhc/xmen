@@ -149,6 +149,8 @@ Run `xmen index my_config.yaml --ngram` or `xmen index my_config.yaml --all` to 
 To use the linker at runtime, pass the index folder as an argument:
 
 ```
+from xmen.linkers import TFIDFNGramLinker
+
 ngram_linker = TFIDFNGramLinker(index_base_path=<path to index>, k=100)
 predictions = ngram_linker.predict_batch(dataset)
 ```
@@ -174,8 +176,10 @@ Run `xmen index my_config.yaml --sapbert` or `xmen index my_config.yaml --all` t
 To use the linker at runtime, pass the `embedding_model_name` (usually the same as was used for creating the index)  and index folder as an argument. To make predictions on a batch of documents, you have to pass a batch size, as the SapBERT linker runs on the GPU by default:
 
 ```
+from xmen.linkers import SapBERTLinker
+
 sapbert_linker = SapBERTLinker(
-    embedding_model_name = <name of the SapBERT model>,
+    embedding_model_name = "cambridgeltl/SapBERT-UMLS-2020AB-all-lang-from-XLMR", # Name of SapBERT model
     index_base_path = <path to index>,
     k = 1000
 )
@@ -187,6 +191,8 @@ If you have loaded a yaml-config as a dictionary, you may also just pass it as k
 ```
 sapbert_linker = SapBERTLinker(**config)
 ```
+
+By default, SapBERT assumes a CUDA device is available. If you want to disable cuda, pass `cuda=False` to the constructor.
 
 Example usage: see [notebooks/BioASQ_DisTEMIST.ipynb](notebooks/BioASQ_DisTEMIST.ipynb)
 
