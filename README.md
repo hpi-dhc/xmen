@@ -151,7 +151,7 @@ To use the linker at runtime, pass the index folder as an argument:
 ```
 from xmen.linkers import TFIDFNGramLinker
 
-ngram_linker = TFIDFNGramLinker(index_base_path=<path to index>, k=100)
+ngram_linker = TFIDFNGramLinker(index_base_path="/path/to/my/index/ngram", k=100)
 predictions = ngram_linker.predict_batch(dataset)
 ```
 
@@ -180,7 +180,7 @@ from xmen.linkers import SapBERTLinker
 
 sapbert_linker = SapBERTLinker(
     embedding_model_name = "cambridgeltl/SapBERT-UMLS-2020AB-all-lang-from-XLMR", # Name of SapBERT model
-    index_base_path = <path to index>,
+    index_base_path = "/path/to/my/index/sapbert",
     k = 1000
 )
 predictions = sapbert_linker.predict_batch(dataset, batch_size=128)
