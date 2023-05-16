@@ -1,6 +1,5 @@
 from typing import List, Union
 from pathlib import Path
-from scispacy import umls_utils
 import datasets
 
 
