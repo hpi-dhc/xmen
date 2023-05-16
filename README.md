@@ -5,7 +5,9 @@ Through its compatibility with the [BigBIO (BigScience Biomedical)](https://gith
 
 ### Installation
 
-xMEN is available through PyPi: `pip install xmen`
+xMEN is available through [PyPi](https://pypi.org/project/xmen/): 
+
+`pip install xmen`
 
 ### Development
 
