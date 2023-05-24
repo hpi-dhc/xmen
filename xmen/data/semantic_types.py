@@ -36,7 +36,7 @@ class SemanticTypeFilter:
         """
         return self.kb.cui_to_entity[cui].types
 
-    def filter_semantic_groups(self, example):
+    def filter_semantic_types(self, example):
         """
         Filters out normalized entities from the given example that are not associated with any of the valid TUIs.
 
@@ -49,7 +49,7 @@ class SemanticTypeFilter:
         entities = example["entities"]
         for e in entities:
             valid_tuis = self.type_to_tui[e["type"]]
-            valid_tuis = expand_tuis(valid_tuis, get_sem_type_tree)
+            valid_tuis = expand_tuis(valid_tuis, self.tree)
             filtered = []
             for n in e["normalized"]:
                 concept_tuis = self.get_tuis(n["db_id"])
@@ -68,4 +68,4 @@ class SemanticTypeFilter:
         Returns:
         - transformed_ds (tf.data.Dataset): A transformed dataset of examples.
         """
-        return ds.map(lambda e: self.filter_semantic_groups(e), load_from_cache_file=False)
+        return ds.map(lambda e: self.filter_semantic_types(e), load_from_cache_file=False)

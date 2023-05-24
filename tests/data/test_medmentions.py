@@ -1,5 +1,4 @@
-from xmen.data import load_medmentions_full, load_medmentions_st21pv, get_cuis
-from xmen.preprocessing import ConceptMerger
+from xmen.data import load_medmentions_full, load_medmentions_st21pv, get_cuis, ConceptMerger
 
 
 def test_medmentions_full_stats():

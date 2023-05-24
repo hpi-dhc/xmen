@@ -236,7 +236,7 @@ To train a cross-encoder, first create a dataset of mention / candidate pairs:
 
 ```
 from xmen.reranking.cross_encoder import CrossEncoderReranker, CrossEncoderTrainingArgs
-from xmen.knowledge_base import load_kb
+from xmen.kb import load_kb
 
 # Load a KB from a pre-computed dictionary (jsonl) to obtain synonyms for concept encoding
 kb = load_kb('path/to/my/dictionary.jsonl')
@@ -273,11 +273,11 @@ TODO
 
 We support various optional components for transforming input data and result sets:
 
-- [Sampling](xmen/preprocessing/sampling.py)
-- [Abbrevation expansion](xmen/preprocessing/abbrevations.py)
-- [Filtering by UMLS semantic groups](xmen/preprocessing/semantic_groups.py)
-- [Filtering by UMLS semantic types](xmen/preprocessing/semantic_types.py)
-- [Replacement of retired CUIS](xmen/preprocessing/retired_cuis.py)
+- [Sampling](xmen/data/sampling.py)
+- [Abbrevation expansion](xmen/data/abbrevations.py)
+- [Filtering by UMLS semantic groups](xmen/data/semantic_groups.py)
+- [Filtering by UMLS semantic types](xmen/data/semantic_types.py)
+- [Replacement of retired CUIS](xmen/data/retired_cuis.py)
 
 ## 📊 Evaluation
 

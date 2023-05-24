@@ -1,13 +1,13 @@
 from pathlib import Path
 import os
-from omegaconf import OmegaConf
 import pickle
-from xmen.knowledge_base import create_flat_term_dict
+from xmen.confhelper import load_config
+from xmen.kb import create_flat_term_dict
 from xmen.cli.index import *
 from xmen.linkers.faiss_indexer import *
 
 file_path = Path(os.path.dirname(os.path.realpath(__file__)))
-cfg = OmegaConf.load(file_path / "dummy_index" / "index.yaml")
+cfg = load_config(file_path / "dummy_index" / "index.yaml")
 dict_path = file_path / "dummy_index" / "test.jsonl"
 
 

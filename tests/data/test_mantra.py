@@ -1,6 +1,5 @@
-from xmen.data import load_mantra_gsc, get_cuis
+from xmen.data import load_mantra_gsc, get_cuis, ConceptMerger
 from xmen import evaluation
-from xmen.preprocessing import ConceptMerger
 from dummy_linker import CopyLinker, NullLinker
 
 import pytest
