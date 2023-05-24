@@ -9,17 +9,20 @@ class SemanticTypeFilter:
     Args:
     - type_to_tui (Dict): A dictionary that maps a semantic type to a set of TUIs.
     - kb: A knowledge base object.
+    - expand_types: Whether to expand the given TUIs based on the semantic type tree
 
     Attributes:
     - type_to_tui (Dict): A dictionary that maps a semantic type to a set of TUIs.
     - kb: A knowledge base object.
     - tree: A semantic type tree object.
+    - expand_types: flag indicating whether to expand semantic types
     """
 
-    def __init__(self, type_to_tui: Dict, kb):
+    def __init__(self, type_to_tui: Dict, kb, expand_types=False):
         self.type_to_tui = type_to_tui
         self.kb = kb
         self.tree = get_sem_type_tree()
+        self.expand_types = expand_types
 
     def __getstate__(self):
         return {}
@@ -49,7 +52,8 @@ class SemanticTypeFilter:
         entities = example["entities"]
         for e in entities:
             valid_tuis = self.type_to_tui[e["type"]]
-            valid_tuis = expand_tuis(valid_tuis, self.tree)
+            if self.expand_types:
+                valid_tuis = expand_tuis(valid_tuis, self.tree)
             filtered = []
             for n in e["normalized"]:
                 concept_tuis = self.get_tuis(n["db_id"])
