@@ -1,6 +1,6 @@
 from omegaconf import DictConfig
 from ..log import logger
-from xmen.knowledge_base import create_flat_term_dict
+from xmen.kb import create_flat_term_dict
 from xmen.linkers import TFIDFNGramLinker, SapBERTLinker
 from pathlib import Path
 import torch

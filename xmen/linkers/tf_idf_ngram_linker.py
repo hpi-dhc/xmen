@@ -9,7 +9,7 @@ import warnings
 from typing import Union, List
 
 from xmen.linkers import EntityLinker, logger
-from xmen.knowledge_base import CompositeKnowledgebase
+from xmen.kb import CompositeKnowledgebase
 
 from scispacy.candidate_generation import (
     CandidateGenerator,

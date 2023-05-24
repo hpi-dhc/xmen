@@ -1,5 +1,7 @@
 name: ggponc
 
+cache_dir: ${oc.env:HOME}/.cache/xmen/
+
 dict:
     umls:
         lang: 
@@ -37,10 +39,10 @@ linker:
         filter_semantic_groups: true
         ngram:
           expand_abbreviations: true
-          index_base_path: ${work_dir}/index/ngrams/
-          k: 100
+          index_base_path: ${cache_dir}/${name}/index/ngrams/
+          k: 3
         sapbert:
           embedding_model_name: cambridgeltl/SapBERT-UMLS-2020AB-all-lang-from-XLMR
           expand_abbreviations: true
-          index_base_path: ${work_dir}/index/sapbert
-          k: 100
+          index_base_path: ${cache_dir}/${name}/index/sapbert
+          k: 3
