@@ -27,12 +27,5 @@ dict:
 
 linker:
   candidate_generation:
-    ngram:
-      expand_abbreviations: true
-      index_base_path: ${cache_dir}/distemist/index/ngrams/
-      k: 100
-    sapbert:
-      model_name: cambridgeltl/SapBERT-UMLS-2020AB-all-lang-from-XLMR
-      expand_abbreviations: true
-      index_base_path: ${cache_dir}/distemist/index/sapbert
-      k: 1000
+    ngram: ~
+    sapbert: ~
