@@ -14,9 +14,6 @@ from xmen.log import logger
 
 from scipy.spatial.distance import cosine
 
-CROSS_LINGUAL = "cambridgeltl/SapBERT-UMLS-2020AB-all-lang-from-XLMR"
-ENGLISH = "cambridgeltl/SapBERT-from-PubMedBERT-fulltext"
-
 _EMBED_DIM = 768
 
 
@@ -40,12 +37,15 @@ class SapBERTLinker(EntityLinker):
     - unique_aliases_only (bool): Whether to use only unique aliases of entities for linking or not.
     """
 
+    CROSS_LINGUAL = "cambridgeltl/SapBERT-UMLS-2020AB-all-lang-from-XLMR"
+    ENGLISH = "cambridgeltl/SapBERT-from-PubMedBERT-fulltext"
+    
     # Global state
     instance = None
     model_wrapper = None
     candidate_dense_embeds = None
     term_dict = None
-
+    
     # Ignore caching when using dataset.map
     def __getstate__(self):
         return {}

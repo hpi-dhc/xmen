@@ -136,10 +136,10 @@ def build_ngram_sapbert(
         required_key = "linker.candidate_generation.ngram"
         write_path = output / "index" / "ngrams"
         if is_ngram_selected and has_correct_keys(cfg, required_key) and can_write(write_path, overwrite):
-            logger.info("Building N-Gram indices.")
+            logger.info("Building N-Gram index.")
             build_ngram(cfg, output, dict)
         else:
-            logger.info("Skipping N-Gram indices.")
+            logger.info("Skipping N-Gram index.")
 
         is_sapbert_selected = sapbert or all
         required_key = "linker.candidate_generation.sapbert"
@@ -153,10 +153,10 @@ def build_ngram_sapbert(
                 logger.warning(
                     "CUDA is not available on this system. Running on CPU. This can take considerably longer."
                 )
-            logger.info("Building SapBERT indices.")
+            logger.info("Building SapBERT index.")
             build_sapbert(cfg, output, dict, gpu_id)
         else:
-            logger.info("Skipping SapBERT indices.")
+            logger.info("Skipping SapBERT index.")
 
     else:
         logger.info(
