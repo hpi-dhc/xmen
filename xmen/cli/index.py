@@ -39,9 +39,9 @@ def build_sapbert(cfg: DictConfig, work_dir: Path, dict_dir: Path, gpu_id: int):
     term_dict = create_flat_term_dict([dict_dir])
     logger.info(f"Number of aliases: {len(term_dict)}.")
     logger.info(f"Number of concepts: {len(term_dict.cui.unique())}.")
-    
+
     sapbert_cfg = cfg.linker.candidate_generation.sapbert
-    model_name = SapBERTLinker.CROSS_LINGUAL # default model
+    model_name = SapBERTLinker.CROSS_LINGUAL  # default model
     if sapbert_cfg and "model_name" in sapbert_cfg:
         model_name = sapbert_cfg.model_name
 

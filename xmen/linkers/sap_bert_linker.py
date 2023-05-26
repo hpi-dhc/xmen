@@ -39,13 +39,13 @@ class SapBERTLinker(EntityLinker):
 
     CROSS_LINGUAL = "cambridgeltl/SapBERT-UMLS-2020AB-all-lang-from-XLMR"
     ENGLISH = "cambridgeltl/SapBERT-from-PubMedBERT-fulltext"
-    
+
     # Global state
     instance = None
     model_wrapper = None
     candidate_dense_embeds = None
     term_dict = None
-    
+
     # Ignore caching when using dataset.map
     def __getstate__(self):
         return {}

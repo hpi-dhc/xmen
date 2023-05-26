@@ -295,10 +295,10 @@ class CrossEncoderReranker(Reranker):
 
     def fit(
         self,
+        training_args: CrossEncoderTrainingArgs,
         train_dataset,
         val_dataset,
-        output_dir: Union[str, Path] = './output/cross_encoder',
-        training_args: CrossEncoderTrainingArgs,
+        output_dir: Union[str, Path] = "./output/cross_encoder",
         train_continue=False,
         loss_fct=None,
         callback=None,
@@ -310,6 +310,7 @@ class CrossEncoderReranker(Reranker):
         Fits the model using the given training and validation datasets.
 
         Args:
+        - training_args: Training Arguments
         - train_dataset (List[InputExample]): The list of InputExample objects representing the training dataset.
         - val_dataset (List[InputExample]): The list of InputExample objects representing the validation dataset.
         - output_dir (Union[str, Path]): The directory where the trained model will be saved.
