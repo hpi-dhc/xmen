@@ -47,5 +47,5 @@ def build_sapbert(cfg: DictConfig, work_dir: Path, dict_dir: Path, gpu_id: int):
             term_dict=term_dict,
             cuda=cuda,
             subtract_mean=False,
-            embedding_model_name=cfg.linker.candidate_generation.sapbert.embedding_model_name,
+            model_name=cfg.linker.candidate_generation.sapbert.model_name,
         )

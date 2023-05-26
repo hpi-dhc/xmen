@@ -1,0 +1,28 @@
+name: quaero
+
+dict:
+    umls:
+        lang: 
+          - fr
+          - en
+        meta_path: ${oc.env:UMLS_HOME}/2014AB/META
+        version: 2014AB
+        semantic_group_file_version: v03
+        semantic_groups:
+          - ANAT
+          - CHEM
+          - DEVI
+          - DISO
+          - GEOG
+          - LIVB
+          - OBJC
+          - PHEN
+          - PHYS
+          - PROC
+
+linker:
+    dataset: quaero
+    candidate_generation:
+        sapbert:
+          model_name: cambridgeltl/SapBERT-UMLS-2020AB-all-lang-from-XLMR
+        ngram: ~

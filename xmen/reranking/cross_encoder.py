@@ -197,8 +197,8 @@ class CrossEncoderTrainingArgs:
 
     def __init__(
         self,
-        model_name: str,
         num_train_epochs: int,
+        model_name: str = "bert-base-multilingual-cased",
         fp16: bool = True,
         label_smoothing: bool = False,
         score_regularization: bool = False,
@@ -297,7 +297,7 @@ class CrossEncoderReranker(Reranker):
         self,
         train_dataset,
         val_dataset,
-        output_dir: Union[str, Path],
+        output_dir: Union[str, Path] = './output/cross_encoder',
         training_args: CrossEncoderTrainingArgs,
         train_continue=False,
         loss_fct=None,

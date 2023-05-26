@@ -144,8 +144,7 @@ YAML file:
 ```
 linker:
   candidate_generation:
-    ngram:
-      k: 100
+    ngram: ~
 ```
 
 Run `xmen index my_config.yaml --ngram` or `xmen index my_config.yaml --all` to create the index.
@@ -171,19 +170,17 @@ YAML file:
 linker:
   candidate_generation:
     sapbert:
-      embedding_model_name: cambridgeltl/SapBERT-UMLS-2020AB-all-lang-from-XLMR
-      k: 1000
+      model_name: cambridgeltl/SapBERT-UMLS-2020AB-all-lang-from-XLMR
 ```
 
 Run `xmen index my_config.yaml --sapbert` or `xmen index my_config.yaml --all` to create the [FAISS](https://github.com/facebookresearch/faiss) index.
 
-To use the linker at runtime, pass the `embedding_model_name` (usually the same as was used for creating the index)  and index folder as an argument. To make predictions on a batch of documents, you have to pass a batch size, as the SapBERT linker runs on the GPU by default:
+To use the linker at runtime, pass the `model_name` (usually the same as was used for creating the index)  and index folder as an argument. To make predictions on a batch of documents, you have to pass a batch size, as the SapBERT linker runs on the GPU by default:
 
 ```
 from xmen.linkers import SapBERTLinker
 
 sapbert_linker = SapBERTLinker(
-    embedding_model_name = "cambridgeltl/SapBERT-UMLS-2020AB-all-lang-from-XLMR", # Name of SapBERT model
     index_base_path = "/path/to/my/index/sapbert",
     k = 1000
 )

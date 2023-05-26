@@ -14,8 +14,8 @@ from xmen.log import logger
 
 from scipy.spatial.distance import cosine
 
-_SAP_BERT_XLMR = "cambridgeltl/SapBERT-UMLS-2020AB-all-lang-from-XLMR"
-_SAP_BERT_EN = "cambridgeltl/SapBERT-from-PubMedBERT-fulltext"
+CROSS_LINGUAL = "cambridgeltl/SapBERT-UMLS-2020AB-all-lang-from-XLMR"
+ENGLISH = "cambridgeltl/SapBERT-from-PubMedBERT-fulltext"
 
 _EMBED_DIM = 768
 
@@ -32,7 +32,7 @@ class SapBERTLinker(EntityLinker):
     - k (int): The number of closest neighbors to retrieve from the index.
     - threshold (float): A threshold value for filtering out candidate entities based on their similarity score.
     - filter_types (bool): Whether to filter out candidate entities based on their semantic type.
-    - embedding_model_name (str): Name of the embedding model to use.
+    - model_name (str): Name of the embedding model to use.
     - consider_n_grams (list): A list of integers representing the number of grams to consider when generating candidate entities.
     - remove_duplicates (bool): Whether to remove duplicate candidate entities or not.
     - expand_abbreviations (bool): Whether to expand abbreviations or not.
@@ -63,7 +63,7 @@ class SapBERTLinker(EntityLinker):
     def write_index(
         index_base_path: Union[str, Path],
         term_dict: dict,
-        embedding_model_name: str = _SAP_BERT_XLMR,
+        model_name: str = CROSS_LINGUAL,
         cuda: bool = True,
         subtract_mean=True,
         batch_size=2048 * 6,
@@ -75,7 +75,7 @@ class SapBERTLinker(EntityLinker):
         Args:
         - index_base_path (Union[str, Path]): Path to the directory where the index files will be written.
         - term_dict (dict): A dictionary containing the terms to include in the index.
-        - embedding_model_name (str): Name of the embedding model to use.
+        - model_name (str): Name of the embedding model to use.
         - cuda (bool): Whether to use the GPU for inference or not.
         - subtract_mean (bool): Whether to subtract the mean from the embeddings or not.
         - batch_size (int): Batch size for embedding generation.
@@ -92,9 +92,9 @@ class SapBERTLinker(EntityLinker):
         term_dict.to_pickle(out_dict_file)
 
         wrapper = Model_Wrapper()
-        wrapper.load_model(embedding_model_name, use_cuda=cuda)
+        wrapper.load_model(model_name, use_cuda=cuda)
 
-        logger.info(f"Computing dictionary embeddings with {embedding_model_name}")
+        logger.info(f"Computing dictionary embeddings with {model_name}")
         candidate_dense_embeds = wrapper.embed_dense(
             term_dict.term.tolist(),
             agg_mode="cls",
@@ -129,7 +129,7 @@ class SapBERTLinker(EntityLinker):
         k: int = 10,
         threshold: float = 0.0,
         filter_types: bool = False,
-        embedding_model_name: str = _SAP_BERT_XLMR,
+        model_name: str = CROSS_LINGUAL,
         consider_n_grams: list = [],
         remove_duplicates=True,
         expand_abbreviations=False,
@@ -142,7 +142,7 @@ class SapBERTLinker(EntityLinker):
         if SapBERTLinker.instance:
             raise Exception("SapBERTLinker is a singleton")
         SapBERTLinker.model_wrapper = Model_Wrapper()
-        SapBERTLinker.model_wrapper.load_model(embedding_model_name, use_cuda=cuda)
+        SapBERTLinker.model_wrapper.load_model(model_name, use_cuda=cuda)
         self.cuda = cuda
         if approximate:
             logger.info("Loading hierarchical faiss index")
@@ -172,7 +172,7 @@ class SapBERTLinker(EntityLinker):
         SapBERTLinker.instance = self
         self.valid = True
 
-    def predict_batch(self, dataset, batch_size):
+    def predict_batch(self, dataset, batch_size=1):
         """
         Perform entity linking on a batch of sentences.
 
