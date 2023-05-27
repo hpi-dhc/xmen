@@ -4,18 +4,33 @@ dict:
   icd10gm:
     custom:
       # Get from: https://www.bfarm.de/DE/Kodiersysteme/Services/Downloads/_node.html
-      icd10gm_path: ${oc.env:HOME}/temp/icd10gm2017syst_kodes.txt
+      icd10gm_path: temp/icd10gm2017syst_kodes.txt
       lang:
         - de
   ops:
     custom:
       # Get from: https://www.bfarm.de/DE/Kodiersysteme/Services/Downloads/_node.html
-      ops_path: ${oc.env:HOME}/temp/ops2017syst_kodes.txt
+      ops_path: temp/ops2017syst_kodes.txt
       lang:
         - de
   atc:
     custom:
       # Get from: https://www.wido.de/publikationen-produkte/arzneimittel-klassifikation/
-      atc_path: ${oc.env:HOME}/temp/ATC GKV-AI_2022.xlsm
+      atc_path: temp/ATC GKV AI 2017.xlsx
       lang:
         - de
+        
+linker:
+    random_seed: 42
+    preprocessing:
+        detect_abbreviations: true
+    candidate_generation:
+        k: 64
+        filter_semantic_groups: true
+        ngram:
+          expand_abbreviations: true
+          k: 3
+        sapbert:
+          embedding_model_name: cambridgeltl/SapBERT-UMLS-2020AB-all-lang-from-XLMR
+          expand_abbreviations: true
+          k: 3

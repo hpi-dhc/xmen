@@ -7,7 +7,7 @@ import openpyxl
 def get_concept_details(cfg) -> dict:
     path = cfg.dict.custom.atc_path
     wb = openpyxl.load_workbook(path)
-    sheet = wb["WIdO-Index 2022 alphabetisch"]
+    sheet = wb["WIdO-Index alphabetisch_2017"]
     atc_dict = pd.DataFrame(sheet.values)
     atc_dict = atc_dict.rename(columns={0: "code", 2: "text", 4: "DDD_Info"})
     atc_dict.drop(0, axis=0, inplace=True)
