@@ -105,7 +105,7 @@ def _get_error_df(gt_ents: list, pred_ents: list, allow_multiple_gold_candidates
                 "entity_match_type": e_match_type,
                 "gold_concept": gt_concept,
                 "gold_type": gt_type,
-                "pred_index": idx,
+                "pred_index": int(idx),
                 "pred_index_score": pred_c[idx].get("score", None) if idx >= 0 else None,
                 "pred_top": pred_c[0]["db_id"] if len(pred_c) > 0 else None,
                 "pred_top_score": pred_c[0].get("score", None) if len(pred_c) > 0 else None,
