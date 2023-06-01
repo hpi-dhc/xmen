@@ -17,6 +17,10 @@ xMEN is available through [PyPi](https://pypi.org/project/xmen/):
 
 We use [Poetry](https://python-poetry.org/) for building, testing and dependency management (see [pyproject.toml](pyproject.toml)).
 
+## 🚀 Getting Started
+
+A very simple pipeline highlighting the main components of xMEN can be found in [notebooks/Getting_Started.ipynb](notebooks/Getting_Started.ipynb)
+
 ## 📂 Data Loading
 
 Usually, BigBIO-compatible datasets can just be loaded from the Hugging Face Hub:
@@ -187,7 +191,7 @@ sapbert_linker = SapBERTLinker(
 predictions = sapbert_linker.predict_batch(dataset, batch_size=128)
 ```
 
-If you have loaded a yaml-config as a dictionary, you may also just pass it as kwargs:
+If you have loaded a yaml-config as a dictionary-like object, you may also just pass it as kwargs:
 
 ```
 sapbert_linker = SapBERTLinker(**config)
@@ -238,7 +242,8 @@ from xmen.kb import load_kb
 # Load a KB from a pre-computed dictionary (jsonl) to obtain synonyms for concept encoding
 kb = load_kb('path/to/my/dictionary.jsonl')
 
-candidates = linker.predict_batch(dataset) # obtain prediction from candidate generator (see above)
+# Obtain prediction from candidate generator (see above)
+candidates = linker.predict_batch(dataset)
 
 cross_enc_ds = CrossEncoderReranker.prepare_data(candidates, dataset, kb)
 ```
@@ -248,15 +253,20 @@ Then you can use this dataset to train a supervised reranking model:
 ```
 from xmen.reranking.cross_encoder import CrossEncoderReranker, CrossEncoderTrainingArgs
 
-cross_encoder_model = 'bert-base-multilingual-cased' # any BERT model, potentially language specific
-n_epochs = 10 # number of epochs to train
-output_dir = './checkpoints/' # Path to temp dir for writing model checkpoints
+# Number of epochs to train
+n_epochs = 10
 
-train_args = CrossEncoderTrainingArgs(cross_encoder_model, n_epochs)
+# Any BERT model, potentially language-specific
+cross_encoder_model = 'bert-base-multilingual-cased'
+
+args = CrossEncoderTrainingArgs(n_epochs, cross_encoder_model)
 
 rr = CrossEncoderReranker()
-rr.fit(cross_enc_ds['train'].dataset, cross_enc_ds['validation'].dataset, output_dir=output_dir, training_args=train_args)
 
+# Fit the model
+rr.fit(args, cross_enc_ds['train'].dataset, cross_enc_ds['validation'].dataset)
+
+# Predict on test set
 prediction = rr.rerank_batch(candidates['test'], cross_enc_ds['test'])
 ```
 
