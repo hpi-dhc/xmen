@@ -30,11 +30,9 @@ class SapBERTLinker(EntityLinker):
     - threshold (float): A threshold value for filtering out candidate entities based on their similarity score.
     - filter_types (bool): Whether to filter out candidate entities based on their semantic type.
     - model_name (str): Name of the embedding model to use.
-    - consider_n_grams (list): A list of integers representing the number of grams to consider when generating candidate entities.
     - remove_duplicates (bool): Whether to remove duplicate candidate entities or not.
     - expand_abbreviations (bool): Whether to expand abbreviations or not.
     - approximate (bool): Whether to use the hierarchical index for faster inference or not.
-    - unique_aliases_only (bool): Whether to use only unique aliases of entities for linking or not.
     """
 
     CROSS_LINGUAL = "cambridgeltl/SapBERT-UMLS-2020AB-all-lang-from-XLMR"
@@ -128,13 +126,10 @@ class SapBERTLinker(EntityLinker):
         gpu_batch_size: int = 16,
         k: int = 10,
         threshold: float = 0.0,
-        filter_types: bool = False,
         model_name: str = CROSS_LINGUAL,
-        consider_n_grams: list = [],
         remove_duplicates=True,
-        expand_abbreviations=False,
+        expand_abbreviations=True,
         approximate=True,
-        unique_aliases_only=False,
     ):
         index_base_path = Path(index_base_path)
         term_dict_pkl = index_base_path / "dict.pickle"
@@ -161,13 +156,9 @@ class SapBERTLinker(EntityLinker):
         self.k = k
         self.kb_name = kb_name
         self.threshold = threshold
-        self.filter_types = filter_types
-        self.consider_n_grams = consider_n_grams
-        self.filter_types = filter_types
         self.gpu_batch_size = gpu_batch_size
         self.remove_duplicates = remove_duplicates
         self.expand_abbreviations = expand_abbreviations
-        self.unique_aliases_only = unique_aliases_only
 
         SapBERTLinker.instance = self
         self.valid = True

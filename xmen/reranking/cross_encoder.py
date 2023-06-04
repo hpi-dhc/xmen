@@ -305,6 +305,7 @@ class CrossEncoderReranker(Reranker):
         add_special_tokens=True,
         max_length=512,
         eval_callback=None,
+        show_progress_bar=True,
     ):
         """
         Fits the model using the given training and validation datasets.
@@ -372,6 +373,7 @@ class CrossEncoderReranker(Reranker):
             label_smoothing=training_args["label_smoothing"],
             score_regularization=training_args["score_regularization"],
             train_layers=training_args["train_layers"],
+            show_progress_bar=show_progress_bar
         )
 
     def rerank_batch(self, candidates, cross_enc_dataset, show_progress_bar=True, convert_to_numpy=True):
