@@ -62,7 +62,7 @@ linker:
           k: 100
         random_seed: 42
         sapbert:
-          embedding_model_name: cambridgeltl/SapBERT-from-PubMedBERT-fulltext
+          model_name: cambridgeltl/SapBERT-from-PubMedBERT-fulltext
           expand_abbreviations: true
           index_base_path: ${work_dir}/index/SapBERT-from-PubMedBERT-fulltext
           k: 1000

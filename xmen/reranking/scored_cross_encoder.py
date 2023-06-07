@@ -145,9 +145,6 @@ class ScoredCrossEncoder(CrossEncoder):
                 `score`, `epoch`, `steps`
         :param show_progress_bar: If True, output a tqdm progress bar
         """
-        print("Using score regularization:", score_regularization)
-        print("Using label smoothing factor:", label_smoothing)
-
         train_dataloader.collate_fn = self.smart_batching_collate_with_scores
 
         if use_amp:

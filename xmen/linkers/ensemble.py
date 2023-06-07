@@ -56,7 +56,7 @@ class EnsembleLinker(EntityLinker):
         self.linker_thresholds[name] = threshold
         self.linker_weigths[name] = weight
 
-    def predict_batch(self, dataset, batch_size, top_k=None, reuse_preds=None):
+    def predict_batch(self, dataset, batch_size=1, top_k=None, reuse_preds=None):
         """
         Runs the ensemble on a dataset in batches.
 

@@ -162,7 +162,7 @@ cython_debug/
 
 .vscode/
 
-outputs
+**/output/
 wandb
 temp_*
 tmp_*
