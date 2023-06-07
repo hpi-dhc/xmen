@@ -14,6 +14,8 @@ from sentence_transformers.readers import InputExample
 from sentence_transformers.cross_encoder import CrossEncoder
 from torch.utils.data import DataLoader
 
+from transformers.trainer_utils import set_seed
+
 from sentence_transformers.cross_encoder.evaluation import (
     CEBinaryClassificationEvaluator,
 )
@@ -204,6 +206,7 @@ class CrossEncoderTrainingArgs:
         score_regularization: bool = False,
         train_layers: list = None,
         softmax_loss: bool = True,
+        random_seed: int = 42,
     ):
         self.args = {}
         self.args["model_name"] = model_name
@@ -213,9 +216,13 @@ class CrossEncoderTrainingArgs:
         self.args["score_regularization"] = score_regularization
         self.args["train_layers"] = train_layers
         self.args["softmax_loss"] = softmax_loss
+        self.args["random_seed"] = random_seed
 
     def __getitem__(self, key):
         return self.args[key]
+
+    def get(self, key, default_val):
+        return self.args.get(key, default_val)
 
 
 class CrossEncoderReranker(Reranker):
@@ -330,6 +337,7 @@ class CrossEncoderReranker(Reranker):
         """
         for k, v in training_args.args.items():
             print(k, ":=", v)
+        set_seed(training_args.get("random_seed", 0))
         if not self.model:
             self.model = ScoredCrossEncoder(training_args["model_name"], num_labels=1, max_length=max_length)
             if add_special_tokens:
