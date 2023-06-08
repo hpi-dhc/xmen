@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "xmen"
-version = "0.9.6"
+version = "0.9.7"
 description = "An extensible toolkit for Cross-lingual (x) Medical Entity Normalization."
 license = "Apache-2.0"
 authors = ["Florian Borchert <florian.borchert@hpi.de>"]
@@ -32,6 +32,8 @@ faiss-cpu = {version = "^1.7.1", markers = 'sys_platform != "linux"'}
 [tool.poetry.dev-dependencies]
 pytest = "^6.0"
 black = "^22.12.0"
+# TODO: only needed for Mantra benchmark, as dataset is not on HF hub
+bigbio = {git = "https://github.com/bigscience-workshop/biomedical.git", branch="main"}
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]

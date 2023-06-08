@@ -13,7 +13,7 @@ def load_dataset(dataset: str):
     Returns:
     - The loaded dataset.
     """
-    from xmen.data import dataloaders as own_module
+    from benchmarks import dataloaders as own_module
 
     loader_fn = getattr(own_module, f"load_{dataset}")
     return loader_fn()
@@ -23,15 +23,27 @@ def load_mantra_gsc():
     """
     Loads the Mantra-GSC dataset using the _load_bigbio_dataset function with the appropriate parameters.
 
+    TODO: Simplify when Mantra is eventually on the Hugging Face Hub
+
     Returns:
     - The loaded Mantra-GSC dataset.
     """
-    return _load_bigbio_dataset(
-        None,
-        "mantra_gsc",
-        lambda conf_name: conf_name.split("_")[2],
-        splits=["train"],
-    )
+    import bigbio
+    mantra_path = str(Path(bigbio.__file__).parent / 'biodatasets' / 'mantra_gsc' / 'mantra_gsc.py')
+    configs = [c for c in datasets.get_dataset_infos(mantra_path).keys() if 'bigbio' in c]
+
+    ds_map = {c: datasets.load_dataset(mantra_path, c) for c in configs}
+    ds = []
+    for conf, ds_dict in ds_map.items():
+        for k in ds_dict.keys():
+            ds_dict[k] = ds_dict[k].add_column("corpus_id", [conf] * len(ds_dict[k]))
+            ds_dict[k] = ds_dict[k].add_column("lang", [conf.split('_')[2]] * len(ds_dict[k]))
+        ds.append(ds_dict)
+    output = datasets.dataset_dict.DatasetDict()
+    for s in ['train']:
+        output[s] = datasets.concatenate_datasets([d[s] for d in ds])
+    return output
+    
 
 
 def _load_medmentions(config_name):
