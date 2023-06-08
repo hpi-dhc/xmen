@@ -21,7 +21,7 @@ def load_dataset(dataset: str):
 
 def load_mantra_gsc():
     """
-    Loads the Mantra-GSC dataset using the _load_bigbio_dataset function with the appropriate parameters.
+    Loads all subsets of Mantra GSC into one dataset
 
     TODO: Simplify when Mantra is eventually on the Hugging Face Hub
 
