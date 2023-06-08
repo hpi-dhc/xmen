@@ -29,21 +29,21 @@ def load_mantra_gsc():
     - The loaded Mantra-GSC dataset.
     """
     import bigbio
-    mantra_path = str(Path(bigbio.__file__).parent / 'biodatasets' / 'mantra_gsc' / 'mantra_gsc.py')
-    configs = [c for c in datasets.get_dataset_infos(mantra_path).keys() if 'bigbio' in c]
+
+    mantra_path = str(Path(bigbio.__file__).parent / "biodatasets" / "mantra_gsc" / "mantra_gsc.py")
+    configs = [c for c in datasets.get_dataset_infos(mantra_path).keys() if "bigbio" in c]
 
     ds_map = {c: datasets.load_dataset(mantra_path, c) for c in configs}
     ds = []
     for conf, ds_dict in ds_map.items():
         for k in ds_dict.keys():
             ds_dict[k] = ds_dict[k].add_column("corpus_id", [conf] * len(ds_dict[k]))
-            ds_dict[k] = ds_dict[k].add_column("lang", [conf.split('_')[2]] * len(ds_dict[k]))
+            ds_dict[k] = ds_dict[k].add_column("lang", [conf.split("_")[2]] * len(ds_dict[k]))
         ds.append(ds_dict)
     output = datasets.dataset_dict.DatasetDict()
-    for s in ['train']:
+    for s in ["train"]:
         output[s] = datasets.concatenate_datasets([d[s] for d in ds])
     return output
-    
 
 
 def _load_medmentions(config_name):

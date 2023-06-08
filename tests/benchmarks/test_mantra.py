@@ -45,6 +45,7 @@ def test_evaluation_identity():
     assert metrics["loose"]["ptp"] < n_annotations
     assert metrics["loose"]["rtp"] < n_annotations
 
+
 def test_evaluation_null_allow_multiple_gold_candidates():
     pred = NullLinker().predict_batch(mantra_ds["train"])
 
@@ -67,6 +68,7 @@ def test_evaluation_null_allow_multiple_gold_candidates():
     assert metrics["strict"]["fn"] < n_annotations_gold
     assert metrics["partial"]["fn"] < n_annotations_gold
     assert metrics["loose"]["fn"] < n_annotations_gold
+
 
 def test_evaluation_null_dont_allow_multiple_gold_candidates():
     pred = NullLinker().predict_batch(mantra_ds["train"])
