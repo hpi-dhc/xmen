@@ -1,4 +1,5 @@
-from xmen.data import load_quaero, get_cuis
+from xmen.data import get_cuis
+from benchmarks.dataloaders import load_quaero
 
 quaero_ds = load_quaero()
 

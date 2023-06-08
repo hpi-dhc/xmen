@@ -1,4 +1,5 @@
-from xmen.data import load_distemist_linking, get_cuis
+from benchmarks.dataloaders import load_distemist_linking
+from xmen.data import get_cuis
 
 ds = load_distemist_linking()
 

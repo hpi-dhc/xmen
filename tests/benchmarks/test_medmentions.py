@@ -1,5 +1,5 @@
-from xmen.data import load_medmentions_full, load_medmentions_st21pv, get_cuis, ConceptMerger
-
+from xmen.data import get_cuis, ConceptMerger
+from benchmarks.dataloaders import load_medmentions_full, load_medmentions_st21pv
 
 def test_medmentions_full_stats():
     ds = load_medmentions_full()
