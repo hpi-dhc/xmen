@@ -13,9 +13,9 @@ def load_dataset(dataset: str):
     Returns:
     - The loaded dataset.
     """
-    from benchmarks import dataloaders as own_module
+    import sys
 
-    loader_fn = getattr(own_module, f"load_{dataset}")
+    loader_fn = getattr(sys.modules[__name__], f"load_{dataset}")
     return loader_fn()
 
 

@@ -1,0 +1,6 @@
+work_dir: ${oc.env:HOME}/runs/xmen/${name}/
+
+linker:
+  candidate_generation:
+    sapbert: ~
+    ngram: ~
