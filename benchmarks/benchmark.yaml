@@ -1,0 +1,16 @@
+defaults:
+  - benchmark: ???
+  - _self_
+
+base_dir: ${oc.env:HOME}/runs/xmen/
+
+work_dir: ${base_dir}/${name}/
+
+# Workaround to enable hydra config groups with xMEN config
+hydra_work_dir: ${base_dir}/${benchmark.name}/
+
+
+linker:
+  candidate_generation:
+    sapbert: ~
+    ngram: ~

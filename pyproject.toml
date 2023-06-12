@@ -34,6 +34,7 @@ pytest = "^6.0"
 black = "^22.12.0"
 # TODO: only needed for Mantra benchmark, as dataset is not on HF hub
 bigbio = {git = "https://github.com/bigscience-workshop/biomedical.git", branch="main"}
+hydra-core = "^1.3.2"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]

@@ -1,4 +1,4 @@
-base_config: ../benchmark_base.yaml
+base_config: ../benchmark.yaml
 
 name: quaero_benchmark
 

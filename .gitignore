@@ -163,6 +163,7 @@ cython_debug/
 .vscode/
 
 **/output/
+**/outputs/**
 wandb
 temp_*
 tmp_*
