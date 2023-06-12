@@ -1,0 +1,42 @@
+base_config: ../benchmark_base.yaml
+
+name: mantra_benchmark
+
+dataset: mantra_gsc
+
+dict:
+  umls:
+    lang:
+      - en
+      - fr
+      - de
+      - nl
+      - es
+    version: 2014AB
+    meta_path: ${oc.env:UMLS_HOME}/${dict.umls.version}/META
+    semantic_groups:
+      - ANAT
+      - CHEM
+      - CONC # Not included in original list of groups, maybe added later?
+      - DEVI
+      - DISO
+      - GEOG
+      - LIVB
+      - OBJC
+      - PHEN
+      - PHYS
+      - PROC
+    sabs:
+      - SNOMEDCT_US
+      - SCTSPA
+      - MSH
+      - MSHGER
+      - MSHFRE
+      - MSHSPA
+      - MSHDUT
+      - MDR
+      - MDRGER
+      - MDRFRE
+      - MDRSPA
+      - MDADUT
+

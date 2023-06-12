@@ -1,0 +1,51 @@
+base_config: ../benchmark_base.yaml
+
+dataset: medmentions_st21pv
+
+dict:
+  umls:
+    lang: 
+      - en
+    version: 2017AA
+    meta_path: ${oc.env:UMLS_HOME}/${dict.umls.version}/META
+    semantic_types:
+      - T005
+      - T007
+      - T017
+      - T022
+      - T031
+      - T033
+      - T037
+      - T038
+      - T058
+      - T062
+      - T074
+      - T082
+      - T091
+      - T092
+      - T097
+      - T098
+      - T103
+      - T168
+      - T170
+      - T201
+      - T204
+    sabs:
+      - CPT
+      - FMA
+      - GO
+      - HGNC
+      - HPO
+      - ICD10
+      - ICD10CM
+      - ICD9CM
+      - MDR
+      - MSH
+      - MTH
+      - NCBI
+      - NCI
+      - NDDF
+      - NDFRT
+      - OMIM
+      - RXNORM
+      - SNOMEDCT_US
