@@ -32,9 +32,10 @@ faiss-cpu = {version = "^1.7.1", markers = 'sys_platform != "linux"'}
 [tool.poetry.dev-dependencies]
 pytest = "^6.0"
 black = "^22.12.0"
+hydra-core = "^1.3.2"
+en-core-sci-sm = {url = "https://s3-us-west-2.amazonaws.com/ai2-s2-scispacy/releases/v0.5.1/en_core_sci_sm-0.5.1.tar.gz"}
 # TODO: only needed for Mantra benchmark, as dataset is not on HF hub
 bigbio = {git = "https://github.com/bigscience-workshop/biomedical.git", branch="main"}
-hydra-core = "^1.3.2"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]

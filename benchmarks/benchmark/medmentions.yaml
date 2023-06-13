@@ -8,8 +8,7 @@ dict:
   umls:
     lang: 
       - en
-    version: 2017AA
-    meta_path: ${oc.env:UMLS_HOME}/${dict.umls.version}/META
+    meta_path: ${oc.env:UMLS_HOME}/2017AA/META
     semantic_types:
       - T005
       - T007

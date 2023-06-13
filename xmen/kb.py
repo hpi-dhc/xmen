@@ -7,7 +7,7 @@ from scispacy.linking_utils import KnowledgeBase, Entity
 from collections.abc import Mapping
 
 
-def load_kb(file_path: Union[str, Path]):
+def load_kb(file_path: Union[str, Path]) -> KnowledgeBase:
     return CompositeKnowledgebase([file_path])
 
 
