@@ -1,0 +1,25 @@
+name: quaero
+
+dict:
+  umls:
+    lang: 
+      - fr
+      - en
+    meta_path: ${oc.env:UMLS_HOME}/2014AB/META
+    version: 2014AB
+    semantic_groups:
+      - ANAT
+      - CHEM
+      - DEVI
+      - DISO
+      - GEOG
+      - LIVB
+      - OBJC
+      - PHEN
+      - PHYS
+      - PROC
+
+linker:
+  candidate_generation:
+    sapbert: ~
+    ngram: ~

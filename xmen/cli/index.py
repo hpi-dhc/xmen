@@ -40,6 +40,11 @@ def build_sapbert(cfg: DictConfig, work_dir: Path, dict_dir: Path, gpu_id: int):
     logger.info(f"Number of aliases: {len(term_dict)}.")
     logger.info(f"Number of concepts: {len(term_dict.cui.unique())}.")
 
+    sapbert_cfg = cfg.linker.candidate_generation.sapbert
+    model_name = SapBERTLinker.CROSS_LINGUAL  # default model
+    if sapbert_cfg and "model_name" in sapbert_cfg:
+        model_name = sapbert_cfg.model_name
+
     cuda = False if gpu_id == -1 else True
     with torch.cuda.device(gpu_id):
         SapBERTLinker.write_index(
@@ -47,5 +52,5 @@ def build_sapbert(cfg: DictConfig, work_dir: Path, dict_dir: Path, gpu_id: int):
             term_dict=term_dict,
             cuda=cuda,
             subtract_mean=False,
-            embedding_model_name=cfg.linker.candidate_generation.sapbert.embedding_model_name,
+            model_name=model_name,
         )

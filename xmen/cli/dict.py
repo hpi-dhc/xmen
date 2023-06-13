@@ -51,7 +51,7 @@ def get_concept_details(cfg, custom_path):
             semantic_groups=cfg.dict.umls.get("semantic_groups", None),
             semantic_types=cfg.dict.umls.get("semantic_types", None),
             non_suppressed_only=cfg.dict.umls.get("non_suppressed_only", False),
-            semantic_group_file_version=cfg.dict.umls.get("semantic_group_file_version", False),
+            semantic_group_file_version=cfg.dict.umls.get("semantic_group_file_version", "v03"),
         )
     elif "custom" in cfg.dict:
         return get_custom_concepts(cfg, custom_path)

@@ -8,8 +8,7 @@ dict:
     
 linker:
    candidate_generation:
-      ngram:
-          k: 100
+      ngram: ~
       sapbert:
-          embedding_model_name: cambridgeltl/SapBERT-UMLS-2020AB-all-lang-from-XLMR
+          model_name: cambridgeltl/SapBERT-UMLS-2020AB-all-lang-from-XLMR
   

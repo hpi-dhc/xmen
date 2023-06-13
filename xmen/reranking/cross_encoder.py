@@ -14,6 +14,8 @@ from sentence_transformers.readers import InputExample
 from sentence_transformers.cross_encoder import CrossEncoder
 from torch.utils.data import DataLoader
 
+from transformers.trainer_utils import set_seed
+
 from sentence_transformers.cross_encoder.evaluation import (
     CEBinaryClassificationEvaluator,
 )
@@ -197,13 +199,14 @@ class CrossEncoderTrainingArgs:
 
     def __init__(
         self,
-        model_name: str,
         num_train_epochs: int,
+        model_name: str = "bert-base-multilingual-cased",
         fp16: bool = True,
         label_smoothing: bool = False,
         score_regularization: bool = False,
         train_layers: list = None,
         softmax_loss: bool = True,
+        random_seed: int = 42,
     ):
         self.args = {}
         self.args["model_name"] = model_name
@@ -213,9 +216,13 @@ class CrossEncoderTrainingArgs:
         self.args["score_regularization"] = score_regularization
         self.args["train_layers"] = train_layers
         self.args["softmax_loss"] = softmax_loss
+        self.args["random_seed"] = random_seed
 
     def __getitem__(self, key):
         return self.args[key]
+
+    def get(self, key, default_val):
+        return self.args.get(key, default_val)
 
 
 class CrossEncoderReranker(Reranker):
@@ -295,21 +302,23 @@ class CrossEncoderReranker(Reranker):
 
     def fit(
         self,
+        training_args: CrossEncoderTrainingArgs,
         train_dataset,
         val_dataset,
-        output_dir: Union[str, Path],
-        training_args: CrossEncoderTrainingArgs,
+        output_dir: Union[str, Path] = "./output/cross_encoder",
         train_continue=False,
         loss_fct=None,
         callback=None,
         add_special_tokens=True,
         max_length=512,
         eval_callback=None,
+        show_progress_bar=True,
     ):
         """
         Fits the model using the given training and validation datasets.
 
         Args:
+        - training_args: Training Arguments
         - train_dataset (List[InputExample]): The list of InputExample objects representing the training dataset.
         - val_dataset (List[InputExample]): The list of InputExample objects representing the validation dataset.
         - output_dir (Union[str, Path]): The directory where the trained model will be saved.
@@ -328,6 +337,7 @@ class CrossEncoderReranker(Reranker):
         """
         for k, v in training_args.args.items():
             print(k, ":=", v)
+        set_seed(training_args.get("random_seed", 0))
         if not self.model:
             self.model = ScoredCrossEncoder(training_args["model_name"], num_labels=1, max_length=max_length)
             if add_special_tokens:
@@ -371,6 +381,7 @@ class CrossEncoderReranker(Reranker):
             label_smoothing=training_args["label_smoothing"],
             score_regularization=training_args["score_regularization"],
             train_layers=training_args["train_layers"],
+            show_progress_bar=show_progress_bar,
         )
 
     def rerank_batch(self, candidates, cross_enc_dataset, show_progress_bar=True, convert_to_numpy=True):

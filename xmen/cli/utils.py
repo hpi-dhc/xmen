@@ -120,7 +120,7 @@ def can_write(path: str, parent_overwrite: bool) -> bool:
         if is_warnable:
             logger.warn(warning)
             logger.info(
-                f"To instruct the command to overwrite all coinciding files by default, swith the flag --overwrite."
+                f"To instruct the command to overwrite all coinciding files by default, switch the flag --overwrite."
                 f"You can also provide a different path to write the files with --output. \n"
                 f"What would you like to do this time? Input yes [y] to overwrite it, no [n] to skip the file."
             )
