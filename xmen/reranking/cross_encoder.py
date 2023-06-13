@@ -203,7 +203,7 @@ class CrossEncoderTrainingArgs:
         model_name: str = "bert-base-multilingual-cased",
         fp16: bool = True,
         label_smoothing: bool = False,
-        score_regularization: bool = False,
+        score_regularization: bool = 1.0,
         train_layers: list = None,
         softmax_loss: bool = True,
         random_seed: int = 42,

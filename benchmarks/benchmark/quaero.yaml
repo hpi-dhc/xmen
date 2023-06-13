@@ -9,8 +9,7 @@ dict:
     lang: 
       - fr
       - en
-    version: 2014AB
-    meta_path: ${oc.env:UMLS_HOME}/${dict.umls.version}/META
+    meta_path: ${oc.env:UMLS_HOME}/2014AB/META
     semantic_groups:
       - ANAT
       - CHEM

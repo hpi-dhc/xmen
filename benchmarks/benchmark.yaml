@@ -6,11 +6,24 @@ base_dir: ${oc.env:HOME}/runs/xmen/
 
 work_dir: ${base_dir}/${name}/
 
-# Workaround to enable hydra config groups with xMEN config
-hydra_work_dir: ${base_dir}/${benchmark.name}/
-
-
 linker:
   candidate_generation:
-    sapbert: ~
-    ngram: ~
+    sapbert:
+      k: 1000
+    ngram:
+      k: 100
+
+# Benchmark settings
+save_intermediate: True
+
+data:
+  expand_abbreviations: True
+
+# Hydra settings
+hydra_work_dir: ${base_dir}/${benchmark.name}/
+
+hydra:
+  job:
+    chdir: True
+  run:
+    dir: ${hydra_work_dir}/outputs/${now:%Y-%m-%d_%H-%M-%S}
