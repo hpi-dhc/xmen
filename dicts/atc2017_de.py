@@ -14,7 +14,7 @@ def get_concept_details(cfg) -> dict:
     atc_dict.dropna(axis=0, how="all", inplace=True)
     atc_dict.drop(atc_dict[atc_dict.text.isnull()].index, inplace=True)
     atc_dict.drop(atc_dict[atc_dict.code.isnull()].index, inplace=True)
-    
+
     concept_details = {}
     for _, entry in atc_dict.iterrows():
         sid = entry.code

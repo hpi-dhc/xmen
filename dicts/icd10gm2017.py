@@ -5,10 +5,12 @@ import re
 
 def get_concept_details(cfg) -> dict:
     path = cfg.dict.custom.icd10gm_path
-    
+
     # load alphabetic codes
-    alph_cols = ["ArtDerKodierung", "DIMDI-Nummer","Druckkennzeichen","code","code2","code3","text"]
-    alph = pd.read_csv(f"{path}/x3get2017/icd10gm2017alpha_edvtxt_20161005.txt", sep="|", names=alph_cols, index_col=False)
+    alph_cols = ["ArtDerKodierung", "DIMDI-Nummer", "Druckkennzeichen", "code", "code2", "code3", "text"]
+    alph = pd.read_csv(
+        f"{path}/x3get2017/icd10gm2017alpha_edvtxt_20161005.txt", sep="|", names=alph_cols, index_col=False
+    )
 
     # load systematic codes
     syst_cols = list(range(30))
@@ -39,9 +41,9 @@ def get_concept_details(cfg) -> dict:
             concept_details[sid]["aliases"].append(entry.text)
         if entry.type not in concept_details[sid]["types"]:
             concept_details[sid]["types"].append(entry.type)
-            
+
     # deal with "sehe auch"
-    for k, v in concept_details.items(): 
+    for k, v in concept_details.items():
         # if there is " - s. a." in canonical, leave the first term there and move the rest to aliases
         chunks = v["canonical_name"].split(" - s.a. ")
         if len(chunks) == 2:
@@ -63,10 +65,10 @@ def get_concept_details(cfg) -> dict:
                 for a in chunks:
                     concept_details[k]["aliases"].append(a)
                 concept_details[k]["aliases"].remove(alias)
-                
+
     # deal with abbreviations
     for k, v in concept_details.items():
-        brackets = r'\[(.*?)\]'
+        brackets = r"\[(.*?)\]"
 
         text = v["canonical_name"]
         if "[" in text and "]" in text:

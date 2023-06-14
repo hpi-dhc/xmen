@@ -4,14 +4,32 @@ from omegaconf import OmegaConf, DictConfig
 
 def get_concept_details(cfg) -> dict:
     path = cfg.dict.custom.ops_path
-    
+
     # load alphabetic codes
-    alph_cols = ["ArtDerKodierung", "DIMDI-Nummer", "code", "code2","text"]
-    alph = pd.read_csv(f"{path}/p2set2017/ops2017alpha_edvtxt_20161028.txt", sep="|", names=alph_cols, index_col=False, encoding="latin1")
+    alph_cols = ["ArtDerKodierung", "DIMDI-Nummer", "code", "code2", "text"]
+    alph = pd.read_csv(
+        f"{path}/p2set2017/ops2017alpha_edvtxt_20161028.txt",
+        sep="|",
+        names=alph_cols,
+        index_col=False,
+        encoding="latin1",
+    )
 
     # load systematic codes
     syst_cols = list(range(30))
-    syst_cols[3], syst_cols[6], syst_cols[8], syst_cols[4], syst_cols[5], = "type", "code", "text", "code2", "code3"
+    (
+        syst_cols[3],
+        syst_cols[6],
+        syst_cols[8],
+        syst_cols[4],
+        syst_cols[5],
+    ) = (
+        "type",
+        "code",
+        "text",
+        "code2",
+        "code3",
+    )
     syst = pd.read_csv(f"{path}/p1smt2017/Klassifikationsdateien/ops2017syst_kodes.txt", sep=";", names=syst_cols)
 
     # get the codes that are only in the systematic list
@@ -38,7 +56,7 @@ def get_concept_details(cfg) -> dict:
             concept_details[sid]["aliases"].append(entry.text)
         if entry.type not in concept_details[sid]["types"]:
             concept_details[sid]["types"].append(entry.type)
-            
+
     # remove all resulting duplicates
     for k, v in concept_details.items():
         concept_details[k]["aliases"] = list(set(v["aliases"]))
