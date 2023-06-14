@@ -9,6 +9,7 @@ from xmen.cli.dict import get_concept_details
 file_path = Path(os.path.dirname(os.path.realpath(__file__)))
 data_dir = file_path / "dummy_dict"
 
+
 # CUSTOM DICT TEST (1)
 def test_custom_dict():
     # read the config
