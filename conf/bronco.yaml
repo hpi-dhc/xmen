@@ -27,10 +27,6 @@ linker:
     candidate_generation:
         k: 64
         filter_semantic_groups: true
-        ngram:
-          expand_abbreviations: true
-          k: 3
         sapbert:
-          embedding_model_name: cambridgeltl/SapBERT-UMLS-2020AB-all-lang-from-XLMR
           expand_abbreviations: true
           k: 3
