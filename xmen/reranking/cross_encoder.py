@@ -235,19 +235,22 @@ class CrossEncoderReranker(Reranker):
         self.model = model
 
     @staticmethod
-    def load(checkpoint, device):
+    def load(checkpoint, device, max_length=512):
         """
         Loads a pre-trained model from a checkpoint and returns a new instance of CrossEncoderReranker.
 
         Args:
         - checkpoint: The path to the checkpoint file to load.
         - device: The device to load the model onto.
+        - max_length: Maximum input length
 
         Returns:
         - new instance of CrossEncoderReranker.
         """
         model = CrossEncoder(checkpoint)
         model.model.to(torch.device(device))
+        if not model.max_length:
+            model.max_length = max_length
         return CrossEncoderReranker(model)
 
     @staticmethod
