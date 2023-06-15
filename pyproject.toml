@@ -28,6 +28,7 @@ scispacy = "^0.5.2"
 sentence-transformers = "^2.2.2"
 faiss-gpu = {version = "^1.7.1", markers = 'sys_platform == "linux"'}
 faiss-cpu = {version = "^1.7.1", markers = 'sys_platform != "linux"'}
+orjson = "^3.9.1"
 
 [tool.poetry.dev-dependencies]
 pytest = "^6.0"

@@ -2,6 +2,7 @@ import hydra
 import os
 from pathlib import Path
 import logging
+from datasets import DatasetDict
 
 from xmen import load_kb
 from xmen.data import get_cuis, CUIReplacer, EmptyNormalizationFilter, ConceptMerger, AbbreviationExpander
@@ -20,13 +21,14 @@ def train_val_test_split(dataset):
 
 
 def log_cuis_stats(dataset, kb):
+    """Log the number of CUIs in the dataset and the number of missing CUIs compared to the KB."""
     for split, ds in dataset.items():
         cuis = get_cuis(ds)
         log.info(f"Split: {split}")
         log.info(f"CUIs (unique): {len(cuis)} ({len(set(cuis))})")
         missing_cuis = [cui for cui in cuis if cui not in kb.cui_to_entity]
         if len(missing_cuis) > 0:
-            log.warn(f"Missing CUIs (unique): {len(missing_cuis)} ({len(set(missing_cuis))})")
+            log.warning(f"Missing CUIs (unique): {len(missing_cuis)} ({len(set(missing_cuis))})")
         else:
             log.info("No missing CUIs")
 
@@ -34,14 +36,14 @@ def log_cuis_stats(dataset, kb):
 class EvalLogger:
     """A class for logging evaluation results."""
 
-    def __init__(self, split, ground_truth, ks=[1, 2, 4, 8, 16, 32, 64]) -> None:
+    def __init__(self, ground_truth, file_prefix, ks=[1, 2, 4, 8, 16, 32, 64]) -> None:
         self.ground_truth = ground_truth
         self.ks = ks
-        self.split = split
-        self.file_name = f"{split}_results.csv"
+        self.file_prefix = file_prefix
+        self.file_name = f"{file_prefix}_results.csv"
         with open(self.file_name, "w") as f:
             f.write("key,")
-            f.write(",".join(["r@_{k}" for k in ks]))
+            f.write(",".join([f"recall_{k}" for k in ks]))
             f.write("\n")
 
     def eval_and_log_at_k(self, key: str, prediction):
@@ -49,7 +51,7 @@ class EvalLogger:
         line = key
         for k in self.ks:
             recall = evaluate(self.ground_truth, prediction, top_k_predictions=k)["strict"]["recall"]
-            log.info("Recall@k", recall)
+            log.info(f"{key} - {self.file_prefix} - Recall@{k}:{recall}")
             line += f",{recall}"
         with open(self.file_name, "a") as f:
             f.write(line)
@@ -57,6 +59,7 @@ class EvalLogger:
 
 
 def prepare_data(config, kb):
+    """Prepare the dataset for the benchmark."""
     log.info("Loading dataset")
     dataset = load_dataset(config.benchmark.dataset)
     log.info(dataset)
@@ -76,10 +79,58 @@ def prepare_data(config, kb):
     return dataset
 
 
-def generate_candidates(index_base_path, dataset, config):
-    ngram_linker = TFIDFNGramLinker(index_base_path / "ngram", **config.linker.ngram)
+def generate_candidates(dataset, config):
+    """ Generate candidates with n-gram, SapBERT and Ensemble. """
+    batch_size = config.linker.batch_size
+    k_ngram = config.linker.candidate_generation.ngram.k
+    k_sapbert = config.linker.candidate_generation.sapbert.k
+    k_ensemble = k_sapbert + k_ngram
+
+    log.info("Generating n-gram candidates")
+    ngram_linker = TFIDFNGramLinker(**config.linker.candidate_generation.ngram)
     candidates_ngram = ngram_linker.predict_batch(dataset)
-    return candidates_ngram
+
+    test_logger.eval_and_log_at_k("ngram", candidates_ngram["test"])
+    val_logger.eval_and_log_at_k("ngram", candidates_ngram["validation"])
+
+    log.info("Generating SapBERT candidates")
+    sapbert_linker = SapBERTLinker(**config.linker.candidate_generation.sapbert)
+    candidates_sapbert = sapbert_linker.predict_batch(dataset, batch_size=batch_size)
+
+    test_logger.eval_and_log_at_k("sapbert", candidates_sapbert["test"])
+    val_logger.eval_and_log_at_k("sapbert", candidates_sapbert["validation"])
+
+    log.info("Generating ensemble candidates")
+    ensemble_linker = EnsembleLinker()
+    ensemble_linker.add_linker("sapbert", sapbert_linker, k=k_sapbert)
+    ensemble_linker.add_linker("ngram", ngram_linker, k=k_ngram)
+
+    # Re-use predictions for efficiency
+    # TODO: reuse_preds currently does not work with dataset dicts
+    candidates_ensemble = DatasetDict()
+    candidates_ensemble["train"] = ensemble_linker.predict_batch(
+        dataset["train"],
+        batch_size,
+        k_ensemble,
+        reuse_preds={"sapbert": candidates_sapbert["train"], "ngram": candidates_ngram["train"]},
+    )
+    candidates_ensemble["validation"] = ensemble_linker.predict_batch(
+        dataset["validation"],
+        batch_size,
+        k_ensemble,
+        reuse_preds={"sapbert": candidates_sapbert["validation"], "ngram": candidates_ngram["validation"]},
+    )
+    candidates_ensemble["test"] = ensemble_linker.predict_batch(
+        dataset["test"],
+        batch_size,
+        k_ensemble,
+        reuse_preds={"sapbert": candidates_sapbert["test"], "ngram": candidates_ngram["test"]},
+    )
+
+    test_logger.eval_and_log_at_k("ensemble", candidates_ensemble["test"])
+    val_logger.eval_and_log_at_k("ensemble", candidates_ensemble["validation"])
+
+    return candidates_ensemble
 
 
 @hydra.main(version_base=None, config_path=".", config_name="benchmark.yaml")
@@ -91,13 +142,11 @@ def main(config) -> None:
     base_path = Path(config.hydra_work_dir)
 
     dict_name = base_path / f"{config.benchmark.name}.jsonl"
-
     if not dict_name.exists():
         log.error(f"{dict_name} does not exist, please run: xmen dict <config name>")
         return
 
     index_base_path = base_path / "index"
-
     if not index_base_path.exists():
         log.error(f"{index_base_path} does not exist, please run: xmen index <config name> --all")
         return
@@ -108,12 +157,16 @@ def main(config) -> None:
 
     dataset = prepare_data(config, kb)
 
-    val_logger = EvalLogger(ground_truth=dataset["val"], split="val")
-    test_logger = EvalLogger(ground_truth=dataset["test"], split="test")
+    #from xmen.data import Sampler
+    #dataset = Sampler(random_seed=config.random_seed, n=10).transform_batch(dataset)
 
-    candidates = generate_candidates(dataset, kb)
-    test_logger.eval_and_log_at_k("ngram", candidates["test"])
-    val_logger.eval_and_log_at_k("ngram", candidates["val"])
+    global val_logger
+    val_logger = EvalLogger(ground_truth=dataset["validation"], file_prefix=f"{config.benchmark.name}_validation")
+
+    global test_logger
+    test_logger = EvalLogger(ground_truth=dataset["test"], file_prefix=f"{config.benchmark.name}_test")
+
+    candidates = generate_candidates(dataset, config)
 
 
 if __name__ == "__main__":
