@@ -133,18 +133,16 @@ def build_ngram_sapbert(
         logger.info(f"Dictionary found in {dict}. Attempting to build indices.")
 
         is_ngram_selected = ngram or all
-        required_key = "linker.candidate_generation.ngram"
         write_path = output / "index" / "ngrams"
-        if is_ngram_selected and has_correct_keys(cfg, required_key) and can_write(write_path, overwrite):
+        if is_ngram_selected and can_write(write_path, overwrite):
             logger.info("Building N-Gram index.")
             build_ngram(cfg, output, dict)
         else:
             logger.info("Skipping N-Gram index.")
 
         is_sapbert_selected = sapbert or all
-        required_key = "linker.candidate_generation.sapbert"
         write_path = output / "index" / "sapbert"
-        if is_sapbert_selected and has_correct_keys(cfg, required_key) and can_write(write_path, overwrite):
+        if is_sapbert_selected and can_write(write_path, overwrite):
             # check for GPUs
             if torch.cuda.is_available():
                 logger.info(f"CUDA is available. Running on GPU with ID {gpu_id}. To select another, use --gpu-id.")
