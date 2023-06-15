@@ -1,25 +1,10 @@
+# Hydra settings
 defaults:
   - benchmark: ???
   - _self_
 
 base_dir: ${oc.env:HOME}/runs/xmen/
 
-work_dir: ${base_dir}/${name}/
-
-linker:
-  candidate_generation:
-    sapbert:
-      k: 1000
-    ngram:
-      k: 100
-
-# Benchmark settings
-save_intermediate: True
-
-data:
-  expand_abbreviations: True
-
-# Hydra settings
 hydra_work_dir: ${base_dir}/${benchmark.name}/
 
 hydra:
@@ -27,3 +12,24 @@ hydra:
     chdir: True
   run:
     dir: ${hydra_work_dir}/outputs/${now:%Y-%m-%d_%H-%M-%S}
+
+# xMEN settings
+work_dir: ${base_dir}/${name}/
+
+linker:
+  batch_size: 128 
+  candidate_generation:
+    sapbert:
+      index_base_path: ${hydra_work_dir}/index/sapbert/
+      model_name: cambridgeltl/SapBERT-UMLS-2020AB-all-lang-from-XLMR
+      k: 1000
+    ngram:
+      index_base_path: ${hydra_work_dir}/index/ngrams/
+      k: 100
+
+# Benchmark settings
+save_intermediate: True
+random_seed: 42
+
+data:
+  expand_abbreviations: True
