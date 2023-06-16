@@ -13,13 +13,6 @@ from dataloaders import load_dataset
 
 log = logging.getLogger(__name__)
 
-
-def train_val_test_split(dataset):
-    """Split a dataset into train, validation, and test sets."""
-    # TODO: implement for datasets without a train/val/test split
-    return dataset
-
-
 def log_cuis_stats(dataset, kb):
     """Log the number of CUIs in the dataset and the number of missing CUIs compared to the KB."""
     for split, ds in dataset.items():
@@ -58,11 +51,8 @@ class EvalLogger:
             f.write("\n")
 
 
-def prepare_data(config, kb):
+def prepare_data(dataset, config, kb):
     """Prepare the dataset for the benchmark."""
-    log.info("Loading dataset")
-    dataset = load_dataset(config.benchmark.dataset)
-    log.info(dataset)
 
     log.info("Filtering empty concept IDs")
     dataset = EmptyNormalizationFilter().transform_batch(ConceptMerger().transform_batch(dataset))
@@ -155,18 +145,22 @@ def main(config) -> None:
     kb = load_kb(dict_name)
     log.info(f"Loaded {dict_name} with {len(kb.cui_to_entity)} concepts and {len(kb.alias_to_cuis)} aliases")
 
-    dataset = prepare_data(config, kb)
+    log.info("Loading dataset")
+    splits = load_dataset(config.benchmark.dataset)
+    log.info(f"Running on {len(splits)} splits")
+    for fold, dataset in enumerate(splits):
+        dataset = prepare_data(dataset, config, kb)
 
-    #from xmen.data import Sampler
-    #dataset = Sampler(random_seed=config.random_seed, n=10).transform_batch(dataset)
+        #from xmen.data import Sampler
+        #dataset = Sampler(random_seed=config.random_seed, n=10).transform_batch(dataset)
 
-    global val_logger
-    val_logger = EvalLogger(ground_truth=dataset["validation"], file_prefix=f"{config.benchmark.name}_validation")
+        global val_logger
+        val_logger = EvalLogger(ground_truth=dataset["validation"], file_prefix=f"{fold}-{config.benchmark.name}_validation")
 
-    global test_logger
-    test_logger = EvalLogger(ground_truth=dataset["test"], file_prefix=f"{config.benchmark.name}_test")
+        global test_logger
+        test_logger = EvalLogger(ground_truth=dataset["test"], file_prefix=f"{fold}-{config.benchmark.name}_test")
 
-    candidates = generate_candidates(dataset, config)
+        candidates = generate_candidates(dataset, config)
 
 
 if __name__ == "__main__":
