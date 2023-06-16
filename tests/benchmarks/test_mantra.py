@@ -4,8 +4,6 @@ from dummy_linker import CopyLinker, NullLinker
 
 from benchmarks.dataloaders import load_mantra_gsc
 
-import pytest
-
 mantra_ds_raw = load_mantra_gsc()
 mantra_ds = ConceptMerger().transform_batch(mantra_ds_raw)
 
@@ -13,7 +11,6 @@ mantra_ds = ConceptMerger().transform_batch(mantra_ds_raw)
 NUM_CONCEPTS_MANTRA_GSC = 5530 - 2
 
 ALL_METRICS = ["strict", "partial", "loose"]
-
 
 def test_stats():
     assert len(mantra_ds_raw["train"]) == 1450
