@@ -6,6 +6,7 @@ import pandas as pd
 from scispacy.linking_utils import KnowledgeBase, Entity
 from collections.abc import Mapping
 
+
 def load_kb(file_path: Union[str, Path]) -> KnowledgeBase:
     return CompositeKnowledgebase([file_path])
 
@@ -61,9 +62,7 @@ class CompositeKnowledgebase(KnowledgeBase):
                     if not cui in self.cui_to_entity:
                         self.cui_to_entity[cui] = Entity(**concept)
                     else:
-                        self.cui_to_entity[cui] = _merge_entities(
-                            Entity(**concept), self.cui_to_entity[cui]
-                        )
+                        self.cui_to_entity[cui] = _merge_entities(Entity(**concept), self.cui_to_entity[cui])
 
             self.alias_to_cuis = {**alias_to_cuis}
 

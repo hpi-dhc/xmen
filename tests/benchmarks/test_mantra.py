@@ -12,6 +12,7 @@ NUM_CONCEPTS_MANTRA_GSC = 5530 - 2
 
 ALL_METRICS = ["strict", "partial", "loose"]
 
+
 def test_stats():
     assert len(mantra_ds_raw["train"]) == 1450
     assert len(get_cuis(mantra_ds_raw["train"])) == 5530
