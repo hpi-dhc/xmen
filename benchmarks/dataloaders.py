@@ -64,12 +64,14 @@ def _load_medmentions(config_name):
                 n["db_id"] = n["db_id"].replace("UMLS:", "")
         return entities
 
-    return [ _load_bigbio_dataset(
-        [config_name],
-        "medmentions",
-        lambda _: "en",
-        splits=["train", "validation", "test"],
-    ).map(lambda d: {"entities": drop_prefix(d["entities"])}) ]
+    return [
+        _load_bigbio_dataset(
+            [config_name],
+            "medmentions",
+            lambda _: "en",
+            splits=["train", "validation", "test"],
+        ).map(lambda d: {"entities": drop_prefix(d["entities"])})
+    ]
 
 
 def load_medmentions_full():
@@ -99,12 +101,14 @@ def load_quaero():
     Returns:
     - A dataset loaded from the Quaero dataset with bigbio knowledge base.
     """
-    return [ _load_bigbio_dataset(
-        ["quaero_emea_bigbio_kb", "quaero_medline_bigbio_kb"],
-        "quaero",
-        lambda _: "fr",
-        splits=["train", "validation", "test"],
-    ) ]
+    return [
+        _load_bigbio_dataset(
+            ["quaero_emea_bigbio_kb", "quaero_medline_bigbio_kb"],
+            "quaero",
+            lambda _: "fr",
+            splits=["train", "validation", "test"],
+        )
+    ]
 
 
 def load_distemist():
@@ -125,17 +129,16 @@ def load_distemist():
     )
 
     # Own validation set (20% of distemist training set / EL sub-track)
-    with open(Path(__file__).parent / 'benchmark' / 'distemist_validation_docs.txt', 'r') as fh:
+    with open(Path(__file__).parent / "benchmark" / "distemist_validation_docs.txt", "r") as fh:
         valid_ids = [l.strip() for l in fh.readlines()]
-        
-    ds_train = ds['train'].filter(lambda d: d['document_id'] not in valid_ids)
-    ds_valid = ds['train'].filter(lambda d: d['document_id'] in valid_ids)
 
-    ds['train'] = ds_train
-    ds['validation'] = ds_valid
+    ds_train = ds["train"].filter(lambda d: d["document_id"] not in valid_ids)
+    ds_valid = ds["train"].filter(lambda d: d["document_id"] in valid_ids)
 
-    return [ ds ]
+    ds["train"] = ds_train
+    ds["validation"] = ds_valid
 
+    return [ds]
 
 
 def _load_bigbio_dataset(config_names: List[str], dataset_name: str, lang_mapper, splits):

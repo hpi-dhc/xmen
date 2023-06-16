@@ -13,6 +13,7 @@ from dataloaders import load_dataset
 
 log = logging.getLogger(__name__)
 
+
 def log_cuis_stats(dataset, kb):
     """Log the number of CUIs in the dataset and the number of missing CUIs compared to the KB."""
     for split, ds in dataset.items():
@@ -70,7 +71,7 @@ def prepare_data(dataset, config, kb):
 
 
 def generate_candidates(dataset, config):
-    """ Generate candidates with n-gram, SapBERT and Ensemble. """
+    """Generate candidates with n-gram, SapBERT and Ensemble."""
     batch_size = config.linker.batch_size
     k_ngram = config.linker.candidate_generation.ngram.k
     k_sapbert = config.linker.candidate_generation.sapbert.k
@@ -97,24 +98,11 @@ def generate_candidates(dataset, config):
 
     # Re-use predictions for efficiency
     # TODO: reuse_preds currently does not work with dataset dicts
-    candidates_ensemble = DatasetDict()
-    candidates_ensemble["train"] = ensemble_linker.predict_batch(
-        dataset["train"],
+    candidates_ensemble = ensemble_linker.predict_batch(
+        dataset,
         batch_size,
         k_ensemble,
-        reuse_preds={"sapbert": candidates_sapbert["train"], "ngram": candidates_ngram["train"]},
-    )
-    candidates_ensemble["validation"] = ensemble_linker.predict_batch(
-        dataset["validation"],
-        batch_size,
-        k_ensemble,
-        reuse_preds={"sapbert": candidates_sapbert["validation"], "ngram": candidates_ngram["validation"]},
-    )
-    candidates_ensemble["test"] = ensemble_linker.predict_batch(
-        dataset["test"],
-        batch_size,
-        k_ensemble,
-        reuse_preds={"sapbert": candidates_sapbert["test"], "ngram": candidates_ngram["test"]},
+        reuse_preds={"sapbert": candidates_sapbert, "ngram": candidates_ngram},
     )
 
     test_logger.eval_and_log_at_k("ensemble", candidates_ensemble["test"])
@@ -151,11 +139,13 @@ def main(config) -> None:
     for fold, dataset in enumerate(splits):
         dataset = prepare_data(dataset, config, kb)
 
-        #from xmen.data import Sampler
-        #dataset = Sampler(random_seed=config.random_seed, n=10).transform_batch(dataset)
+        # from xmen.data import Sampler
+        # dataset = Sampler(random_seed=config.random_seed, n=10).transform_batch(dataset)
 
         global val_logger
-        val_logger = EvalLogger(ground_truth=dataset["validation"], file_prefix=f"{fold}-{config.benchmark.name}_validation")
+        val_logger = EvalLogger(
+            ground_truth=dataset["validation"], file_prefix=f"{fold}-{config.benchmark.name}_validation"
+        )
 
         global test_logger
         test_logger = EvalLogger(ground_truth=dataset["test"], file_prefix=f"{fold}-{config.benchmark.name}_test")
