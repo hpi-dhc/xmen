@@ -28,7 +28,7 @@ def log_cuis_stats(dataset, kb):
 
 
 class EvalLogger:
-    """A class for logging evaluation results."""
+    """A helper class for logging evaluation results."""
 
     def __init__(self, ground_truth, file_prefix, ks=[1, 2, 4, 8, 16, 32, 64]) -> None:
         self.ground_truth = ground_truth
@@ -97,7 +97,6 @@ def generate_candidates(dataset, config):
     ensemble_linker.add_linker("ngram", ngram_linker, k=k_ngram)
 
     # Re-use predictions for efficiency
-    # TODO: reuse_preds currently does not work with dataset dicts
     candidates_ensemble = ensemble_linker.predict_batch(
         dataset,
         batch_size,
