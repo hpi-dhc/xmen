@@ -218,7 +218,6 @@ class SapBERTLinker(EntityLinker):
         raise NotImplementedError()
 
     def _get_concepts(self, mention_candidates):
-
         logger.debug(f"Calculate embeddings for {len(mention_candidates)} mentions")
         mention_dense_embeds = SapBERTLinker.model_wrapper.embed_dense(
             mention_candidates,

@@ -135,30 +135,6 @@ def can_write(path: str, parent_overwrite: bool) -> bool:
         return True if overwrite == "y" else False
 
 
-def has_correct_keys(cfg, proper_nested_keys: str) -> bool:
-    """
-    Checks whether the provided configuration dictionary has the specified nested keys.
-
-    Args:
-    - cfg (dict): The configuration dictionary to check.
-    - proper_nested_keys (str): The required nested keys in the configuration, separated by dots.
-
-    Returns:
-    - (bool): True if the dictionary has the required keys, False otherwise.
-    """
-    nested_keys = proper_nested_keys.split(".")
-    for key in nested_keys:
-        if key not in cfg:
-            logger.error(
-                f"The command requires the key `{proper_nested_keys}` to be set in the config .yaml file (in that "
-                "specific nested structure)."
-            )
-            return False
-        cfg = cfg[key]
-    logger.info(f"Key {proper_nested_keys} correctly found in .yaml file.")
-    return True
-
-
 def get_alias_count(concept_details):
     """
     Calculates the total number of aliases in the given concept_details dictionary.
