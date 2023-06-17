@@ -12,7 +12,7 @@ def get_concept_details(cfg) -> dict:
         sep="|",
         names=alph_cols,
         index_col=False,
-        encoding="latin1",
+        encoding="latin1"
     )
 
     # load systematic codes
