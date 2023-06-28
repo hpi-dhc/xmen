@@ -2,11 +2,10 @@
 
 from abc import ABC, abstractmethod
 from datasets.arrow_dataset import Dataset
-import logging
+from pathlib import Path
+from xmen.log import logger
 
 from xmen.reranking import Reranker
-
-logger = logging.getLogger("transformers")
 
 
 class EntityLinker(ABC):
@@ -49,3 +48,20 @@ class RerankedLinker(EntityLinker):
 from .tf_idf_ngram_linker import TFIDFNGramLinker
 from .sap_bert_linker import SapBERTLinker
 from .ensemble import EnsembleLinker
+
+
+def default_ensemble(index_base_path, k_ngram=100, k_sapbert=1000, k_ensemble=64):
+    """
+    Creates the default ensemble candidate generator consisting of equally weighted SapBERT and TF-IDF N-Gram Linker
+    """
+    index_base_path = Path(index_base_path)
+    ngram_linker = TFIDFNGramLinker(index_base_path=index_base_path / "ngrams", k=k_ngram)
+
+    SapBERTLinker.clear()
+    sapbert_linker = SapBERTLinker(index_base_path=index_base_path / "sapbert", k=k_sapbert)
+
+    ensemble = EnsembleLinker()
+    ensemble.add_linker("ngram", ngram_linker, k=k_ngram)
+    ensemble.add_linker("sapbert", sapbert_linker, k=k_sapbert)
+
+    return ensemble
