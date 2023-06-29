@@ -28,9 +28,8 @@ linker:
     ngram:
       index_base_path: ${hydra_work_dir}/index/ngrams/
       k: 100
-
-reranking:
-  k : 64
+  reranking:
+    k : 64
 
 # Benchmark settings
 save_intermediate: True

@@ -24,8 +24,10 @@ def load_dataset(dataset: str, **kwargs):
 def load_bronco_diagnosis(data_dir):
     return _load_bronco("DIAGNOSIS", data_dir)
 
+
 def load_bronco_treatment(data_dir):
     return _load_bronco("TREATMENT", data_dir)
+
 
 def load_bronco_medication(data_dir):
     return _load_bronco("MEDICATION", data_dir)

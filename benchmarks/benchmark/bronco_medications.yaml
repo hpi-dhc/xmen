@@ -2,8 +2,8 @@ base_config: ../benchmark.yaml
 
 name: bronco_medications_benchmark
 
-dataset: bronco_medications
-data_dir: ../../local_files/BRONCO150
+dataset: bronco_medication
+data_dir: ../local_files/BRONCO150
 
 dict:
   custom:

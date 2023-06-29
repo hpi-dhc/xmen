@@ -2,7 +2,6 @@ import hydra
 import os
 from pathlib import Path
 import logging
-from datasets import DatasetDict
 
 from xmen import load_kb
 from xmen.data import get_cuis, CUIReplacer, EmptyNormalizationFilter, ConceptMerger, AbbreviationExpander
@@ -11,7 +10,7 @@ from xmen.linkers.util import filter_and_apply_threshold
 from xmen.reranking.cross_encoder import CrossEncoderTrainingArgs, CrossEncoderReranker
 from xmen.evaluation import evaluate
 
-from dataloaders import load_dataset
+import dataloaders
 
 log = logging.getLogger(__name__)
 
@@ -62,9 +61,10 @@ def prepare_data(dataset, config, kb):
 
     log_cuis_stats(dataset, kb)
 
-    log.info("Replace Retired CUIs")
-    dataset = CUIReplacer(config.benchmark.dict.umls.meta_path).transform_batch(dataset)
-    log_cuis_stats(dataset, kb)
+    if umls := config.benchmark.dict.get("umls", None):
+        log.info("Replace Retired CUIs")
+        dataset = CUIReplacer(umls.meta_path).transform_batch(dataset)
+        log_cuis_stats(dataset, kb)
 
     if config.data.expand_abbreviations:
         dataset = AbbreviationExpander().transform_batch(dataset)
@@ -87,7 +87,7 @@ def generate_candidates(dataset, config):
     val_logger.eval_and_log_at_k("ngram", candidates_ngram["validation"])
 
     log.info("Generating SapBERT candidates")
-    sapbert_linker = SapBERTLinker(**config.linker.candidate_generation.sapbert)
+    sapbert_linker = SapBERTLinker.instance if SapBERTLinker.instance else SapBERTLinker(**config.linker.candidate_generation.sapbert)
     candidates_sapbert = sapbert_linker.predict_batch(dataset, batch_size=batch_size)
 
     test_logger.eval_and_log_at_k("sapbert", candidates_sapbert["test"])
@@ -136,7 +136,7 @@ def main(config) -> None:
     log.info(f"Loaded {dict_name} with {len(kb.cui_to_entity)} concepts and {len(kb.alias_to_cuis)} aliases")
 
     log.info("Loading dataset")
-    splits = load_dataset(config.benchmark.dataset, config.benchmark.get('data_dir', None))
+    splits = dataloaders.load_dataset(config.benchmark.dataset, data_dir=config.benchmark.get("data_dir", None))
     log.info(f"Running on {len(splits)} splits")
     for fold, dataset in enumerate(splits):
         fold_prefix = f"{fold}-{config.benchmark.name}"
@@ -144,9 +144,7 @@ def main(config) -> None:
         dataset = prepare_data(dataset, config, kb)
 
         global val_logger
-        val_logger = EvalLogger(
-            ground_truth=dataset["validation"], file_prefix=f"{fold_prefix}_validation"
-        )
+        val_logger = EvalLogger(ground_truth=dataset["validation"], file_prefix=f"{fold_prefix}_validation")
 
         global test_logger
         test_logger = EvalLogger(ground_truth=dataset["test"], file_prefix=f"{fold_prefix}_test")
@@ -154,32 +152,33 @@ def main(config) -> None:
         candidates = generate_candidates(dataset, config)
 
         # Prepare Dataset
-        candidates = filter_and_apply_threshold(candidates, config.reranking.k, 0.0)
+        candidates = filter_and_apply_threshold(candidates, config.linker.reranking.k, 0.0)
 
         cross_enc_ds = CrossEncoderReranker.prepare_data(candidates, dataset, kb)
 
         train_args = CrossEncoderTrainingArgs(
-            num_train_epochs = 2,
+            num_train_epochs=2,
         )
 
         rr = CrossEncoderReranker()
-        output_dir = output_base_dir / fold_prefix / 'cross_encoder_training'
+        output_dir = output_base_dir / fold_prefix / "cross_encoder_training"
 
         rr.fit(
-            train_dataset = cross_enc_ds['train'].dataset,
-            val_dataset = cross_enc_ds['validation'].dataset,
-            output_dir= output_dir,
-            training_args = train_args,
-            show_progress_bar = False
+            train_dataset=cross_enc_ds["train"].dataset,
+            val_dataset=cross_enc_ds["validation"].dataset,
+            output_dir=output_dir,
+            training_args=train_args,
+            show_progress_bar=False,
         )
 
         rr = CrossEncoderReranker.load(output_dir, device=0)
 
-        cross_enc_pred_val = rr.rerank_batch(candidates['validation'], cross_enc_ds['validation'])
+        cross_enc_pred_val = rr.rerank_batch(candidates["validation"], cross_enc_ds["validation"])
         val_logger.eval_and_log_at_k("cross_encoder", cross_enc_pred_val)
 
-        cross_enc_pred_test = rr.rerank_batch(candidates['test'], cross_enc_ds['test'])
+        cross_enc_pred_test = rr.rerank_batch(candidates["test"], cross_enc_ds["test"])
         test_logger.eval_and_log_at_k("cross_encoder", cross_enc_pred_test)
+
 
 if __name__ == "__main__":
     main()
