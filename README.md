@@ -223,8 +223,6 @@ Sometimes, you want to compare the ensemble performance to individual linkers an
 prediction = ensemble_linker.predict_batch(dataset, 128, 100, reuse_preds={'sapbert' : predictions_sap, 'ngram' : predictions_ngram'})
 ```
 
-Note: `reuse_preds` currently does not support Hugging Face `DatasetDict` objects, so you would have to call it on each split individually.
-
 Example usage: see [notebooks/BioASQ_DisTEMIST.ipynb](notebooks/BioASQ_DisTEMIST.ipynb)
 
 ## 🌀 Rerankers

@@ -1,8 +1,9 @@
-from xmen.data import load_medmentions_full, load_medmentions_st21pv, get_cuis, ConceptMerger
+from xmen.data import get_cuis, ConceptMerger
+from benchmarks.dataloaders import load_medmentions_full, load_medmentions_st21pv
 
 
 def test_medmentions_full_stats():
-    ds = load_medmentions_full()
+    ds = load_medmentions_full()[0]
     ds = ConceptMerger().transform_batch(ds)
 
     assert len(ds["train"]) == 2635
@@ -16,7 +17,7 @@ def test_medmentions_full_stats():
 
 
 def test_medmentions_st21pv_stats():
-    ds = load_medmentions_st21pv()
+    ds = load_medmentions_st21pv()[0]
     ds = ConceptMerger().transform_batch(ds)
 
     assert len(ds["train"]) == 2635
@@ -34,7 +35,7 @@ def test_medmentions_st21pv_stats():
 
 
 def test_overlap():
-    ds = load_medmentions_st21pv()
+    ds = load_medmentions_st21pv()[0]
     ds = ConceptMerger().transform_batch(ds)
 
     train_cuis_set = set(get_cuis(ds["train"]))

@@ -21,6 +21,6 @@ def load_config(file_name):
     path = Path(file_name)
     conf = OmegaConf.load(path)
     if base_config_path := conf.get("base_config", None):
-        base_conf = OmegaConf.load(path.parent / base_config_path)
+        base_conf = load_config(path.parent / base_config_path)
         conf = OmegaConf.merge(base_conf, conf)
     return conf

@@ -1,5 +1,5 @@
 from collections import defaultdict
-import json
+import orjson
 from pathlib import Path
 from typing import List, Union
 import pandas as pd
@@ -7,7 +7,7 @@ from scispacy.linking_utils import KnowledgeBase, Entity
 from collections.abc import Mapping
 
 
-def load_kb(file_path: Union[str, Path]):
+def load_kb(file_path: Union[str, Path]) -> KnowledgeBase:
     return CompositeKnowledgebase([file_path])
 
 
@@ -41,7 +41,7 @@ class CompositeKnowledgebase(KnowledgeBase):
         for file_path, mapper in zip(file_paths, mappers):
             file_path = Path(file_path)
             assert file_path.suffix == ".jsonl"
-            raw = [json.loads(line) for line in open(file_path)]
+            raw = [orjson.loads(line) for line in open(file_path)]
 
             for entry in raw:
                 if mapper:
@@ -53,17 +53,16 @@ class CompositeKnowledgebase(KnowledgeBase):
                 for concept in entry:
                     if type(concept["concept_id"]) == int:
                         concept["concept_id"] = str(concept["concept_id"])
+                    cui = concept["concept_id"]
                     unique_aliases = set(concept["aliases"])
                     if "canonical_name" in concept:
                         unique_aliases.add(concept["canonical_name"])
                     for alias in unique_aliases:
-                        alias_to_cuis[alias].add(concept["concept_id"])
-                    if not concept["concept_id"] in self.cui_to_entity:
-                        self.cui_to_entity[concept["concept_id"]] = Entity(**concept)
+                        alias_to_cuis[alias].add(cui)
+                    if not cui in self.cui_to_entity:
+                        self.cui_to_entity[cui] = Entity(**concept)
                     else:
-                        self.cui_to_entity[concept["concept_id"]] = _merge_entities(
-                            Entity(**concept), self.cui_to_entity[concept["concept_id"]]
-                        )
+                        self.cui_to_entity[cui] = _merge_entities(Entity(**concept), self.cui_to_entity[cui])
 
             self.alias_to_cuis = {**alias_to_cuis}
 
@@ -122,7 +121,7 @@ def create_flat_term_dict(concept_names_jsonl: List[Union[str, Path]], mappers: 
     for jsonl_file, mapper in zip(concept_names_jsonl, mappers):
         with open(jsonl_file) as f:
             for entry in f:
-                entry = json.loads(entry)
+                entry = orjson.loads(entry)
                 if mapper != None:
                     entry = mapper(entry)
                     if not entry:

@@ -1,8 +1,7 @@
 from typing import Dict
 from xmen.linkers import EntityLinker
 from .util import filter_and_apply_threshold
-from datasets import Dataset, utils
-import numpy as np
+from datasets import Dataset, utils, DatasetDict
 import itertools
 
 
@@ -70,7 +69,7 @@ class EnsembleLinker(EntityLinker):
         - a dictionary containing the predicted entities for each document in the dataset
         """
 
-        def merge_linkers(batch, index):
+        def merge_linkers(batch, index, reuse_preds_split=None):
             progress = utils.logging.is_progress_bar_enabled()
             try:
                 mapped = {}
@@ -78,11 +77,10 @@ class EnsembleLinker(EntityLinker):
                     utils.logging.disable_progress_bar()
 
                 for linker_name, linker_fn in self.linkers_fn.items():
-                    if reuse_preds:
-                        linked = reuse_preds[linker_name].select(index)
+                    if reuse_preds_split:
+                        linked = reuse_preds_split[linker_name].select(index)
                     else:
                         linker = linker_fn()
-                        self.get_logger().info(f"Running{linker_name}")
                         linked = linker.predict_batch(Dataset.from_dict(batch), batch_size)
                     mapped[linker_name] = filter_and_apply_threshold(
                         linked,
@@ -128,13 +126,29 @@ class EnsembleLinker(EntityLinker):
                     utils.logging.enable_progress_bar()
             return {"entities": entities}
 
-        return dataset.map(
-            merge_linkers,
-            with_indices=True,
-            batched=True,
-            batch_size=batch_size,
-            load_from_cache_file=False,
-        )
+        if type(dataset) == DatasetDict:
+            return DatasetDict(
+                {
+                    split: dataset[split].map(
+                        lambda b, i: merge_linkers(
+                            b, i, {linker: v[split] for linker, v in reuse_preds.items()} if reuse_preds else None
+                        ),
+                        with_indices=True,
+                        batched=True,
+                        batch_size=batch_size,
+                        load_from_cache_file=False,
+                    )
+                    for split in dataset.keys()
+                }
+            )
+        else:
+            return dataset.map(
+                lambda b, i: merge_linkers(b, i, reuse_preds),
+                with_indices=True,
+                batched=True,
+                batch_size=batch_size,
+                load_from_cache_file=False,
+            )
 
     def predict(self, unit: str, entities: dict) -> dict:
         raise NotImplementedError()

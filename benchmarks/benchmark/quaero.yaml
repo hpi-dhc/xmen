@@ -1,0 +1,24 @@
+base_config: ../benchmark.yaml
+
+name: quaero_benchmark
+
+dataset: quaero
+
+dict:
+  umls:
+    lang: 
+      - fr
+      - en
+    meta_path: ${oc.env:UMLS_HOME}/2014AB/META
+    semantic_groups:
+      - ANAT
+      - CHEM
+      - DEVI
+      - DISO
+      - GEOG
+      - LIVB
+      - OBJC
+      - PHEN
+      - PHYS
+      - PROC
+

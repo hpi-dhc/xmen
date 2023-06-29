@@ -108,7 +108,7 @@ class ScoredCrossEncoder(CrossEncoder):
         optimizer_class: Type[Optimizer] = torch.optim.AdamW,
         optimizer_params: Dict[str, object] = {"lr": 2e-5},
         weight_decay: float = 0.01,
-        score_regularization: bool = True,
+        score_regularization: bool = 1.0,
         train_layers: list = [],
         label_smoothing: float = 0.0,
         evaluation_steps: int = 0,
@@ -207,8 +207,8 @@ class ScoredCrossEncoder(CrossEncoder):
                         if self.config.num_labels == 1:
                             logits = logits.view(-1)
                         loss_value = loss_fct(logits, labels)
-                        if score_regularization:
-                            loss_value += self.score_regularizer(logits, scores)
+                        if score_regularization != 0:
+                            loss_value += score_regularization * self.score_regularizer(logits, scores)
 
                     scale_before_step = scaler.get_scale()
                     scaler.scale(loss_value).backward()
@@ -224,10 +224,8 @@ class ScoredCrossEncoder(CrossEncoder):
                     if self.config.num_labels == 1:
                         logits = logits.view(-1)
                     loss_value = loss_fct(logits, labels)
-                    if score_regularization:
-                        # loss_value = self.score_regularizer(logits, scores)
-                        # Try next: only logits, no softmax
-                        loss_value += self.score_regularizer(logits, scores)
+                    if score_regularization != 0:
+                        loss_value += score_regularization * self.score_regularizer(logits, scores)
                     loss_value.backward()
                     torch.nn.utils.clip_grad_norm_(self.model.parameters(), max_grad_norm)
                     optimizer.step()

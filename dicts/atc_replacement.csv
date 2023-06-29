@@ -1,0 +1,306 @@
+Previous ATC code,Substance name,New ATC code,Year changed
+A01AD02,benzydamine,R02AX03,2018
+A03AE02,tegaserod,A06AX06,2013
+A03AE04,prucalopride,A06AX05,2013
+A10BX04,exenatide,A10BJ01,2017
+A10BX07,liraglutide,A10BJ02,2017
+A10BX09,dapagliflozin,A10BK01,2017
+A10BX10,lixisenatide,A10BJ03,2017
+A10BX11,canagliflozin,A10BK02,2017
+A10BX12,empagliflozin,A10BK03,2017
+A10BX13,albiglutide,A10BJ04,2017
+A10BX14,dulaglutide,A10BJ05,2017
+A11CC07,paricalcitol,H05BX02,2010
+A12AA12,calcium acetate,V03AE07,2016
+B01AC14,anagrelide,L01XX35,2006
+B01AX06,rivaroxaban,B01AF01,2013
+B02AB03,"c1-inhibitor, plasma derived",B06AC01,2012
+B02BC10,"fibrinogen, human",B02BC30,2014
+B02BD09,nonacog alfa,B02BD04,2017
+B02BD12,trenonacog alfa,B02BD04,2017
+B03AB06,ferric citrate,V03AE08,2016
+B03AC01,ferric oxide polymaltose complexes,B03AC,2014
+B03AC02,saccharated iron oxide,B03AC,2014
+B03AC03,iron-sorbitol-citric acid complex,B03AC,2014
+B03AC05,ferric sorbitol gluconic acid complex,B03AC,2014
+B03AC06,ferric oxide dextran complexes,B03AC,2014
+B03AC07,ferric sodium gluconate complex,B03AC,2014
+B06AA11,bromelains,D03BA03,2014
+C01EB12,tedisamil,C01BD06,2009
+C01EB19,icatibant,B06AC02,2012
+C04AX13,piribedil,N04BC08,2006
+C07AA57,sotalol and acetylsalicylic acid,C07FX02,2017
+C07AB52,metoprolol and acetylsalicylic acid,C07FX03,2017
+C07AB57,bisoprolol and acetylsalicylic acid,C07FX04,2017
+C07FA05,propranolol and other combinations,C07FX01,2017
+C07FB02,metoprolol and felodipine,C07FB02,2017
+C07FB02,metoprolol and amlodipine,C07FB13,2017
+C10AA51,"simvastatin, combinations",C10BX01,2006
+C10AA52,"lovastatin, combinations",C10BA01,2006
+C10AA53,"pravastatin, combinations",C10BX02,2006
+C10AA55,"atorvastatin, combinations",C10BX03,2006
+C10AX04,benfluorex,A10BX06,2009
+D03AX07,glyceryl trinitrate,C05AE01,2008
+D03AX08,isosorbide dinitrate,C05AE02,2008
+D11AX14,tacrolimus,D11AH01,2010
+D11AX15,pimecrolimus,D11AH02,2010
+D11AX17,cromoglicic acid,D11AH03,2010
+D11AX19,alitretinoin,D11AH04,2012
+G03AC03,levonorgestrel,G03AD01,2011
+G03DC05,tibolone,G03CX01,2008
+G04BE05,phentolamine,V03AB36,2011
+H01BA06,argipressin,H01BA01,2018
+H01CA03,histrelin,L02AE05,2013
+J01DA01,cefalexin,J01DB01,2005
+J01DA02,cefaloridine,J01DB02,2005
+J01DA03,cefalotin,J01DB03,2005
+J01DA04,cefazolin,J01DB04,2005
+J01DA05,cefoxitin,J01DC01,2005
+J01DA06,cefuroxime,J01DC02,2005
+J01DA07,cefamandole,J01DC03,2005
+J01DA08,cefaclor,J01DC04,2005
+J01DA09,cefadroxil,J01DB05,2005
+J01DA10,cefotaxime,J01DD01,2005
+J01DA11,ceftazidime,J01DD02,2005
+J01DA12,cefsulodin,J01DD03,2005
+J01DA13,ceftriaxone,J01DD04,2005
+J01DA14,cefotetan,J01DC05,2005
+J01DA15,cefazedone,J01DB06,2005
+J01DA16,cefmenoxime,J01DD05,2005
+J01DA17,cefonicid,J01DC06,2005
+J01DA18,latamoxef,J01DD06,2005
+J01DA19,cefotiam,J01DC07,2005
+J01DA21,cefatrizine,J01DB07,2005
+J01DA22,ceftizoxime,J01DD07,2005
+J01DA23,cefixime,J01DD08,2005
+J01DA24,cefepime,J01DE01,2005
+J01DA25,cefodizime,J01DD09,2005
+J01DA26,cefetamet,J01DD10,2005
+J01DA27,cefpiramide,J01DD11,2005
+J01DA30,cefapirin,J01DB08,2005
+J01DA31,cefradine,J01DB09,2005
+J01DA32,cefoperazone,J01DD12,2005
+J01DA33,cefpodoxime,J01DD13,2005
+J01DA34,cefacetrile,J01DB10,2005
+J01DA35,cefroxadine,J01DB11,2005
+J01DA36,ceftezole,J01DB12,2005
+J01DA37,cefpirome,J01DE02,2005
+J01DA38,loracarbef,J01DC08,2005
+J01DA39,ceftibuten,J01DD14,2005
+J01DA40,cefmetazole,J01DC09,2005
+J01DA41,cefprozil,J01DC10,2005
+J01DA42,cefdinir,J01DD15,2005
+J01DA63,"ceftriaxone, combinations",J01DD54,2005
+J01DD54,"ceftriaxone, combinations",J01DD63,2018
+J05AB04,ribavirin,J05AP01,2018
+J05AB54,"ribavirin, combinations",L03AB60,2007
+J05AE06,lopinavir and ritonavir,J05AR10,2013
+J05AE11,telaprevir,J05AP02,2018
+J05AE12,boceprevir,J05AP03,2018
+J05AE13,faldaprevir,J05AP04,2018
+J05AE14,simeprevir,J05AP05,2018
+J05AE15,asunaprevir,J05AP06,2018
+J05AF30,combinations,J05AR,2007
+J05AX08,raltegravir,J05AJ01,2021
+J05AX11,elvitegravir,J05AJ02,2021
+J05AX12,dolutegravir,J05AJ03,2021
+J05AX14,daclatasvir,J05AP07,2018
+J05AX15,sofosbuvir,J05AP08,2018
+J05AX16,dasabuvir,J05AP09,2018
+J05AX65,sofosbuvir and ledipasvir,J05AP51,2018
+J05AX66,"dasabuvir, ombitasvir, paritaprevir and ritonavir",J05AP52,2018
+J05AX67,"ombitasvir, paritaprevir and ritonavir",J05AP53,2018
+J05AX68,elbasvir and grazoprevir,J05AP54,2018
+J05AX69,sofosbuvir and velpatasvir,J05AP55,2018
+J06BB16,palivizumab,J06BD01,2022
+J06BB17,motavizumab,J06BD02,2022
+J06BB18,raxibacumab,J06BC02,2022
+J06BB21,bezlotoxumab,J06BC03,2022
+J06BB22,obiltoxaximab,J06BC04,2022
+J07BX03,covid-19 vaccines,deleted,2023
+L01BA01,methotrexate,L04AX03,2017
+L01EX16,erdafitinib,L01EN01,2022
+L01EX20,pemigatinib,L01EN02,2022
+L01XC01,edrecolomab,L01FX01,2022
+L01XC02,rituximab,L01FA01,2022
+L01XC03,trastuzumab,L01FD01,2022
+L01XC04,alemtuzumab,L04AA34,2015
+L01XC05,gemtuzumab ozogamicin,L01FX02,2022
+L01XC06,cetuximab,L01FE01,2022
+L01XC07,bevacizumab,L01FG01,2022
+L01XC08,panitumumab,L01FE02,2022
+L01XC09,catumaxomab,L01FX03,2022
+L01XC10,ofatumumab,L01FA02,2022
+L01XC11,ipilimumab,L01FX04,2022
+L01XC12,brentuximab vedotin,L01FX05,2022
+L01XC13,pertuzumab,L01FD02,2022
+L01XC14,trastuzumab emtansine,L01FD03,2022
+L01XC15,obinutuzumab,L01FA03,2022
+L01XC16,dinutuximab beta,L01FX06,2022
+L01XC17,nivolumab,L01FF01,2022
+L01XC18,pembrolizumab,L01FF02,2022
+L01XC19,blinatumomab,L01FX07,2022
+L01XC21,ramucirumab,L01FG02,2022
+L01XC22,necitumumab,L01FE03,2022
+L01XC23,elotuzumab,L01FX08,2022
+L01XC24,daratumumab,L01FC01,2022
+L01XC25,mogamulizumab,L01FX09,2022
+L01XC26,inotuzumab ozogamicin,L01FB01,2022
+L01XC27,olaratumab,L01FX10,2022
+L01XC28,durvalumab,L01FF03,2022
+L01XC29,bermekimab,L01FX11,2022
+L01XC31,avelumab,L01FF04,2022
+L01XC32,atezolizumab,L01FF05,2022
+L01XC33,cemiplimab,L01FF06,2022
+L01XC34,moxetumomab pasudotox,L01FB02,2022
+L01XC35,tafasitamab,L01FX12,2022
+L01XC36,enfortumab vedotin,L01FX13,2022
+L01XC37,polatuzumab vedotin,L01FX14,2022
+L01XC38,isatuximab,L01FC02,2022
+L01XC39,belantamab mafodotin,L01FX15,2022
+L01XC40,dostarlimab,L01FF07,2022
+L01XC41,trastuzumab deruxtecan,L01FD04,2022
+L01XC42,prolgolimab,L01FF08,2022
+L01XD02,verteporfin,S01LA01,2007
+L01XE01,imatinib,L01EA01,2021
+L01XE02,gefitinib,L01EB01,2021
+L01XE03,erlotinib,L01EB02,2021
+L01XE04,sunitinib,L01EX01,2021
+L01XE05,sorafenib,L01EX02,2021
+L01XE06,dasatinib,L01EA02,2021
+L01XE07,lapatinib,L01EH01,2021
+L01XE08,nilotinib,L01EA03,2021
+L01XE09,temsirolimus,L01EG01,2021
+L01XE10,everolimus,L01EG02,2021
+L01XE11,pazopanib,L01EX03,2021
+L01XE12,vandetanib,L01EX04,2021
+L01XE13,afatinib,L01EB03,2021
+L01XE14,bosutinib,L01EA04,2021
+L01XE15,vemurafenib,L01EC01,2021
+L01XE16,crizotinib,L01ED01,2021
+L01XE17,axitinib,L01EK01,2021
+L01XE18,ruxolitinib,L01EJ01,2021
+L01XE19,ridaforolimus,L01EG03,2021
+L01XE21,regorafenib,L01EX05,2021
+L01XE22,masitinib,L01EX06,2021
+L01XE23,dabrafenib,L01EC02,2021
+L01XE24,ponatinib,L01EA05,2021
+L01XE25,trametinib,L01EE01,2021
+L01XE26,cabozantinib,L01EX07,2021
+L01XE27,ibrutinib,L01EL01,2021
+L01XE28,ceritinib,L01ED02,2021
+L01XE29,lenvatinib,L01EX08,2021
+L01XE31,nintedanib,L01EX09,2021
+L01XE32,cediranib,L01EK02,2021
+L01XE33,palbociclib,L01EF01,2021
+L01XE34,tivozanib,L01EK03,2021
+L01XE35,osimertinib,L01EB04,2021
+L01XE36,alectinib,L01ED03,2021
+L01XE37,rociletinib,L01EB05,2021
+L01XE38,cobimetinib,L01EE02,2021
+L01XE39,midostaurin,L01EX10,2021
+L01XE40,olmutinib,L01EB06,2021
+L01XE41,binimetinib,L01EE03,2021
+L01XE42,ribociclib,L01EF02,2021
+L01XE43,brigatinib,L01ED04,2021
+L01XE44,lorlatinib,L01ED05,2021
+L01XE45,neratinib,L01EH02,2021
+L01XE46,encorafenib,L01EC03,2021
+L01XE47,dacomitinib,L01EB07,2021
+L01XE48,icotinib,L01EB08,2021
+L01XE50,abemaciclib,L01EF03,2021
+L01XE51,acalabrutinib,L01EL02,2021
+L01XE52,quizartinib,L01EX11,2021
+L01XE53,larotrectinib,L01EX12,2021
+L01XE54,gilteritinib,L01EX13,2021
+L01XE56,entrectinib,L01EX14,2021
+L01XE57,fedratinib,L01EJ02,2021
+L01XX09,miltefosine,P01CX04,2020
+L01XX14,tretinoin,L01XF01,2021
+L01XX17,topotecan,L01CE01,2021
+L01XX19,irinotecan,L01CE02,2021
+L01XX22,alitretinoin,L01XF02,2021
+L01XX25,bexarotene,L01XF03,2021
+L01XX28,imatinib,L01XE01,2007
+L01XX31,gefitinib,L01XE02,2007
+L01XX32,bortezomib,L01XG01,2021
+L01XX34,erlotinib,L01XE03,2007
+L01XX37,sitimagene ceradenovec,L01XL01,2023
+L01XX38,vorinostat,L01XH01,2021
+L01XX39,romidepsin,L01XH02,2021
+L01XX42,panobinostat,L01XH03,2021
+L01XX43,vismodegib,L01XJ01,2021
+L01XX45,carfilzomib,L01XG02,2021
+L01XX46,olaparib,L01XK01,2021
+L01XX47,idelalisib,L01EM01,2021
+L01XX48,sonidegib,L01XJ02,2021
+L01XX49,belinostat,L01XH04,2021
+L01XX50,ixazomib,L01XG03,2021
+L01XX51,talimogene laherparepvec,L01XL02,2023
+L01XX54,niraparib,L01XK02,2021
+L01XX55,rucaparib,L01XK03,2021
+L01XX56,etirinotecan pegol,L01CE03,2021
+L01XX60,talazoparib,L01XK04,2021
+L01XX61,copanlisib,L01EM02,2021
+L01XX63,glasdegib,L01XJ03,2021
+L01XX64,entinostat,L01XH05,2021
+L01XX65,alpelisib,L01EM03,2021
+L01XX68,belotecan,L01CE04,2021
+L01XX70,axicabtagene ciloleucel,L01XL03,2023
+L01XX71,tisagenlecleucel,L01XL04,2023
+L04AA01,ciclosporin,L04AD01,2008
+L04AA05,tacrolimus,L04AD02,2008
+L04AA08,daclizumab,L04AC01,2008
+L04AA09,basiliximab,L04AC02,2008
+L04AA11,etanercept,L04AB01,2008
+L04AA12,infliximab,L04AB02,2008
+L04AA14,anakinra,L04AC03,2008
+L04AA16,afelimomab,L04AB03,2008
+L04AA17,adalimumab,L04AB04,2008
+L04AC06,mepolizumab,R03DX09,2017
+M01AE51,dihydrocodeine and other non-opioid analgesics,N02AJ03,2017
+M01AE51,codeine and ibuprofen,N02AJ08,2017
+N01AB03,methoxyflurane,N02BG09,2009
+N01AX01,droperidol,N05AD08 (existing code),2013
+N02AA09,diamorphine,N07BC06,2013
+N02AA55,oxycodone and paracetamol,N02AJ17,2017
+N02AA55,oxycodone and acetylsalicylic acid,N02AJ18,2017
+N02AA55,oxycodone and ibuprofen,N02AJ19,2017
+N02AA58,dihydrocodeine and paracetamol,N02AJ01,2017
+N02AA58,dihydrocodeine and acetylsalicylic acid,N02AJ02,2017
+N02AA58,dihydrocodeine and other non-opioid analgesics,N02AJ03,2017
+N02AA59,codeine and paracetamol,N02AJ06,2017
+N02AA59,codeine and acetylsalicylic acid,N02AJ07,2017
+N02AA59,codeine and ibuprofen,N02AJ08,2017
+N02AA59,codeine and other non-opioid analgesics,N02AJ09,2017
+N02AX52,tramadol and paracetamol,N02AJ13,2017
+N02BA51,dihydrocodeine and acetylsalicylic acid,N02AJ02,2017
+N02BA51,codeine and acetylsalicylic acid,N02AJ07,2017
+N02BA51,oxycodone and acetylsalicylic acid,N02AJ18,2017
+N02BE51,dihydrocodeine and paracetamol,N02AJ01,2017
+N02BE51,codeine and paracetamol,N02AJ06,2017
+N02BE51,codeine and other non-opioid analgesics,N02AJ09,2017
+N02BE51,oxycodone and paracetamol,N02AJ17,2017
+N02BG11,mirogabalin,N02BF03,2023
+N02CX07,erenumab,N02CD01,2020
+N02CX08,galcanezumab,N02CD02,2020
+N03AX12,gabapentin,N02BF01,2023
+N03AX16,pregabalin,N02BF02,2023
+N05AK01,tetrabenazine,N07XX06,2008
+N05AX09,clotiapine,N05AH06,2010
+N05CM17,melatonin,N05CH01,2008
+N07BA02,bupropion,N06AX12,2009
+N07XX09,dimethyl fumarate,L04AX07,2019
+P01BE52,artemether and lumefantrine,P01BF01,2011
+R03AK03,fenoterol and ipratropium bromide,R03AL01,2014
+R03AK04,salbutamol and ipratropium bromide,R03AL02,2014
+R03AK07,formoterol and beclometasone,R03AK08,2014
+R03AK07,formoterol and mometasone,R03AK09,2014
+R03CA02,ephedrine,C01CA26,2011
+R05CB12,tiopronin,G04BX16,2017
+S01AX11,ofloxacin,S01AE01,2013
+S01AX12,norfloxacin,S01AE02,2013
+S01AX13,ciprofloxacin,S01AE03,2013
+S01AX17,lomefloxacin,S01AE04,2013
+S01AX19,levofloxacin,S01AE05,2013
+S01AX21,gatifloxacin,S01AE06,2013
