@@ -9,7 +9,7 @@ dict:
     custom:
       lang: 
         - es
-      distemist_path: temp/dictionary_distemist.tsv
+      distemist_path: local_files/dictionary_distemist.tsv
   distemist_umls_es:
     umls:
       lang:
@@ -24,8 +24,3 @@ dict:
   distemist_umls_all:
     umls:
       meta_path: ${umls_meta_path}
-
-linker:
-  candidate_generation:
-    ngram: ~
-    sapbert: ~

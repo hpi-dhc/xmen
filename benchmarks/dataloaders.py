@@ -2,8 +2,10 @@ from typing import List, Union
 from pathlib import Path
 import datasets
 
+RANDOM_SEED = 42
 
-def load_dataset(dataset: str):
+
+def load_dataset(dataset: str, **kwargs):
     """
     Loads a dataset using the appropriate data loader function from the xmen package.
 
@@ -16,7 +18,40 @@ def load_dataset(dataset: str):
     import sys
 
     loader_fn = getattr(sys.modules[__name__], f"load_{dataset}")
-    return loader_fn()
+    return loader_fn(**kwargs)
+
+
+def load_bronco_diagnosis(data_dir):
+    return _load_bronco("DIAGNOSIS", data_dir)
+
+def load_bronco_treatment(data_dir):
+    return _load_bronco("TREATMENT", data_dir)
+
+def load_bronco_medication(data_dir):
+    return _load_bronco("MEDICATION", data_dir)
+
+
+def _load_bronco(label: str, data_dir):
+    def filter_entities(bigbio_entities, valid_entities):
+        filtered_entities = []
+        for ent in bigbio_entities:
+            if ent["type"] in valid_entities:
+                filtered_entities.append(ent)
+        return filtered_entities
+
+    bronco = _load_bigbio_dataset(
+        ["bronco_bigbio_kb"], "bronco", lambda _: "de", splits=["train"], data_dir=data_dir
+    ).map(lambda row: {"entities": filter_entities(row["entities"], [label])})["train"]
+
+    res = []
+    for k_test in range(4, -1, -1):
+        k_valid = k_test - 1 if k_test > 0 else 4
+        test_split = bronco.select([k_test])
+        validation_split = bronco.select([k_valid])
+        train_split = bronco.select([i for i in range(0, 5) if i not in [k_valid, k_test]])
+        res.append(datasets.DatasetDict({"train": train_split, "validation": validation_split, "test": test_split}))
+
+    return res
 
 
 def load_mantra_gsc():
@@ -141,7 +176,7 @@ def load_distemist():
     return [ds]
 
 
-def _load_bigbio_dataset(config_names: List[str], dataset_name: str, lang_mapper, splits):
+def _load_bigbio_dataset(config_names: List[str], dataset_name: str, lang_mapper, splits, data_dir=None):
     """
     Loads a biomedical dataset and returns a concatenated dataset for the specified splits.
 
@@ -157,7 +192,7 @@ def _load_bigbio_dataset(config_names: List[str], dataset_name: str, lang_mapper
     # TODO: implement loading all available configs for a dataset
     assert config_names is not None, "Not implemented"
 
-    ds_map = {c: datasets.load_dataset(f"bigscience-biomedical/{dataset_name}", c) for c in config_names}
+    ds_map = {c: datasets.load_dataset(f"bigbio/{dataset_name}", c, data_dir) for c in config_names}
     ds = []
     for conf, ds_dict in ds_map.items():
         for k in ds_dict.keys():

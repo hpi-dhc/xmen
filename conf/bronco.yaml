@@ -4,18 +4,18 @@ dict:
   icd10gm:
     custom:
       # Get from: https://www.bfarm.de/DE/Kodiersysteme/Services/Downloads/_node.html
-      icd10gm_path: temp/icd10gm2017
+      icd10gm_path: local_files/icd10gm2017
       lang:
         - de
   ops:
     custom:
       # Get from: https://www.bfarm.de/DE/Kodiersysteme/Services/Downloads/_node.html
-      ops_path: temp/ops2017
+      ops_path: local_files/ops2017
       lang:
         - de
   atc:
     custom:
       # Get from: https://www.wido.de/publikationen-produkte/arzneimittel-klassifikation/
-      atc_path: temp/atc2017
+      atc_path: local_files/atc2017
       lang:
         - de
