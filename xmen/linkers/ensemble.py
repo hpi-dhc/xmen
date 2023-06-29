@@ -81,7 +81,6 @@ class EnsembleLinker(EntityLinker):
                         linked = reuse_preds_split[linker_name].select(index)
                     else:
                         linker = linker_fn()
-                        self.get_logger().info(f"Running{linker_name}")
                         linked = linker.predict_batch(Dataset.from_dict(batch), batch_size)
                     mapped[linker_name] = filter_and_apply_threshold(
                         linked,
