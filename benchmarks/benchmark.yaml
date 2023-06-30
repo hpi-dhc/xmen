@@ -32,8 +32,14 @@ linker:
       k: 100
   reranking:
     k : 64
+    data:
+      context_length: 128
+      encode_sem_type: True
+    training:
+      num_train_epochs: 10
+      score_regularization: 1.0
+      model_name: bert-base-multilingual-cased
 
-# Benchmark settings
 random_seed: 42
 
 disable_wandb: False
