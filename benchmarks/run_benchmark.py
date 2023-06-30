@@ -131,9 +131,12 @@ def main(config) -> None:
 
     if HydraConfig.get().runtime.choices['hydra/launcher'] == 'local':
         log.info("Running locally")
+        job_id = 'local'
+        hostname = 'local'
     else:
         env = submitit.JobEnvironment()
-        print(env)
+        job_id = env.job_id
+        hostname = env.hostname        
 
     base_path = Path(config.work_dir)
     output_base_dir = Path(config.output)  
@@ -165,6 +168,7 @@ def main(config) -> None:
                 dict_config = OmegaConf.to_container(config, structured_config_mode=SCMode.DICT_CONFIG)            
                 wandb.log(dict_config)
                 wandb.log({'hydra_dir' : os.getcwd()})
+                wandb.log({'job_id' : job_id, 'hostname' : hostname})
             else:
                 eval_callback = None
 
