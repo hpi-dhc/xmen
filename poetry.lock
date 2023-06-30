@@ -440,6 +440,18 @@ files = [
 colorama = {version = "*", markers = "platform_system == \"Windows\""}
 
 [[package]]
+name = "cloudpickle"
+version = "2.2.1"
+description = "Extended pickling support for Python objects"
+category = "dev"
+optional = false
+python-versions = ">=3.6"
+files = [
+    {file = "cloudpickle-2.2.1-py3-none-any.whl", hash = "sha256:61f594d1f4c295fa5cd9014ceb3a1fc4a70b0de1164b94fbc2d854ccba056f9f"},
+    {file = "cloudpickle-2.2.1.tar.gz", hash = "sha256:d89684b8de9e34a2a43b3460fbca07d09d6e25ce858df4d5a44240403b6178f5"},
+]
+
+[[package]]
 name = "colorama"
 version = "0.4.6"
 description = "Cross-platform colored terminal text."
@@ -904,6 +916,22 @@ antlr4-python3-runtime = ">=4.9.0,<4.10.0"
 importlib-resources = {version = "*", markers = "python_version < \"3.9\""}
 omegaconf = ">=2.2,<2.4"
 packaging = "*"
+
+[[package]]
+name = "hydra-submitit-launcher"
+version = "1.2.0"
+description = "Submitit Launcher for Hydra apps"
+category = "dev"
+optional = false
+python-versions = "*"
+files = [
+    {file = "hydra-submitit-launcher-1.2.0.tar.gz", hash = "sha256:e14c8eb46d020fac60ba25f82bcc368dc55851d2683dc95c88631ffcf15e4a34"},
+    {file = "hydra_submitit_launcher-1.2.0-py3-none-any.whl", hash = "sha256:51ce468fbc91211c3a46677eefde94bbb9f721c9545af0be6dd0a95658515613"},
+]
+
+[package.dependencies]
+hydra-core = ">=1.1.0.dev7"
+submitit = ">=1.3.3"
 
 [[package]]
 name = "idna"
@@ -2968,6 +2996,25 @@ files = [
 catalogue = ">=2.0.3,<2.1.0"
 
 [[package]]
+name = "submitit"
+version = "1.4.5"
+description = "\"Python 3.6+ toolbox for submitting jobs to Slurm"
+category = "dev"
+optional = false
+python-versions = ">=3.6"
+files = [
+    {file = "submitit-1.4.5-py3-none-any.whl", hash = "sha256:148022ea179bfebcd85df7fcf741c41c3d803eb2e67c1470f22e8b075c13dca6"},
+    {file = "submitit-1.4.5.tar.gz", hash = "sha256:d12cbbfc98a8c1777c4f6e87f73f063dafdba15653bca2984223b038d41f8223"},
+]
+
+[package.dependencies]
+cloudpickle = ">=1.2.1"
+typing_extensions = ">=3.7.4.2"
+
+[package.extras]
+dev = ["black (==22.3.0)", "coverage[toml] (>=5.1)", "flit (>=3.5.1)", "isort (==5.5.3)", "mypy (>=0.971)", "pre-commit (>=1.15.2)", "pylint (>=2.14.0)", "pytest (>=4.3.0)", "pytest-asyncio (>=0.15.0)", "pytest-cov (>=2.6.1)", "types-pkg_resources (>=0.1.2)"]
+
+[[package]]
 name = "thinc"
 version = "8.1.10"
 description = "A refreshing functional take on deep learning, compatible with your favorite libraries"
@@ -3653,4 +3700,4 @@ testing = ["big-O", "flake8 (<5)", "jaraco.functools", "jaraco.itertools", "more
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.8,<3.11"
-content-hash = "e1d206b668fb62d9a8015e9f9ca17beaad9cdabfed60bf848b8c70cc7786e821"
+content-hash = "23b417d43cb98e8d4e3cd36fa5ed6d79a739abff17656e64ce1a8e8a9ce4c3e0"

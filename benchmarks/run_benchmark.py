@@ -91,8 +91,6 @@ def generate_candidates(dataset, config):
     test_logger.eval_and_log_at_k("ngram", candidates_ngram["test"])
     val_logger.eval_and_log_at_k("ngram", candidates_ngram["validation"])
 
-    return candidates_ngram
-
     log.info("Generating SapBERT candidates")
     sapbert_linker = (
         SapBERTLinker.instance
@@ -125,9 +123,6 @@ def generate_candidates(dataset, config):
 
 @hydra.main(version_base=None, config_path=".", config_name="benchmark.yaml")
 def main(config) -> None:
-    import submitit
-    env = submitit.JobEnvironment()
-    log.info(f"Process ID {os.getpid()} executing task with {env}")
     """Run a benchmark with the given config file."""    
     log.info(f"Running in {os.getcwd()}")
     log.info(f"# CUDA Devices: {torch.cuda.device_count()}")
@@ -183,18 +178,16 @@ def main(config) -> None:
 
             log.info("Training cross encoder (this might take a while...)")
             train_args = CrossEncoderTrainingArgs(
-                num_train_epochs=2,
+                num_train_epochs=10,
                 random_seed=config.random_seed
             )
 
             rr = CrossEncoderReranker()
             output_dir = output_base_dir / fold_prefix / "cross_encoder_training"
 
-
-
             rr.fit(
-                train_dataset=cross_enc_ds["train"].dataset[0:10],
-                val_dataset=cross_enc_ds["validation"].dataset[0:10],
+                train_dataset=cross_enc_ds["train"].dataset,
+                val_dataset=cross_enc_ds["validation"].dataset,
                 output_dir=output_dir,
                 training_args=train_args,
                 show_progress_bar=True,

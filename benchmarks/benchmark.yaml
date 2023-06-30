@@ -1,7 +1,7 @@
 # Hydra settings
 defaults:
   - benchmark: ???
-  - hydra/launcher: local
+  - override hydra/launcher: local
   - _self_
 
 base_dir: ${oc.env:HOME}/runs/xmen/
