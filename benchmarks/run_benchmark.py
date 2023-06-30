@@ -184,12 +184,12 @@ def main(config) -> None:
             candidates = filter_and_apply_threshold(candidates, config.linker.reranking.k, 0.0)
 
             log.info("Preparing data for cross encoder training")
-            cross_enc_ds = CrossEncoderReranker.prepare_data(candidates, dataset, kb)
+            cross_enc_ds = CrossEncoderReranker.prepare_data(candidates, dataset, kb, **config.linker.reranking.data)
 
             log.info("Training cross encoder (this might take a while...)")
             train_args = CrossEncoderTrainingArgs(
-                num_train_epochs=10,
-                random_seed=config.random_seed
+                random_seed=config.random_seed,
+                **config.linker.reranking.training
             )
 
             rr = CrossEncoderReranker()
