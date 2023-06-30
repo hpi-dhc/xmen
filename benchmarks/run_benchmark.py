@@ -1,10 +1,12 @@
 import hydra
+from hydra.core.hydra_config import HydraConfig
 import os
 from pathlib import Path
 import logging
 import dataloaders
 from omegaconf import OmegaConf, SCMode
 import wandb
+import submitit
 import torch
 
 from xmen import load_kb
@@ -127,6 +129,12 @@ def main(config) -> None:
     log.info(f"Running in {os.getcwd()}")
     log.info(f"# CUDA Devices: {torch.cuda.device_count()}")
 
+    if HydraConfig.get().runtime.choices['hydra/launcher'] == 'local':
+        log.info("Running locally")
+    else:
+        env = submitit.JobEnvironment()
+        print(env)
+
     base_path = Path(config.work_dir)
     output_base_dir = Path(config.output)  
 
@@ -168,6 +176,8 @@ def main(config) -> None:
             global test_logger
             test_logger = EvalLogger(ground_truth=dataset["test"], file_prefix=f"{fold_prefix}", split="test", callback=eval_callback)
 
+            dataset.save_to_disk(fold_prefix + "_dataset")
+
             candidates = generate_candidates(dataset, config)
 
             # Prepare Dataset
@@ -195,13 +205,16 @@ def main(config) -> None:
             )
 
             log.info("Running prediction")
+
             rr = CrossEncoderReranker.load(output_dir, device=0)
 
             cross_enc_pred_val = rr.rerank_batch(candidates["validation"], cross_enc_ds["validation"])
             val_logger.eval_and_log_at_k("cross_encoder", cross_enc_pred_val)
+            cross_enc_pred_val.save_to_disk(fold_prefix + '_cross_enc_pred_val')
 
             cross_enc_pred_test = rr.rerank_batch(candidates["test"], cross_enc_ds["test"])
             test_logger.eval_and_log_at_k("cross_encoder", cross_enc_pred_test)
+            cross_enc_pred_test.save_to_disk(fold_prefix + '_cross_enc_pred_test')
         
         finally:
             if run:
