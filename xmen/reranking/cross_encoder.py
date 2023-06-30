@@ -379,7 +379,7 @@ class CrossEncoderReranker(Reranker):
             loss_fct=loss_fct,
             warmup_steps=100,
             output_path=output_dir,
-            callback=callback,
+            callback=None,
             use_amp=training_args["fp16"],
             label_smoothing=training_args["label_smoothing"],
             score_regularization=training_args["score_regularization"],

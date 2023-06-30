@@ -38,6 +38,9 @@ en-core-sci-sm = {url = "https://s3-us-west-2.amazonaws.com/ai2-s2-scispacy/rele
 # TODO: only needed for Mantra benchmark, as dataset is not on HF hub
 bigbio = {git = "https://github.com/bigscience-workshop/biomedical.git", branch="main"}
 
+[tool.poetry.group.dev.dependencies]
+wandb = "^0.15.4"
+
 [build-system]
 requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"

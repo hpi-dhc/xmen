@@ -2,6 +2,10 @@ import hydra
 import os
 from pathlib import Path
 import logging
+import dataloaders
+from omegaconf import OmegaConf, SCMode
+import wandb
+import torch
 
 from xmen import load_kb
 from xmen.data import get_cuis, CUIReplacer, EmptyNormalizationFilter, ConceptMerger, AbbreviationExpander
@@ -10,10 +14,7 @@ from xmen.linkers.util import filter_and_apply_threshold
 from xmen.reranking.cross_encoder import CrossEncoderTrainingArgs, CrossEncoderReranker
 from xmen.evaluation import evaluate
 
-import dataloaders
-
 log = logging.getLogger(__name__)
-
 
 def log_cuis_stats(dataset, kb):
     """Log the number of CUIs in the dataset and the number of missing CUIs compared to the KB."""
@@ -31,11 +32,13 @@ def log_cuis_stats(dataset, kb):
 class EvalLogger:
     """A helper class for logging evaluation results."""
 
-    def __init__(self, ground_truth, file_prefix, ks=[1, 2, 4, 8, 16, 32, 64]) -> None:
+    def __init__(self, ground_truth, split, file_prefix, ks=[1, 2, 4, 8, 16, 32, 64], callback = None) -> None:
         self.ground_truth = ground_truth
         self.ks = ks
-        self.file_prefix = file_prefix
+        self.split = split
+        self.file_prefix = file_prefix + "_" + split
         self.file_name = f"{file_prefix}_results.csv"
+        self.callback = callback
         with open(self.file_name, "w") as f:
             f.write("key,")
             f.write(",".join([f"recall_{k}" for k in ks]))
@@ -46,7 +49,10 @@ class EvalLogger:
         line = key
         for k in self.ks:
             recall = evaluate(self.ground_truth, prediction, top_k_predictions=k)["strict"]["recall"]
-            log.info(f"{key} - {self.file_prefix} - Recall@{k}:{recall}")
+            log_key = f"{key}-{self.file_prefix}-recall@{k}"
+            log.info(f"{log_key}: {recall}")
+            if self.callback:
+                self.callback({f"{self.split}/{key}-recall@{k}" : recall})
             line += f",{recall}"
         with open(self.file_name, "a") as f:
             f.write(line)
@@ -61,7 +67,7 @@ def prepare_data(dataset, config, kb):
 
     log_cuis_stats(dataset, kb)
 
-    if umls := config.benchmark.dict.get("umls", None):
+    if umls := config.dict.get("umls", None):
         log.info("Replace Retired CUIs")
         dataset = CUIReplacer(umls.meta_path).transform_batch(dataset)
         log_cuis_stats(dataset, kb)
@@ -70,7 +76,6 @@ def prepare_data(dataset, config, kb):
         dataset = AbbreviationExpander().transform_batch(dataset)
 
     return dataset
-
 
 def generate_candidates(dataset, config):
     """Generate candidates with n-gram, SapBERT and Ensemble."""
@@ -86,8 +91,14 @@ def generate_candidates(dataset, config):
     test_logger.eval_and_log_at_k("ngram", candidates_ngram["test"])
     val_logger.eval_and_log_at_k("ngram", candidates_ngram["validation"])
 
+    return candidates_ngram
+
     log.info("Generating SapBERT candidates")
-    sapbert_linker = SapBERTLinker.instance if SapBERTLinker.instance else SapBERTLinker(**config.linker.candidate_generation.sapbert)
+    sapbert_linker = (
+        SapBERTLinker.instance
+        if SapBERTLinker.instance
+        else SapBERTLinker(**config.linker.candidate_generation.sapbert)
+    )
     candidates_sapbert = sapbert_linker.predict_batch(dataset, batch_size=batch_size)
 
     test_logger.eval_and_log_at_k("sapbert", candidates_sapbert["test"])
@@ -114,14 +125,17 @@ def generate_candidates(dataset, config):
 
 @hydra.main(version_base=None, config_path=".", config_name="benchmark.yaml")
 def main(config) -> None:
-    """Run a benchmark with the given config file."""
-
+    import submitit
+    env = submitit.JobEnvironment()
+    log.info(f"Process ID {os.getpid()} executing task with {env}")
+    """Run a benchmark with the given config file."""    
     log.info(f"Running in {os.getcwd()}")
+    log.info(f"# CUDA Devices: {torch.cuda.device_count()}")
 
-    base_path = Path(config.hydra_work_dir)
-    output_base_dir = Path(config.output)
+    base_path = Path(config.work_dir)
+    output_base_dir = Path(config.output)  
 
-    dict_name = base_path / f"{config.benchmark.name}.jsonl"
+    dict_name = base_path / f"{config.name}.jsonl"
     if not dict_name.exists():
         log.error(f"{dict_name} does not exist, please run: xmen dict benchmarks/benchmark/<config name>")
         return
@@ -136,48 +150,69 @@ def main(config) -> None:
     log.info(f"Loaded {dict_name} with {len(kb.cui_to_entity)} concepts and {len(kb.alias_to_cuis)} aliases")
 
     log.info("Loading dataset")
-    splits = dataloaders.load_dataset(config.benchmark.dataset, data_dir=config.benchmark.get("data_dir", None))
+    splits = dataloaders.load_dataset(config.dataset, data_dir=config.get("data_dir", None))
     log.info(f"Running on {len(splits)} splits")
     for fold, dataset in enumerate(splits):
-        fold_prefix = f"{fold}-{config.benchmark.name}"
+        fold_prefix = f"{fold}-{config.name}"
+        run = None
+        try:
+            if not config.disable_wandb:
+                run = wandb.init(name=fold_prefix, project='xmen-benchmark')
+                eval_callback = wandb.log
+                dict_config = OmegaConf.to_container(config, structured_config_mode=SCMode.DICT_CONFIG)            
+                wandb.log(dict_config)
+                wandb.log({'hydra_dir' : os.getcwd()})
+            else:
+                eval_callback = None
 
-        dataset = prepare_data(dataset, config, kb)
+            dataset = prepare_data(dataset, config, kb)
 
-        global val_logger
-        val_logger = EvalLogger(ground_truth=dataset["validation"], file_prefix=f"{fold_prefix}_validation")
+            global val_logger
+            val_logger = EvalLogger(ground_truth=dataset["validation"], file_prefix=f"{fold_prefix}", split="validation", callback=eval_callback)
 
-        global test_logger
-        test_logger = EvalLogger(ground_truth=dataset["test"], file_prefix=f"{fold_prefix}_test")
+            global test_logger
+            test_logger = EvalLogger(ground_truth=dataset["test"], file_prefix=f"{fold_prefix}", split="test", callback=eval_callback)
 
-        candidates = generate_candidates(dataset, config)
+            candidates = generate_candidates(dataset, config)
 
-        # Prepare Dataset
-        candidates = filter_and_apply_threshold(candidates, config.linker.reranking.k, 0.0)
+            # Prepare Dataset
+            candidates = filter_and_apply_threshold(candidates, config.linker.reranking.k, 0.0)
 
-        cross_enc_ds = CrossEncoderReranker.prepare_data(candidates, dataset, kb)
+            log.info("Preparing data for cross encoder training")
+            cross_enc_ds = CrossEncoderReranker.prepare_data(candidates, dataset, kb)
 
-        train_args = CrossEncoderTrainingArgs(
-            num_train_epochs=2,
-        )
+            log.info("Training cross encoder (this might take a while...)")
+            train_args = CrossEncoderTrainingArgs(
+                num_train_epochs=2,
+                random_seed=config.random_seed
+            )
 
-        rr = CrossEncoderReranker()
-        output_dir = output_base_dir / fold_prefix / "cross_encoder_training"
+            rr = CrossEncoderReranker()
+            output_dir = output_base_dir / fold_prefix / "cross_encoder_training"
 
-        rr.fit(
-            train_dataset=cross_enc_ds["train"].dataset,
-            val_dataset=cross_enc_ds["validation"].dataset,
-            output_dir=output_dir,
-            training_args=train_args,
-            show_progress_bar=False,
-        )
 
-        rr = CrossEncoderReranker.load(output_dir, device=0)
 
-        cross_enc_pred_val = rr.rerank_batch(candidates["validation"], cross_enc_ds["validation"])
-        val_logger.eval_and_log_at_k("cross_encoder", cross_enc_pred_val)
+            rr.fit(
+                train_dataset=cross_enc_ds["train"].dataset[0:10],
+                val_dataset=cross_enc_ds["validation"].dataset[0:10],
+                output_dir=output_dir,
+                training_args=train_args,
+                show_progress_bar=True,
+                eval_callback=eval_callback
+            )
 
-        cross_enc_pred_test = rr.rerank_batch(candidates["test"], cross_enc_ds["test"])
-        test_logger.eval_and_log_at_k("cross_encoder", cross_enc_pred_test)
+            log.info("Running prediction")
+            rr = CrossEncoderReranker.load(output_dir, device=0)
+
+            cross_enc_pred_val = rr.rerank_batch(candidates["validation"], cross_enc_ds["validation"])
+            val_logger.eval_and_log_at_k("cross_encoder", cross_enc_pred_val)
+
+            cross_enc_pred_test = rr.rerank_batch(candidates["test"], cross_enc_ds["test"])
+            test_logger.eval_and_log_at_k("cross_encoder", cross_enc_pred_test)
+        
+        finally:
+            if run:
+                run.finish()
 
 
 if __name__ == "__main__":
