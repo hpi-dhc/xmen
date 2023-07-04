@@ -1,6 +1,7 @@
 import hydra
 from hydra.core.hydra_config import HydraConfig
 import os
+import sys
 from pathlib import Path
 import logging
 import dataloaders
@@ -8,6 +9,8 @@ from omegaconf import OmegaConf, SCMode
 import wandb
 import submitit
 import torch
+import traceback
+import uuid
 
 from xmen import load_kb
 from xmen.data import get_cuis, CUIReplacer, EmptyNormalizationFilter, ConceptMerger, AbbreviationExpander
@@ -127,109 +130,116 @@ def generate_candidates(dataset, config):
 
 @hydra.main(version_base=None, config_path=".", config_name="benchmark.yaml")
 def main(config) -> None:
-    """Run a benchmark with the given config file."""
-    log.info(f"Running in {os.getcwd()}")
-    log.info(f"# CUDA Devices: {torch.cuda.device_count()}")
+    try:
+        """Run a benchmark with the given config file."""
+        log.info(f"Running in {os.getcwd()}")
+        log.info(f"# CUDA Devices: {torch.cuda.device_count()}")
 
-    if HydraConfig.get().runtime.choices["hydra/launcher"] == "local":
-        log.info("Running locally")
-        job_id = "local"
-        hostname = "local"
-    else:
-        env = submitit.JobEnvironment()
-        job_id = env.job_id
-        hostname = env.hostname
+        if HydraConfig.get().runtime.choices["hydra/launcher"] == "local":
+            log.info("Running locally")
+            job_id = "local"
+            hostname = "local"
+        else:
+            env = submitit.JobEnvironment()
+            job_id = env.job_id
+            hostname = env.hostname
 
-    base_path = Path(config.work_dir)
-    output_base_dir = Path(config.output)
+        base_path = Path(config.work_dir)
+        output_base_dir = Path(config.output) / str(uuid.uuid4())
+        log.info(f"Writing to output dir {output_base_dir}")
 
-    dict_name = base_path / f"{config.name}.jsonl"
-    if not dict_name.exists():
-        log.error(f"{dict_name} does not exist, please run: xmen dict benchmarks/benchmark/<config name>")
-        return
+        dict_name = base_path / f"{config.name}.jsonl"
+        if not dict_name.exists():
+            log.error(f"{dict_name} does not exist, please run: xmen dict benchmarks/benchmark/<config name>")
+            return
 
-    index_base_path = base_path / "index"
-    if not index_base_path.exists():
-        log.error(f"{index_base_path} does not exist, please run: xmen index benchmarks/benchmark/<config name> --all")
-        return
+        index_base_path = base_path / "index"
+        if not index_base_path.exists():
+            log.error(f"{index_base_path} does not exist, please run: xmen index benchmarks/benchmark/<config name> --all")
+            return
 
-    log.info("Loading KB")
-    kb = load_kb(dict_name)
-    log.info(f"Loaded {dict_name} with {len(kb.cui_to_entity)} concepts and {len(kb.alias_to_cuis)} aliases")
+        log.info("Loading KB")
+        kb = load_kb(dict_name)
+        log.info(f"Loaded {dict_name} with {len(kb.cui_to_entity)} concepts and {len(kb.alias_to_cuis)} aliases")
 
-    log.info("Loading dataset")
-    splits = dataloaders.load_dataset(config.dataset, data_dir=config.get("data_dir", None))
-    log.info(f"Running on {len(splits)} splits")
-    for fold, dataset in enumerate(splits):
-        fold_prefix = f"{fold}-{config.name}"
-        run = None
-        try:
-            if not config.disable_wandb:
-                run = wandb.init(name=fold_prefix, project="xmen-benchmark")
-                eval_callback = wandb.log
-                dict_config = OmegaConf.to_container(config, structured_config_mode=SCMode.DICT_CONFIG)
-                wandb.log(dict_config)
-                wandb.log({"hydra_dir": os.getcwd()})
-                wandb.log({"job_id": job_id, "hostname": hostname})
-            else:
-                eval_callback = None
+        log.info("Loading dataset")
+        splits = dataloaders.load_dataset(config.dataset, data_dir=config.get("data_dir", None))
+        log.info(f"Running on {len(splits)} splits")
+        for fold, dataset in enumerate(splits):
+            fold_prefix = f"{fold}-{config.name}"
+            log.info(f"Fold: {fold_prefix}")
+            run = None
+            try:
+                if not config.disable_wandb:
+                    log.info("Initializing Weights & Biases run")
+                    run = wandb.init(name=fold_prefix, project="xmen-benchmark")
+                    eval_callback = run.log
+                    dict_config = OmegaConf.to_container(config, structured_config_mode=SCMode.DICT_CONFIG)
+                    run.log(dict_config)
+                    run.log({"hydra_dir": os.getcwd()})
+                    run.log({"job_id": job_id, "hostname": hostname})
+                else:
+                    eval_callback = None
 
-            dataset = prepare_data(dataset, config, kb)
+                dataset = prepare_data(dataset, config, kb)
 
-            global val_logger
-            val_logger = EvalLogger(
-                ground_truth=dataset["validation"],
-                file_prefix=f"{fold_prefix}",
-                split="validation",
-                callback=eval_callback,
-            )
+                global val_logger
+                val_logger = EvalLogger(
+                    ground_truth=dataset["validation"],
+                    file_prefix=f"{fold_prefix}",
+                    split="validation",
+                    callback=eval_callback,
+                )
 
-            global test_logger
-            test_logger = EvalLogger(
-                ground_truth=dataset["test"], file_prefix=f"{fold_prefix}", split="test", callback=eval_callback
-            )
+                global test_logger
+                test_logger = EvalLogger(
+                    ground_truth=dataset["test"], file_prefix=f"{fold_prefix}", split="test", callback=eval_callback
+                )
 
-            dataset.save_to_disk(fold_prefix + "_dataset")
+                dataset.save_to_disk(fold_prefix + "_dataset")
 
-            candidates = generate_candidates(dataset, config)
+                log.info("Generating candidates")
+                candidates = generate_candidates(dataset, config)
 
-            # Prepare Dataset
-            candidates = filter_and_apply_threshold(candidates, config.linker.reranking.k, 0.0)
+                # Prepare Dataset
+                candidates = filter_and_apply_threshold(candidates, config.linker.reranking.k, 0.0)
 
-            log.info("Preparing data for cross encoder training")
-            cross_enc_ds = CrossEncoderReranker.prepare_data(candidates, dataset, kb, **config.linker.reranking.data)
+                log.info("Preparing data for cross encoder training")
+                cross_enc_ds = CrossEncoderReranker.prepare_data(candidates, dataset, kb, **config.linker.reranking.data)
 
-            log.info("Training cross encoder (this might take a while...)")
-            train_args = CrossEncoderTrainingArgs(random_seed=config.random_seed, **config.linker.reranking.training)
+                log.info("Training cross encoder (this might take a while...)")
+                train_args = CrossEncoderTrainingArgs(random_seed=config.random_seed, **config.linker.reranking.training)
 
-            rr = CrossEncoderReranker()
-            output_dir = output_base_dir / fold_prefix / "cross_encoder_training"
+                rr = CrossEncoderReranker()
+                output_dir = output_base_dir / fold_prefix / "cross_encoder_training"
 
-            rr.fit(
-                train_dataset=cross_enc_ds["train"].dataset,
-                val_dataset=cross_enc_ds["validation"].dataset,
-                output_dir=output_dir,
-                training_args=train_args,
-                show_progress_bar=True,
-                eval_callback=eval_callback,
-            )
+                rr.fit(
+                    train_dataset=cross_enc_ds["train"].dataset,
+                    val_dataset=cross_enc_ds["validation"].dataset,
+                    output_dir=output_dir,
+                    training_args=train_args,
+                    show_progress_bar=True,
+                    eval_callback=eval_callback,
+                )
 
-            log.info("Running prediction")
+                log.info("Running prediction")
 
-            rr = CrossEncoderReranker.load(output_dir, device=0)
+                rr = CrossEncoderReranker.load(output_dir, device=0)
 
-            cross_enc_pred_val = rr.rerank_batch(candidates["validation"], cross_enc_ds["validation"])
-            val_logger.eval_and_log_at_k("cross_encoder", cross_enc_pred_val)
-            cross_enc_pred_val.save_to_disk(fold_prefix + "_cross_enc_pred_val")
+                cross_enc_pred_val = rr.rerank_batch(candidates["validation"], cross_enc_ds["validation"])
+                val_logger.eval_and_log_at_k("cross_encoder", cross_enc_pred_val)
+                cross_enc_pred_val.save_to_disk(fold_prefix + "_cross_enc_pred_val")
 
-            cross_enc_pred_test = rr.rerank_batch(candidates["test"], cross_enc_ds["test"])
-            test_logger.eval_and_log_at_k("cross_encoder", cross_enc_pred_test)
-            cross_enc_pred_test.save_to_disk(fold_prefix + "_cross_enc_pred_test")
+                cross_enc_pred_test = rr.rerank_batch(candidates["test"], cross_enc_ds["test"])
+                test_logger.eval_and_log_at_k("cross_encoder", cross_enc_pred_test)
+                cross_enc_pred_test.save_to_disk(fold_prefix + "_cross_enc_pred_test")
 
-        finally:
-            if run:
-                run.finish()
-
+            finally:
+                if run:
+                    run.finish()
+    except Exception:
+        traceback.print_exc(file=sys.stderr)
+        raise
 
 if __name__ == "__main__":
     main()

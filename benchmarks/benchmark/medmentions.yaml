@@ -1,3 +1,4 @@
+# @package _global_
 base_config: ../benchmark_base.yaml
 
 dataset: medmentions_st21pv
