@@ -5,10 +5,8 @@ _target_: hydra_plugins.hydra_submitit_launcher.submitit_launcher.SlurmLauncher
 submitit_folder: ${hydra.sweep.dir}/.submitit/%j
 timeout_min: 4320
 cpus_per_task: 8
-gpus_per_node: 1
-tasks_per_node: 1
+gpus_per_task: 1
 mem_gb: 64
-nodes: 1
 partition: gpua100
 array_parallelism: 2
 name: xmen-${name}
