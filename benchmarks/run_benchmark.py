@@ -21,6 +21,19 @@ from xmen.evaluation import evaluate
 
 log = logging.getLogger(__name__)
 
+from hydra.core.config_store import ConfigStore
+from hydra.core.plugins import Plugins
+from hydra_plugins.hydra_process_launcher import InProcessLauncher, InProcessQueueConf
+
+Plugins.instance().register(InProcessLauncher)
+
+ConfigStore.instance().store(
+    group="hydra/launcher",
+    name="submitit_inprocess",
+    node=InProcessQueueConf(),
+    provider="submitit_launcher",
+)
+
 
 def log_cuis_stats(dataset, kb):
     """Log the number of CUIs in the dataset and the number of missing CUIs compared to the KB."""
@@ -155,7 +168,9 @@ def main(config) -> None:
 
         index_base_path = base_path / "index"
         if not index_base_path.exists():
-            log.error(f"{index_base_path} does not exist, please run: xmen index benchmarks/benchmark/<config name> --all")
+            log.error(
+                f"{index_base_path} does not exist, please run: xmen index benchmarks/benchmark/<config name> --all"
+            )
             return
 
         log.info("Loading KB")
@@ -205,10 +220,14 @@ def main(config) -> None:
                 candidates = filter_and_apply_threshold(candidates, config.linker.reranking.k, 0.0)
 
                 log.info("Preparing data for cross encoder training")
-                cross_enc_ds = CrossEncoderReranker.prepare_data(candidates, dataset, kb, **config.linker.reranking.data)
+                cross_enc_ds = CrossEncoderReranker.prepare_data(
+                    candidates, dataset, kb, **config.linker.reranking.data
+                )
 
                 log.info("Training cross encoder (this might take a while...)")
-                train_args = CrossEncoderTrainingArgs(random_seed=config.random_seed, **config.linker.reranking.training)
+                train_args = CrossEncoderTrainingArgs(
+                    random_seed=config.random_seed, **config.linker.reranking.training
+                )
 
                 rr = CrossEncoderReranker()
                 output_dir = output_base_dir / fold_prefix / "cross_encoder_training"
@@ -240,6 +259,7 @@ def main(config) -> None:
     except Exception:
         traceback.print_exc(file=sys.stderr)
         raise
+
 
 if __name__ == "__main__":
     main()

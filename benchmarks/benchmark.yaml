@@ -36,7 +36,7 @@ linker:
       context_length: 128
       encode_sem_type: True
     training:
-      num_train_epochs: 10
+      num_train_epochs: 20
       score_regularization: 1.0
       model_name: bert-base-multilingual-cased
 
