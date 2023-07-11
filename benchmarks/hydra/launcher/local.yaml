@@ -1,0 +1,5 @@
+defaults:
+  - submitit_inprocess
+
+_target_: hydra_plugins.hydra_process_launcher.InProcessLauncher
+submitit_folder: ${hydra.sweep.dir}/.submitit/%j

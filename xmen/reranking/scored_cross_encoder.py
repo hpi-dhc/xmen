@@ -116,7 +116,7 @@ class ScoredCrossEncoder(CrossEncoder):
         save_best_model: bool = True,
         max_grad_norm: float = 1,
         use_amp: bool = False,
-        callback: Callable[[float, int, int], None] = None,
+        callback: Callable[[Dict], None] = None,
         show_progress_bar: bool = True,
     ):
         """
@@ -141,8 +141,6 @@ class ScoredCrossEncoder(CrossEncoder):
         :param max_grad_norm: Used for gradient normalization.
         :param use_amp: Use Automatic Mixed Precision (AMP). Only for Pytorch >= 1.6.0
         :param callback: Callback function that is invoked after each evaluation.
-                It must accept the following three parameters in this order:
-                `score`, `epoch`, `steps`
         :param show_progress_bar: If True, output a tqdm progress bar
         """
         train_dataloader.collate_fn = self.smart_batching_collate_with_scores

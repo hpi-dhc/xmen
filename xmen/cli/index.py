@@ -43,7 +43,7 @@ def build_sapbert(cfg: DictConfig, work_dir: Path, dict_dir: Path, gpu_id: int):
     if cfg.get("linker", {}).get("candidate_generation", {}).get("sapbert", {}).get("model_name", {}) == {}:
         model_name = SapBERTLinker.CROSS_LINGUAL  # default model
     else:
-        model_name = cfg.candidate_generation.sapbert.model_name
+        model_name = cfg.linker.candidate_generation.sapbert.model_name
 
     cuda = False if gpu_id == -1 else True
     with torch.cuda.device(gpu_id):

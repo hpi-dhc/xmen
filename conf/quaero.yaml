@@ -18,8 +18,3 @@ dict:
       - PHEN
       - PHYS
       - PROC
-
-linker:
-  candidate_generation:
-    sapbert: ~
-    ngram: ~

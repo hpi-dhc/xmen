@@ -1,0 +1,18 @@
+# @package _global_
+defaults:
+  - _self_
+  - bronco
+
+base_config: bronco.yaml
+
+name: bronco_medications_benchmark
+
+dataset: bronco_medication
+
+dict:
+  custom:
+    # Get from: https://www.wido.de/publikationen-produkte/arzneimittel-klassifikation/
+    atc_path: local_files/atc2017
+    drug_bank_xml: local_files/drugbank/5.1.10/full_database.xml
+    lang:
+      - de
