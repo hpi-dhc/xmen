@@ -1,10 +1,13 @@
 # @package _global_
-base_config: ../benchmark.yaml
+defaults:
+  - _self_
+  - bronco
+
+base_config: bronco.yaml
 
 name: bronco_medications_benchmark
 
 dataset: bronco_medication
-data_dir: ../local_files/BRONCO150
 
 dict:
   custom:

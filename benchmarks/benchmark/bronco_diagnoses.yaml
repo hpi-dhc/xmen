@@ -1,0 +1,17 @@
+# @package _global_
+defaults:
+  - _self_
+  - bronco
+
+base_config: bronco.yaml
+
+name: bronco_diagnoses_benchmark
+
+dataset: bronco_diagnosis
+
+dict:
+  custom:
+    # Get from: https://www.bfarm.de/DE/Kodiersysteme/Services/Downloads/_node.html
+    icd10gm_path: local_files/icd10gm2017
+    lang:
+      - de

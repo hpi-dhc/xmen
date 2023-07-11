@@ -13,7 +13,14 @@ import traceback
 import uuid
 
 from xmen import load_kb
-from xmen.data import get_cuis, CUIReplacer, EmptyNormalizationFilter, ConceptMerger, AbbreviationExpander
+from xmen.data import (
+    get_cuis,
+    CUIReplacer,
+    EmptyNormalizationFilter,
+    ConceptMerger,
+    AbbreviationExpander,
+    SemanticGroupFilter,
+)
 from xmen.linkers import SapBERTLinker, TFIDFNGramLinker, EnsembleLinker
 from xmen.linkers.util import filter_and_apply_threshold
 from xmen.reranking.cross_encoder import CrossEncoderTrainingArgs, CrossEncoderReranker
@@ -51,31 +58,41 @@ def log_cuis_stats(dataset, kb):
 class EvalLogger:
     """A helper class for logging evaluation results."""
 
-    def __init__(self, ground_truth, split, file_prefix, ks=[1, 2, 4, 8, 16, 32, 64], callback=None) -> None:
+    def __init__(
+        self, ground_truth, split, file_prefix, ks=[1, 2, 4, 8, 16, 32, 64], callback=None, subsets=[]
+    ) -> None:
         self.ground_truth = ground_truth
         self.ks = ks
         self.split = split
+        self.subsets = subsets
         self.file_prefix = file_prefix + "_" + split
-        self.file_name = f"{file_prefix}_results.csv"
+        self.file_name = f"{self.file_prefix}_results.csv"
         self.callback = callback
         with open(self.file_name, "w") as f:
-            f.write("key,")
+            f.write("key,subset,")
             f.write(",".join([f"recall_{k}" for k in ks]))
             f.write("\n")
 
     def eval_and_log_at_k(self, key: str, prediction):
         """Evaluate a prediction and log the results at the given k values."""
-        line = key
-        for k in self.ks:
-            recall = evaluate(self.ground_truth, prediction, top_k_predictions=k)["strict"]["recall"]
-            log_key = f"{key}-{self.file_prefix}-recall@{k}"
-            log.info(f"{log_key}: {recall}")
-            if self.callback:
-                self.callback({f"{self.split}/{key}-recall@{k}": recall})
-            line += f",{recall}"
-        with open(self.file_name, "a") as f:
-            f.write(line)
-            f.write("\n")
+        for subset in [None] + self.subsets:
+            subset_key = key + ("_" + subset if subset else "")
+            line = key + "," + (subset if subset else "")
+            gt = self.ground_truth
+            p = prediction
+            if subset:
+                gt = gt.filter(lambda x: x["corpus_id"] == subset)
+                p = p.filter(lambda x: x["corpus_id"] == subset)
+            for k in self.ks:
+                recall = evaluate(gt, p, top_k_predictions=k)["strict"]["recall"]
+                log_key = f"{subset_key}-{self.file_prefix}-recall@{k}"
+                log.info(f"{log_key}: {recall}")
+                if self.callback:
+                    self.callback({f"{self.split}/{subset_key}-recall@{k}": recall})
+                line += f",{recall}"
+            with open(self.file_name, "a") as f:
+                f.write(line)
+                f.write("\n")
 
 
 def prepare_data(dataset, config, kb):
@@ -92,6 +109,7 @@ def prepare_data(dataset, config, kb):
         log_cuis_stats(dataset, kb)
 
     if config.data.expand_abbreviations:
+        log.info("Expanding Abbreviations")
         dataset = AbbreviationExpander().transform_batch(dataset)
 
     return dataset
@@ -178,7 +196,10 @@ def main(config) -> None:
         log.info(f"Loaded {dict_name} with {len(kb.cui_to_entity)} concepts and {len(kb.alias_to_cuis)} aliases")
 
         log.info("Loading dataset")
-        splits = dataloaders.load_dataset(config.dataset, data_dir=config.get("data_dir", None))
+        if data_dir := config.get("data_dir", None):
+            splits = dataloaders.load_dataset(config.dataset, data_dir=data_dir)
+        else:
+            splits = dataloaders.load_dataset(config.dataset)
         log.info(f"Running on {len(splits)} splits")
         for fold, dataset in enumerate(splits):
             fold_prefix = f"{fold}-{config.name}"
@@ -190,6 +211,7 @@ def main(config) -> None:
                     run = wandb.init(name=fold_prefix, project="xmen-benchmark")
                     eval_callback = run.log
                     dict_config = OmegaConf.to_container(config, structured_config_mode=SCMode.DICT_CONFIG)
+                    log.info(dict_config)
                     run.log(dict_config)
                     run.log({"hydra_dir": os.getcwd()})
                     run.log({"job_id": job_id, "hostname": hostname})
@@ -197,6 +219,11 @@ def main(config) -> None:
                     eval_callback = None
 
                 dataset = prepare_data(dataset, config, kb)
+                log.info(dataset)
+
+                subsets = config.get("subsets", [])
+                if subsets:
+                    log.info(f"Considering subsets: {subsets}")
 
                 global val_logger
                 val_logger = EvalLogger(
@@ -204,11 +231,16 @@ def main(config) -> None:
                     file_prefix=f"{fold_prefix}",
                     split="validation",
                     callback=eval_callback,
+                    subsets=subsets,
                 )
 
                 global test_logger
                 test_logger = EvalLogger(
-                    ground_truth=dataset["test"], file_prefix=f"{fold_prefix}", split="test", callback=eval_callback
+                    ground_truth=dataset["test"],
+                    file_prefix=f"{fold_prefix}",
+                    split="test",
+                    callback=eval_callback,
+                    subsets=subsets,
                 )
 
                 dataset.save_to_disk(fold_prefix + "_dataset")
@@ -216,9 +248,19 @@ def main(config) -> None:
                 log.info("Generating candidates")
                 candidates = generate_candidates(dataset, config)
 
-                # Prepare Dataset
+                if config.data.get("filter_semantic_groups", False):
+                    log.info("Filtering semantic groups")
+                    group_filter = SemanticGroupFilter(kb, "v03")
+                    candidates = group_filter.transform_batch(candidates)
+
                 candidates = filter_and_apply_threshold(candidates, config.linker.reranking.k, 0.0)
 
+                test_logger.eval_and_log_at_k("candidates", candidates["test"])
+                val_logger.eval_and_log_at_k("candidates", candidates["validation"])
+
+                candidates.save_to_disk(fold_prefix + "_candidates")
+
+                # Prepare Dataset for Cross Encoder
                 log.info("Preparing data for cross encoder training")
                 cross_enc_ds = CrossEncoderReranker.prepare_data(
                     candidates, dataset, kb, **config.linker.reranking.data

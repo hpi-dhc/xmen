@@ -1,0 +1,17 @@
+# @package _global_
+defaults:
+  - _self_
+  - bronco
+
+base_config: bronco.yaml
+
+name: bronco_treatments_benchmark
+
+dataset: bronco_treatment
+
+dict:
+  custom:
+    # Get from: https://www.bfarm.de/DE/Kodiersysteme/Services/Downloads/_node.html
+    ops_path: local_files/ops2017
+    lang:
+      - de
