@@ -46,8 +46,6 @@ def get_concept_details(cfg) -> dict:
             concept_details[sid] = {"concept_id": sid, "canonical_name": entry.text, "types": [], "aliases": []}
         elif sid in concept_details:
             concept_details[sid]["aliases"].append(entry.text)
-        if entry.type not in concept_details[sid]["types"]:
-            concept_details[sid]["types"].append(entry.type)
 
     # remove all resulting duplicates
     for k, v in concept_details.items():

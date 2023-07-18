@@ -42,6 +42,9 @@ linker:
 random_seed: 42
 
 disable_wandb: False
+wandb_project: xmen
+
+thresholds: [0.01, 0.02, 0.03, 0.04, 0.05]
 
 data:
   expand_abbreviations: True

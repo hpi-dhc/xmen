@@ -9,20 +9,23 @@ from omegaconf import OmegaConf, SCMode
 import wandb
 import submitit
 import torch
+from transformers.trainer_utils import enable_full_determinism
 import traceback
 import uuid
 
 from xmen import load_kb
 from xmen.data import (
     get_cuis,
+    filter_and_apply_threshold,
     CUIReplacer,
     EmptyNormalizationFilter,
+    MissingCUIFilter,
     ConceptMerger,
     AbbreviationExpander,
     SemanticGroupFilter,
+    Sampler,
 )
 from xmen.linkers import SapBERTLinker, TFIDFNGramLinker, EnsembleLinker
-from xmen.linkers.util import filter_and_apply_threshold
 from xmen.reranking.cross_encoder import CrossEncoderTrainingArgs, CrossEncoderReranker
 from xmen.evaluation import evaluate
 
@@ -68,9 +71,12 @@ class EvalLogger:
         self.file_prefix = file_prefix + "_" + split
         self.file_name = f"{self.file_prefix}_results.csv"
         self.callback = callback
+        self.metrics = ["recall", "precision", "fscore"]
         with open(self.file_name, "w") as f:
-            f.write("key,subset,")
-            f.write(",".join([f"recall_{k}" for k in ks]))
+            f.write("key,subset")
+            for k in ks:
+                for m in self.metrics:
+                    f.write(f",{m}_{k}")
             f.write("\n")
 
     def eval_and_log_at_k(self, key: str, prediction):
@@ -84,12 +90,13 @@ class EvalLogger:
                 gt = gt.filter(lambda x: x["corpus_id"] == subset)
                 p = p.filter(lambda x: x["corpus_id"] == subset)
             for k in self.ks:
-                recall = evaluate(gt, p, top_k_predictions=k)["strict"]["recall"]
-                log_key = f"{subset_key}-{self.file_prefix}-recall@{k}"
-                log.info(f"{log_key}: {recall}")
-                if self.callback:
-                    self.callback({f"{self.split}/{subset_key}-recall@{k}": recall})
-                line += f",{recall}"
+                for metric in self.metrics:
+                    res = evaluate(gt, p, top_k_predictions=k)["strict"][metric]
+                    log_key = f"{subset_key}-{self.file_prefix}-{metric}@{k}"
+                    log.info(f"{log_key}: {res}")
+                    if self.callback:
+                        self.callback({f"{self.split}/{subset_key}-{metric}@{k}": res})
+                    line += f",{res}"
             with open(self.file_name, "a") as f:
                 f.write(line)
                 f.write("\n")
@@ -106,6 +113,11 @@ def prepare_data(dataset, config, kb):
     if umls := config.dict.get("umls", None):
         log.info("Replace Retired CUIs")
         dataset = CUIReplacer(umls.meta_path).transform_batch(dataset)
+        log_cuis_stats(dataset, kb)
+
+    if config.data.get("ignore_missing_cuis", False):
+        log.info("Ignoring entities missing CUIs")
+        dataset = MissingCUIFilter(kb).transform_batch(dataset)
         log_cuis_stats(dataset, kb)
 
     if config.data.expand_abbreviations:
@@ -166,6 +178,8 @@ def main(config) -> None:
         log.info(f"Running in {os.getcwd()}")
         log.info(f"# CUDA Devices: {torch.cuda.device_count()}")
 
+        enable_full_determinism(config.random_seed)
+
         if HydraConfig.get().runtime.choices["hydra/launcher"] == "local":
             log.info("Running locally")
             job_id = "local"
@@ -202,13 +216,17 @@ def main(config) -> None:
             splits = dataloaders.load_dataset(config.dataset)
         log.info(f"Running on {len(splits)} splits")
         for fold, dataset in enumerate(splits):
+            if sample := config.get("sample", None):
+                log.info(f"Sampling {sample} examples")
+                dataset = Sampler(config.random_seed, n=sample).transform_batch(dataset)
+
             fold_prefix = f"{fold}-{config.name}"
             log.info(f"Fold: {fold_prefix}")
             run = None
             try:
                 if not config.disable_wandb:
                     log.info("Initializing Weights & Biases run")
-                    run = wandb.init(name=fold_prefix, project="xmen-benchmark")
+                    run = wandb.init(name=fold_prefix, project=config.wandb_project)
                     eval_callback = run.log
                     dict_config = OmegaConf.to_container(config, structured_config_mode=SCMode.DICT_CONFIG)
                     log.info(dict_config)
@@ -294,6 +312,15 @@ def main(config) -> None:
                 cross_enc_pred_test = rr.rerank_batch(candidates["test"], cross_enc_ds["test"])
                 test_logger.eval_and_log_at_k("cross_encoder", cross_enc_pred_test)
                 cross_enc_pred_test.save_to_disk(fold_prefix + "_cross_enc_pred_test")
+
+                if thresholds := config.get("thresholds", None):
+                    for t in thresholds:
+                        log.info(f"Thresholding at {t}")
+                        cross_enc_pred_val_t = filter_and_apply_threshold(cross_enc_pred_val, k=1, threshold=t)
+                        val_logger.eval_and_log_at_k(f"cross_encoder_t_{t}", cross_enc_pred_val_t)
+
+                        cross_enc_pred_test_t = filter_and_apply_threshold(cross_enc_pred_test, k=1, threshold=t)
+                        test_logger.eval_and_log_at_k(f"cross_encoder_t_{t}", cross_enc_pred_test_t)
 
             finally:
                 if run:

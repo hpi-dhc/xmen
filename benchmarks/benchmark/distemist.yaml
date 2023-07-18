@@ -12,3 +12,12 @@ dict:
       - en
     distemist_path: local_files/dictionary_distemist.tsv
     umls_meta_path: ${oc.env:UMLS_HOME}/2022AA/META
+
+linker:
+  reranking:
+    training:
+      model_name: PlanTL-GOB-ES/roberta-base-biomedical-clinical-es
+
+data:
+  # DisTEMIST test set has some invalid CUIs, which were not part of the shared task evaluation
+  ignore_missing_cuis: True

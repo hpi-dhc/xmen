@@ -5,17 +5,20 @@ import datasets
 RANDOM_SEED = 42
 
 
-def load_dataset(dataset: str, **kwargs):
+def load_dataset(dataset: Union[str, Path], **kwargs):
     """
     Loads a dataset using the appropriate data loader function from the xmen package.
 
     Args:
-    - dataset (str): Name of the dataset to be loaded.
+    - dataset (str | Path): Name or path of the dataset to be loaded.
 
     Returns:
     - The loaded dataset.
     """
     import sys
+
+    if Path(dataset).exists():
+        return [datasets.load_from_disk(dataset)]
 
     loader_fn = getattr(sys.modules[__name__], f"load_{dataset}")
     return loader_fn(**kwargs)

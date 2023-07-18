@@ -1,6 +1,6 @@
 from typing import Dict
 from xmen.linkers import EntityLinker
-from .util import filter_and_apply_threshold
+from xmen.data import filter_and_apply_threshold
 from datasets import Dataset, utils, DatasetDict
 import itertools
 

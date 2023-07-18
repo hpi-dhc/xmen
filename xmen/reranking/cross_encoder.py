@@ -10,15 +10,9 @@ from xmen.reranking import Reranker
 from xmen.reranking.scored_cross_encoder import ScoredInputExample, ScoredCrossEncoder
 from xmen.reranking.ranking_util import get_flat_candidate_ds
 
-from sentence_transformers.readers import InputExample
 from sentence_transformers.cross_encoder import CrossEncoder
-from torch.utils.data import DataLoader
 
 from transformers.trainer_utils import set_seed
-
-from sentence_transformers.cross_encoder.evaluation import (
-    CEBinaryClassificationEvaluator,
-)
 
 from datasets import DatasetDict
 from xmen.data import IndexedDatasetDict, IndexedDataset
@@ -311,7 +305,6 @@ class CrossEncoderReranker(Reranker):
         output_dir: Union[str, Path] = "./output/cross_encoder",
         train_continue=False,
         loss_fct=None,
-        callback=None,
         add_special_tokens=True,
         max_length=512,
         eval_callback=None,
@@ -328,7 +321,6 @@ class CrossEncoderReranker(Reranker):
         - train_continue (bool, optional): If True, the training will be continued from the current state of the model. Defaults to False.
         - softmax_loss (bool, optional): If True, uses CrossEntropyLoss as the loss function. Otherwise, no loss function is used. Defaults to True.
         - loss_fct (optional): The loss function to be used. If None, the function will be automatically set based on the value of softmax_loss. Defaults to None.
-        - callback (optional): A callback function to be called at the end of each epoch. Defaults to None.
         - add_special_tokens (bool, optional): If True, additional special tokens are added to the tokenizer. Defaults to True.
         - max_length (int, optional): The maximum length of the input sequence. Defaults to 512.
         - fp16 (bool, optional): If True, uses mixed-precision training. Defaults to False.
@@ -452,8 +444,7 @@ class EntityLinkingEvaluator:
 
             for scores, batch in zip(pred_scores, self.el_dataset):
                 labels = np.array([b.label for b in batch])
-                pred_index = scores.argmax()
-                pred_indices = scores.argsort()[-1::-1]
+                pred_indices = scores.argsort(kind="stable")[-1::-1]
                 top_k = pred_indices[0:k]
                 ground_truth = labels.argmax() if (labels > 0).any() else -1
 

@@ -6,8 +6,8 @@ name: quaero_benchmark
 dataset: quaero
 
 subsets:
-  - quaero_emea_bigbio_kb
   - quaero_medline_bigbio_kb
+  - quaero_emea_bigbio_kb  
 
 dict:
   umls:
@@ -26,6 +26,12 @@ dict:
       - PHEN
       - PHYS
       - PROC
+
+
+linker:
+  reranking:
+    training:
+      model_name: Dr-BERT/DrBERT-4GB-CP-PubMedBERT
 
 data:
   filter_semantic_groups: True
