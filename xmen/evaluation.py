@@ -275,7 +275,7 @@ def evaluate(
     ground_truth: Iterable,
     prediction: Iterable,
     allow_multiple_gold_candidates=False,
-    top_k_predictions=None,
+    top_k_predictions=1,
     threshold=None,
     ner_only=False,
     metrics=["strict"],
@@ -289,7 +289,7 @@ def evaluate(
     - allow_multiple_gold_candidates: A boolean indicating whether multiple
             gold standard candidates are allowed for each annotation. Defaults to False.
     - top_k_predictions: An integer indicating the maximum number of predicted
-            candidates to consider for each annotation. Defaults to None.
+            candidates to consider for each annotation. Defaults to 1.
     - threshold: A float indicating the minimum confidence threshold to consider
             for each predicted candidate. Defaults to None.
     - ner_only: A boolean indicating whether to only consider NER tags. Defaults to False.

@@ -139,7 +139,7 @@ def test_multiple_candidates():
         )
     ]
 
-    metrics = evaluation.evaluate(gt, pred, metrics="all")
+    metrics = evaluation.evaluate(gt, pred, metrics="all", top_k_predictions=None)
     assert metrics["strict"]["precision"] == 0.5
     assert metrics["strict"]["recall"] == 1.0
     assert metrics["strict"]["fscore"] == 2 / 3
@@ -174,7 +174,7 @@ def test_multiple_candidates_predictions():
             ]
         )
     ]
-    metrics = evaluation.evaluate(gt, pred, metrics="all")
+    metrics = evaluation.evaluate(gt, pred, metrics="all", top_k_predictions=None)
     assert metrics["strict"]["precision"] == 0.5
     assert metrics["strict"]["recall"] == 1
     assert metrics["strict"]["fscore"] == 2 / 3

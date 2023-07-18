@@ -22,7 +22,7 @@ def test_stats():
 def test_evaluation_identity():
     pred = CopyLinker().predict_batch(mantra_ds["train"])
 
-    metrics = evaluation.evaluate(mantra_ds["train"], pred, allow_multiple_gold_candidates=False, metrics=ALL_METRICS)
+    metrics = evaluation.evaluate(mantra_ds["train"], pred, allow_multiple_gold_candidates=False, metrics=ALL_METRICS, top_k_predictions=None)
 
     for m in ["strict", "partial", "loose"]:
         n_annotations = metrics[m]["n_annos_gold"]
