@@ -23,10 +23,12 @@ def get_concept_details(cfg) -> dict:
     syst_cols[4] = "code2"
     syst_cols[5] = "code3"
     syst = pd.read_csv(f"{path}/p1smt2017/Klassifikationsdateien/ops2017syst_kodes.txt", sep=";", names=syst_cols)
-    
+
     # load 3 digit codes
     dreisteller_cols = ["Kapitelnummer", "code1", "code", "text"]
-    dreisteller = pd.read_csv(f"{path}/p1smt2017/Klassifikationsdateien/ops2017syst_dreisteller.txt", sep=";", names=dreisteller_cols)
+    dreisteller = pd.read_csv(
+        f"{path}/p1smt2017/Klassifikationsdateien/ops2017syst_dreisteller.txt", sep=";", names=dreisteller_cols
+    )
 
     # get all concepts from alphabetic (they have aliases and "s.a.", etc.)
     concept_details = {}
@@ -46,7 +48,7 @@ def get_concept_details(cfg) -> dict:
         elif sid in concept_details:
             if not entry.text in concept_details[sid]["aliases"]:
                 concept_details[sid]["aliases"].append(entry.text)
-                
+
     # get from systematic the concepts whose codes are only there and not in alphabetic
     for _, entry in dreisteller.iterrows():
         sid = entry.code
