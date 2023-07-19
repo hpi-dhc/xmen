@@ -45,6 +45,8 @@ class SemanticGroupFilter:
         entities = example["entities"]
         for e in entities:
             sem_groups = e["type"]
+            if not isinstance(sem_groups, list):
+                sem_groups = [sem_groups]
             filtered = []
             for n in e["normalized"]:
                 concept_groups = self.get_sem_groups(n["db_id"])
