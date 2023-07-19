@@ -15,7 +15,7 @@ from sentence_transformers.cross_encoder import CrossEncoder
 from transformers.trainer_utils import set_seed
 
 from datasets import DatasetDict
-from xmen.data import IndexedDatasetDict, IndexedDataset
+from xmen.data import IndexedDatasetDict, IndexedDataset, Deduplicator
 
 import logging
 from sentence_transformers import LoggingHandler
@@ -393,11 +393,12 @@ class CrossEncoderReranker(Reranker):
         - A dataset of re-ranked candidates.
         """
         predictions = _cross_encoder_predict(self.model, cross_enc_dataset.dataset, show_progress_bar, convert_to_numpy)
-        return candidates.map(
+        reranked = candidates.map(
             lambda d, i: rerank(d, i, cross_enc_dataset.index, predictions),
             with_indices=True,
             load_from_cache_file=False,
         )
+        return Deduplicator().transform_batch(reranked)
 
 
 class EntityLinkingEvaluator:

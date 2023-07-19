@@ -79,7 +79,7 @@ def _get_error_df(gt_ents: list, pred_ents: list, allow_multiple_gold_candidates
                 e["text"],
                 e["type"],
             )
-            for e in entities
+            for e in sorted(entities, key=lambda e: e['offsets'])
         ]
 
     gt_items = get_items(gt_ents)
@@ -367,7 +367,7 @@ def _to_nel_eval(
     - An iterable of Document objects in neleval format.
     """
     for u in units:
-        entities = u["entities"]
+        entities = sorted(u["entities"], key=lambda e: e['offsets'])
         unit_id = u.get("corpus_id", "") + u["document_id"]
         annotations = []
         for e in entities:
