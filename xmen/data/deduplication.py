@@ -2,7 +2,7 @@ from itertools import groupby
 
 class Deduplicator():
     
-    def _deduplicate(document):
+    def _deduplicate(self, document):
         result = []
         sorted_ents = sorted(document['entities'], key=lambda e: e['offsets'])
         for o, grp in groupby(sorted_ents, lambda e: e['offsets']):
