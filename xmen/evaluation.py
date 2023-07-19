@@ -92,9 +92,9 @@ def _get_error_df(gt_ents: list, pred_ents: list, allow_multiple_gold_candidates
         if len(group) == 1:
             pred_items.append(group[0])
         else:
-            def match_indices(pred_normalized):
+            def best_match_index(pred_normalized):
                 matches = [g for g in gt_items if (g[0], g[1], g[3], g[4]) == key]
-                best_match = len(matches)
+                best_match = len(pred_normalized)
                 best_index = len(pred_normalized)
                 for i, m in enumerate(matches):
                     for j, p in enumerate(pred_normalized):
@@ -103,8 +103,19 @@ def _get_error_df(gt_ents: list, pred_ents: list, allow_multiple_gold_candidates
                                 best_index = j
                                 best_match = i
                 return best_match
-
-            matched = sorted(group, key=lambda pred: match_indices(pred[2]))
+            best_match_indices = sorted([(pred, best_match_index(pred[2])) for pred in group ], key=lambda t: t[1])
+            matched = [None] * len(best_match_indices)
+            for p, i in best_match_indices:
+                if i < len(matched) and matched[i] == None:
+                    matched[i] = p
+                else:
+                    found = False
+                    for j in range(len(matched)):
+                        if not found and matched[j] == None:
+                            matched[j] = p
+                            found = True
+                    assert found == True
+            
             pred_items.extend(matched)
     assert len(pred_items) == len(pred_items_unmatched)
 
