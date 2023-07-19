@@ -4,8 +4,9 @@ class Deduplicator():
     
     def _deduplicate(self, document):
         result = []
-        sorted_ents = sorted(document['entities'], key=lambda e: e['offsets'])
-        for o, grp in groupby(sorted_ents, lambda e: e['offsets']):
+        grp_key = lambda e: (e['offsets'], e['type'], e['text'])
+        sorted_ents = sorted(document['entities'], key=grp_key)
+        for _, grp in groupby(sorted_ents, grp_key):
             for i, g in enumerate(grp):
                 g['normalized'] = g['normalized'][i:]
                 result.append(g)

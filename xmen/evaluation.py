@@ -79,7 +79,7 @@ def _get_error_df(gt_ents: list, pred_ents: list, allow_multiple_gold_candidates
                 e["text"],
                 e["type"],
             )
-            for e in sorted(entities, key=lambda e: e['offsets'])
+            for e in sorted(entities, key=lambda e: (e['offsets'], e['type'], e['text']))
         ]
 
     gt_items = get_items(gt_ents)
