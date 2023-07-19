@@ -177,8 +177,17 @@ def load_distemist():
 
     ds["train"] = ds_train
     ds["validation"] = ds_valid
+    
+    def unmerge_multi_annotations(document):
+        entities = []
+        for e in document['entities']:
+            for n in e['normalized']:
+                en = e.copy()
+                en['normalized'] = [n]
+                entities.append(en)
+        return { "entities" : entities }
 
-    return [ds]
+    return [ds.map(unmerge_multi_annotations)]
 
 
 def _load_bigbio_dataset(config_names: List[str], dataset_name: str, lang_mapper, splits, data_dir=None):

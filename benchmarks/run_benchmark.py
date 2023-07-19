@@ -20,7 +20,6 @@ from xmen.data import (
     CUIReplacer,
     EmptyNormalizationFilter,
     MissingCUIFilter,
-    ConceptMerger,
     AbbreviationExpander,
     SemanticGroupFilter,
     Sampler,
@@ -106,7 +105,7 @@ def prepare_data(dataset, config, kb):
     """Prepare the dataset for the benchmark."""
 
     log.info("Filtering empty concept IDs")
-    dataset = EmptyNormalizationFilter().transform_batch(ConceptMerger().transform_batch(dataset))
+    dataset = EmptyNormalizationFilter().transform_batch(dataset)
 
     log_cuis_stats(dataset, kb)
 
