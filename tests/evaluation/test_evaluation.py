@@ -380,3 +380,37 @@ def test_multiple_candidates_top_2():
         assert metrics["strict"]["fp"] == 1, m
         assert metrics["strict"]["rtp"] == 1, m
         assert metrics["strict"]["fn"] == 0, m
+
+def test_error_analysis():
+    gt = [
+        make_document(
+        [
+            Entity([[11, 17]], "entity", concepts=[Concept("c1", db_name="UMLS")]),
+            Entity([[11, 17]], "entity", concepts=[Concept("c2", db_name="UMLS")])
+        ])
+        ]
+    pred = [
+        make_document(
+        [
+            Entity([[11, 17]], "entity", concepts=[Concept("c1", db_name="UMLS")]),
+            Entity([[11, 17]], "entity", concepts=[Concept("c2", db_name="UMLS")])
+        ])
+    ]
+    assert (evaluation.entity_linking_error_analysis(gt, pred).pred_index == 0).all()
+
+def test_error_analysis_order():
+    gt = [
+        make_document(
+        [
+            Entity([[11, 17]], "entity", concepts=[Concept("c2", db_name="UMLS")]),
+            Entity([[11, 17]], "entity", concepts=[Concept("c1", db_name="UMLS")])
+        ])
+        ]
+    pred = [
+        make_document(
+        [
+            Entity([[11, 17]], "entity", concepts=[Concept("c1", db_name="UMLS")]),
+            Entity([[11, 17]], "entity", concepts=[Concept("c2", db_name="UMLS")])
+        ])
+    ]
+    assert (evaluation.entity_linking_error_analysis(gt, pred).pred_index == 0).all()

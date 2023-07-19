@@ -83,12 +83,52 @@ def _get_error_df(gt_ents: list, pred_ents: list, allow_multiple_gold_candidates
         ]
 
     gt_items = get_items(gt_ents)
-    pred_items = get_items(pred_ents)
+    pred_items_unmatched = get_items(pred_ents)
+
+    # If we have entities with multiple normalizations, we want to order by best match order
+    pred_items = []
+    for key, group in groupby(pred_items_unmatched, lambda x: (x[0], x[1], x[3], x[4])):        
+        group = list(group)
+        if len(group) == 1:
+            pred_items.append(group[0])
+        else:
+            def match_indices(pred_normalized):
+                matches = [g for g in gt_items if (g[0], g[1], g[3], g[4]) == key]
+                best_match = len(matches)
+                best_index = len(pred_normalized)
+                for i, m in enumerate(matches):
+                    for j, p in enumerate(pred_normalized):
+                        if p["db_id"] == m[2][0]["db_id"]:
+                            if j < best_index:
+                                best_index = j
+                                best_match = i
+                return best_match
+
+            matched = sorted(group, key=lambda pred: match_indices(pred[2]))
+            pred_items.extend(matched)
+    assert len(pred_items) == len(pred_items_unmatched)
 
     ent_res = []
 
-    def record_match(pred_s, pred_e, pred_c, pred_text, pred_type, gt_s, gt_e, gt_c, gt_text, gt_type, e_match_type):
-        if not gt_c:
+    def record_match(pred_s : int, pred_e : int, pred_c, pred_text, pred_type, gt_s, gt_e, gt_c, gt_text, gt_type, e_match_type):
+        if not gt_c: # false positive
+            ent_res.append(
+                {
+                    "pred_start": pred_s,
+                    "pred_end": pred_e,
+                    "pred_text": pred_text,
+                    "gt_start": None,
+                    "gt_end": None,
+                    "gt_text": None,
+                    "entity_match_type": e_match_type,
+                    "gold_concept": None,
+                    "gold_type": None,
+                    "pred_index": -1,
+                    "pred_index_score": None,
+                    "pred_top": None,
+                    "pred_top_score": None,
+                }
+            )
             return
 
         def get_match_result(gt_concept):
@@ -158,10 +198,11 @@ def _get_error_df(gt_ents: list, pred_ents: list, allow_multiple_gold_candidates
                 pred_c,
                 pred_text,
                 pred_type,
-                gt_s,
-                gt_e,
-                gt_c,
-                gt_text,
+                -1,
+                -1,
+                None,
+                None,
+                None,
                 e_match_type,
             )
         elif not pred_items:
