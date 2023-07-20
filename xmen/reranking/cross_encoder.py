@@ -398,8 +398,7 @@ class CrossEncoderReranker(Reranker):
             with_indices=True,
             load_from_cache_file=False,
         )
-        return reranked
-        #return Deduplicator().transform_batch(reranked)
+        return Deduplicator().transform_batch(reranked)
 
 
 class EntityLinkingEvaluator:

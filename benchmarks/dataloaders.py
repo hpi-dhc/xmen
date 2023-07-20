@@ -177,15 +177,15 @@ def load_distemist():
 
     ds["train"] = ds_train
     ds["validation"] = ds_valid
-    
+
     def unmerge_multi_annotations(document):
         entities = []
-        for e in document['entities']:
-            for n in e['normalized']:
+        for e in document["entities"]:
+            for n in e["normalized"]:
                 en = e.copy()
-                en['normalized'] = [n]
+                en["normalized"] = [n]
                 entities.append(en)
-        return { "entities" : entities }
+        return {"entities": entities}
 
     return [ds.map(unmerge_multi_annotations)]
 

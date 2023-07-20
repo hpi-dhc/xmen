@@ -79,7 +79,7 @@ def _get_error_df(gt_ents: list, pred_ents: list, allow_multiple_gold_candidates
                 e["text"],
                 e["type"],
             )
-            for e in sorted(entities, key=lambda e: (e['offsets'], e['type'], e['text']))
+            for e in sorted(entities, key=lambda e: (e["offsets"], e["type"], e["text"]))
         ]
 
     gt_items = get_items(gt_ents)
@@ -87,11 +87,12 @@ def _get_error_df(gt_ents: list, pred_ents: list, allow_multiple_gold_candidates
 
     # If we have entities with multiple normalizations, we want to order by best match order
     pred_items = []
-    for key, group in groupby(pred_items_unmatched, lambda x: (x[0], x[1], x[3], x[4])):        
+    for key, group in groupby(pred_items_unmatched, lambda x: (x[0], x[1], x[3], x[4])):
         group = list(group)
         if len(group) == 1:
             pred_items.append(group[0])
         else:
+
             def best_match_index(pred_normalized):
                 matches = [g for g in gt_items if (g[0], g[1], g[3], g[4]) == key]
                 best_match = len(pred_normalized)
@@ -103,7 +104,8 @@ def _get_error_df(gt_ents: list, pred_ents: list, allow_multiple_gold_candidates
                                 best_index = j
                                 best_match = i
                 return best_match
-            best_match_indices = sorted([(pred, best_match_index(pred[2])) for pred in group ], key=lambda t: t[1])
+
+            best_match_indices = sorted([(pred, best_match_index(pred[2])) for pred in group], key=lambda t: t[1])
             matched = [None] * len(best_match_indices)
             for p, i in best_match_indices:
                 if i < len(matched) and matched[i] == None:
@@ -115,14 +117,16 @@ def _get_error_df(gt_ents: list, pred_ents: list, allow_multiple_gold_candidates
                             matched[j] = p
                             found = True
                     assert found == True
-            
+
             pred_items.extend(matched)
     assert len(pred_items) == len(pred_items_unmatched)
 
     ent_res = []
 
-    def record_match(pred_s : int, pred_e : int, pred_c, pred_text, pred_type, gt_s, gt_e, gt_c, gt_text, gt_type, e_match_type):
-        if not gt_c: # false positive
+    def record_match(
+        pred_s: int, pred_e: int, pred_c, pred_text, pred_type, gt_s, gt_e, gt_c, gt_text, gt_type, e_match_type
+    ):
+        if not gt_c:  # false positive
             ent_res.append(
                 {
                     "pred_start": pred_s,
@@ -419,7 +423,7 @@ def _to_nel_eval(
     - An iterable of Document objects in neleval format.
     """
     for u in units:
-        entities = sorted(u["entities"], key=lambda e: e['offsets'])
+        entities = sorted(u["entities"], key=lambda e: e["offsets"])
         unit_id = u.get("corpus_id", "") + u["document_id"]
         annotations = []
         for e in entities:

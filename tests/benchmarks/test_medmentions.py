@@ -12,7 +12,7 @@ def test_medmentions_full_stats():
 
     all_cuis = get_cuis(ds["train"]) + get_cuis(ds["validation"]) + get_cuis(ds["test"])
 
-    # assert len(all_cuis) == 352496 
+    # assert len(all_cuis) == 352496
     assert len(set(all_cuis)) == 34724
 
 
@@ -23,7 +23,7 @@ def test_medmentions_st21pv_stats():
     assert len(ds["validation"]) == 878
     assert len(ds["test"]) == 879
 
-    assert len(get_cuis(ds["train"])) == 122241 
+    assert len(get_cuis(ds["train"])) == 122241
     assert len(get_cuis(ds["validation"])) == 40884
     assert len(get_cuis(ds["test"])) == 40157
 
