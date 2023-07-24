@@ -25,7 +25,7 @@ logger = logging.getLogger(__name__)
 from typing import Union, List
 
 
-def flat_ds_to_cross_enc_dataset(flat_candidate_ds, doc_index, context_length, mask_mention, encode_sem_type):
+def flat_ds_to_cross_enc_dataset(flat_candidate_ds, doc_index, context_length, mask_mention, encode_sem_type, use_nil):
     """
     Convert a flat candidate dataset to a cross-encoding dataset.
 
@@ -49,13 +49,18 @@ def flat_ds_to_cross_enc_dataset(flat_candidate_ds, doc_index, context_length, m
         l_ctx, m, r_ctx = doc["context_left"], doc["mention"], doc["context_right"]
         mention = f"{l_ctx[-context_length:] if context_length else ''} [START] {m if not mask_mention else '[MASK]'} [END] {r_ctx[:context_length] if context_length else ''}"
         batch = []
+        match_found = False
         for c, score, syns, semtype in zip(doc["candidates"], doc["scores"], doc["synonyms"], doc["types"]):
             candidate = syns[0] + " [TITLE] " + " [SEP] ".join(syns[1:])
             if encode_sem_type:
                 candidate = ",".join(semtype) + " [TYPE] " + candidate
             label = 1 if c in doc["label"] else 0
+            if label == 1:
+                match_found = True
             batch.append(ScoredInputExample(texts=[mention, candidate], label=label, score=score))
         if batch:
+            if use_nil:
+                batch[-1] = ScoredInputExample(texts=[mention, "[NIL]"], label=1 if not match_found else 0, score=0.0, nil=True)
             res.append(batch)
             res_index.append(idx)
     return res, res_index
@@ -69,6 +74,7 @@ def create_cross_enc_dataset(
     expand_abbreviations: bool,
     encode_sem_type: bool,
     masking: bool,
+    use_nil: bool,
 ):
     """
     Create a cross-encoding dataset from a candidate dataset.
@@ -94,7 +100,7 @@ def create_cross_enc_dataset(
         candidate_ds, ground_truth, expand_abbreviations=expand_abbreviations, kb=kb
     )
     return flat_ds_to_cross_enc_dataset(
-        flat_candidate_ds, doc_index, context_length, mask_mention=masking, encode_sem_type=encode_sem_type
+        flat_candidate_ds, doc_index, context_length, mask_mention=masking, encode_sem_type=encode_sem_type, use_nil=use_nil
     )
 
 
@@ -143,7 +149,7 @@ def _cross_encoder_predict(cross_encoder, cross_enc_dataset, show_progress_bar, 
     return pred_scores
 
 
-def rerank(doc, index, doc_idx, ranking, reject_nil=False):
+def rerank(doc, index, doc_idx, ce_dataset, ranking):
     """
     Re-ranks entities in a given document based on their normalized scores.
 
@@ -151,8 +157,8 @@ def rerank(doc, index, doc_idx, ranking, reject_nil=False):
     - doc (dict): A dictionary containing the document to be re-ranked.
     - index (int): The index of the document.
     - doc_idx (list): A list of indices indicating the position of entities in the document.
+    - ce_dataset (list): A list of ScoredInputExamples representing the mention-candidate pairs in the document.
     - ranking (list): A list of scores to rank the entities.
-    - reject_nil (bool): A boolean value indicating whether or not to reject entities with empty normalized scores.
 
     Raises:
     - AssertionError: If an entity has an empty normalized score and `reject_nil` is set to `True`.
@@ -168,11 +174,16 @@ def rerank(doc, index, doc_idx, ranking, reject_nil=False):
         if mask[ranking_idx] == False:
             assert len(e["normalized"]) == 0
         else:
+            candidates = ce_dataset[ranking_idx]
             rank = ranking[ranking_idx]
             assert len(e["normalized"]) == len(rank), (len(e["normalized"]), len(rank))
-            for n, r in zip(e["normalized"], rank):
+            for n, r, cand in zip(e["normalized"], rank, candidates):
                 n["score"] = r
+                if cand.nil:
+                    n["db_id"] = None
             e["normalized"].sort(key=lambda k: k["score"], reverse=True)
+            if not e["normalized"][0]["db_id"]:
+                e["normalized"] = []
         entities.append(e)
     return {"entities": entities}
 
@@ -256,6 +267,7 @@ class CrossEncoderReranker(Reranker):
         expand_abbreviations: bool = False,
         encode_sem_type: bool = False,
         masking: bool = False,
+        use_nil: bool = False,
         **kwargs,
     ):
         """
@@ -281,7 +293,7 @@ class CrossEncoderReranker(Reranker):
             for split, cand in candidates.items():
                 gt = ground_truth[split]
                 ds, doc_index = create_cross_enc_dataset(
-                    cand, gt, kb, context_length, expand_abbreviations, encode_sem_type, masking
+                    cand, gt, kb, context_length, expand_abbreviations, encode_sem_type, masking, use_nil
                 )
                 res[split] = IndexedDataset(ds, doc_index)
             return res
@@ -294,6 +306,7 @@ class CrossEncoderReranker(Reranker):
                 expand_abbreviations,
                 encode_sem_type,
                 masking,
+                use_nil
             )
             return IndexedDataset(ds, doc_index)
 
@@ -336,7 +349,7 @@ class CrossEncoderReranker(Reranker):
         if not self.model:
             self.model = ScoredCrossEncoder(training_args["model_name"], num_labels=1, max_length=max_length)
             if add_special_tokens:
-                self.model.tokenizer.add_special_tokens({"additional_special_tokens": ["[START]", "[END]", "[TITLE]"]})
+                self.model.tokenizer.add_special_tokens({"additional_special_tokens": ["[START]", "[END]", "[TITLE]", "[NIL]", "[TYPE]"]})
                 self.model.model.resize_token_embeddings(len(self.model.tokenizer))
         else:
             assert train_continue, "Training must be continued if model is set"
@@ -394,7 +407,7 @@ class CrossEncoderReranker(Reranker):
         """
         predictions = _cross_encoder_predict(self.model, cross_enc_dataset.dataset, show_progress_bar, convert_to_numpy)
         reranked = candidates.map(
-            lambda d, i: rerank(d, i, cross_enc_dataset.index, predictions),
+            lambda d, i: rerank(d, i, cross_enc_dataset.index, cross_enc_dataset.dataset, predictions),
             with_indices=True,
             load_from_cache_file=False,
         )

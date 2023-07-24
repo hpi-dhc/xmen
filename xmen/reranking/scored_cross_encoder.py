@@ -23,7 +23,7 @@ class ScoredInputExample:
     Structure for one input example with texts, the label and a unique id
     """
 
-    def __init__(self, guid: str = "", texts: List[str] = None, label: Union[int, float] = 0, score: float = None):
+    def __init__(self, guid: str = "", texts: List[str] = None, label: Union[int, float] = 0, score: float = None, nil = False):
         """
         Creates one InputExample with the given texts, guid and label
         :param guid
@@ -34,15 +34,18 @@ class ScoredInputExample:
             the label for the example
         :score score
             prior score for the example
+        :nil nil
+            whether the example is a nil example
         """
         self.guid = guid
         self.texts = texts
         self.label = label
         self.score = score
+        self.nil = nil
 
     def __repr__(self):
-        return "<ScoredInputExample> label: {}, score: {}, texts: {}".format(
-            str(self.label), str(self.score), "; ".join(self.texts)
+        return "<ScoredInputExample> label: {}, score: {}, texts: {}, nil: {}".format(
+            str(self.label), str(self.score), "; ".join(self.texts), self.nil
         )
 
 
