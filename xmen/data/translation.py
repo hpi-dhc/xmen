@@ -132,10 +132,14 @@ class Translator:
         for p in passages:
             clean_texts = []
             for t in p["text"]:
-                clean_text = self._remove_nested_tags_text(t, document["id"])
-                if t != clean_text:
-                    logger.debug("Cleaned document:\n" + clean_text)
-                clean_texts.append(clean_text)
+                errors = True
+                while errors:
+                    clean_text = self._remove_nested_tags_text(t, document["id"])
+                    if t == clean_text:
+                        logger.debug("Cleaned document:\n" + clean_text)                
+                        clean_texts.append(clean_text)
+                        errors = False
+                    t = clean_text
             p["text"] = clean_texts
         return {"passages": passages}
 
