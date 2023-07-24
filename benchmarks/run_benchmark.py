@@ -33,6 +33,7 @@ log = logging.getLogger(__name__)
 from hydra.core.config_store import ConfigStore
 from hydra.core.plugins import Plugins
 from hydra_plugins.hydra_process_launcher import InProcessLauncher, InProcessQueueConf
+from hydra.utils import to_absolute_path
 
 Plugins.instance().register(InProcessLauncher)
 
@@ -209,10 +210,13 @@ def main(config) -> None:
         log.info(f"Loaded {dict_name} with {len(kb.cui_to_entity)} concepts and {len(kb.alias_to_cuis)} aliases")
 
         log.info("Loading dataset")
-        if data_dir := config.get("data_dir", None):
-            splits = dataloaders.load_dataset(config.dataset, data_dir=data_dir)
+        if local_dataset := config.get('local_dataset', None):
+            splits = dataloaders.load_dataset(to_absolute_path(config.local_dataset))
         else:
-            splits = dataloaders.load_dataset(config.dataset)
+            if data_dir := config.get("data_dir", None):
+                splits = dataloaders.load_dataset(config.dataset, data_dir=data_dir)
+            else:
+                splits = dataloaders.load_dataset(config.dataset)
         log.info(f"Running on {len(splits)} splits")
         for fold, dataset in enumerate(splits):
             if sample := config.get("sample", None):

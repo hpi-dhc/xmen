@@ -1,9 +1,7 @@
 # @package _global_
-base_config: ../benchmark_base.yaml
+base_config: ../benchmark.yaml
 
-dataset: medmentions_st21pv
-
-name: ???
+name: medmentions_en
 
 dict:
   umls:

@@ -35,6 +35,7 @@ linker:
     data:
       context_length: 128
       encode_sem_type: True
+      use_nil: False
     training:
       num_train_epochs: 20
       score_regularization: 1.0
