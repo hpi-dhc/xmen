@@ -286,6 +286,7 @@ class CrossEncoderReranker(Reranker):
         - IndexedDataset or IndexedDatasetDict containing the encoded passages.
         """
         print("Context length:", context_length)
+        print("Use NIL values:", use_nil)
 
         if type(candidates) == DatasetDict:
             assert type(ground_truth) == DatasetDict
