@@ -274,7 +274,7 @@ class CrossEncoderReranker(Reranker):
         expand_abbreviations: bool = False,
         encode_sem_type: bool = False,
         masking: bool = False,
-        use_nil: bool = False,
+        use_nil: bool = True,
         **kwargs,
     ):
         """
@@ -288,6 +288,7 @@ class CrossEncoderReranker(Reranker):
         - expand_abbreviations: Whether to expand abbreviations in the passages.
         - encode_sem_type: Whether to include the semantic type of the concept in its representation
         - masking: Whether to mask entities in the passages.
+        - use_nil: Whether to have an option for NIL in each batch for unlinkable entities
 
         Returns:
         - IndexedDataset or IndexedDatasetDict containing the encoded passages.

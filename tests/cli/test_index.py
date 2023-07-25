@@ -36,7 +36,7 @@ def test_sapbert_indices(tmp_path):
     if not os.path.exists(tmp_path):
         print(tmp_path)
         tmp_path.mkdir()
-    build_sapbert(cfg, tmp_path, dict_path, -1)
+    build_sapbert(cfg, tmp_path, dict_path, -1, batch_size=1)
     assert len(os.listdir(tmp_path / "index" / sapbert_folder)) == 2
 
     with open(tmp_path / "index" / f"{sapbert_folder}" / "dict.pickle", "rb") as f:
