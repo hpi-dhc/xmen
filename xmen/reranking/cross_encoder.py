@@ -399,7 +399,9 @@ class CrossEncoderReranker(Reranker):
             show_progress_bar=show_progress_bar,
         )
 
-    def rerank_batch(self, candidates, cross_enc_dataset, show_progress_bar=True, convert_to_numpy=True, allow_nil=True):
+    def rerank_batch(
+        self, candidates, cross_enc_dataset, show_progress_bar=True, convert_to_numpy=True, allow_nil=True
+    ):
         """
         Re-ranks a batch of candidates using a cross encoder and returns the re-ranked candidates.
 
