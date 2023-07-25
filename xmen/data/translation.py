@@ -22,7 +22,7 @@ class Translator:
 
         logger.info("Initializing Translation Model")
 
-        self.tokenizer = AutoTokenizer.from_pretrained("facebook/nllb-200-distilled-600M", src_lang="eng_Latn")
+        self.tokenizer = AutoTokenizer.from_pretrained("facebook/nllb-200-distilled-600M", src_lang=src_lang)
 
         self.model = AutoModelForSeq2SeqLM.from_pretrained("ychenNLP/nllb-200-3.3b-easyproject")
         if cuda:
@@ -136,7 +136,7 @@ class Translator:
                 while errors:
                     clean_text = self._remove_nested_tags_text(t, document["id"])
                     if t == clean_text:
-                        logger.debug("Cleaned document:\n" + clean_text)                
+                        logger.debug("Cleaned document:\n" + clean_text)
                         clean_texts.append(clean_text)
                         errors = False
                     t = clean_text

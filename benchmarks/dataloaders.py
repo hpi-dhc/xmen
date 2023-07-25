@@ -59,7 +59,7 @@ def _load_bronco(label: str, data_dir):
     return res
 
 
-def load_mantra_gsc():
+def load_mantra_gsc(subsets=None):
     """
     Loads all subsets of Mantra GSC into one dataset
 
@@ -71,9 +71,10 @@ def load_mantra_gsc():
     import bigbio
 
     mantra_path = str(Path(bigbio.__file__).parent / "biodatasets" / "mantra_gsc" / "mantra_gsc.py")
-    configs = [c for c in datasets.get_dataset_infos(mantra_path).keys() if "bigbio" in c]
+    if not subsets:
+        subsets = [c for c in datasets.get_dataset_infos(mantra_path).keys() if "bigbio" in c]
 
-    ds_map = {c: datasets.load_dataset(mantra_path, c) for c in configs}
+    ds_map = {c: datasets.load_dataset(mantra_path, c) for c in subsets}
     ds = []
     for conf, ds_dict in ds_map.items():
         for k in ds_dict.keys():
@@ -134,16 +135,18 @@ def load_medmentions_st21pv():
     return _load_medmentions("medmentions_st21pv_bigbio_kb")
 
 
-def load_quaero():
+def load_quaero(subsets=None):
     """
     Loads the Quaero dataset.
 
     Returns:
     - A dataset loaded from the Quaero dataset with bigbio knowledge base.
     """
+    if not subsets:
+        subsets = ["quaero_emea_bigbio_kb", "quaero_medline_bigbio_kb"]
     return [
         _load_bigbio_dataset(
-            ["quaero_emea_bigbio_kb", "quaero_medline_bigbio_kb"],
+            subsets,
             "quaero",
             lambda _: "fr",
             splits=["train", "validation", "test"],
@@ -151,7 +154,7 @@ def load_quaero():
     ]
 
 
-def load_distemist():
+def load_distemist(subsets=None):
     """
     Loads the DisTEMIST (EL track) dataset.
 
@@ -161,8 +164,10 @@ def load_distemist():
     Raises:
     - AssertionError: If the loaded dataset has an unexpected format.
     """
+    if not subsets:
+        subsets = ["distemist_linking_bigbio_kb"]
     ds = _load_bigbio_dataset(
-        ["distemist_linking_bigbio_kb"],
+        subsets,
         "distemist",
         lambda _: "es",
         splits=["train", "test"],

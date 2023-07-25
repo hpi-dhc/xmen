@@ -18,15 +18,17 @@ lang_to_code = {
 
 def translate_dataset(dataset, src_lang, target_lang, output_dir):
     t = Translator(src_lang, target_lang)
-    translated_dataset = t._translate_batch(dataset)
-    
+    translated_dataset = t.transform_batch(dataset)
+
     translated_dataset.save_to_disk(output_dir)
-    
-    num_ents_before = len([e for v in dataset.values() for d in v for e in d['entities']])
+
+    num_ents_before = len([e for v in dataset.values() for d in v for e in d["entities"]])
     logger.info(f"Number of entities before translation: {num_ents_before}")
-    
-    num_ents_after = len([e for v in translated_dataset.values() for d in v for e in d['entities']])
-    logger.info(f"Number of entities after translation: {num_ents_after} ({(1 - num_ents_after / num_ents_before)*100:.2f}% loss)")    
+
+    num_ents_after = len([e for v in translated_dataset.values() for d in v for e in d["entities"]])
+    logger.info(
+        f"Number of entities after translation: {num_ents_after} ({(1 - num_ents_after / num_ents_before)*100:.2f}% loss)"
+    )
 
 
 if __name__ == "__main__":

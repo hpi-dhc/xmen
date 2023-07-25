@@ -99,7 +99,7 @@ def build_ngram_sapbert(
     sapbert: bool = typer.Option(default=False, help=sapbert_help, show_default=True),
     ngram: bool = typer.Option(default=False, help=ngram_help, show_default=True),
     all: bool = typer.Option(default=False, help=all_help, show_default=True),
-    batch_size: int = typer.Option(default=DEFAULT_BATCH_SIZE, help=batch_help, show_default=True)
+    batch_size: int = typer.Option(default=DEFAULT_BATCH_SIZE, help=batch_help, show_default=True),
 ):
     """
     Builds N-Gram and SAPBert indices from a .jsonl dict with the given configuration.

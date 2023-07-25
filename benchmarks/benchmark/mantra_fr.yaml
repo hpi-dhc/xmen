@@ -1,0 +1,19 @@
+# @package _global_
+defaults:
+  - _self_
+  - mantra
+  
+base_config: mantra.yaml
+
+subsets:
+  - mantra_gsc_fr_medline_bigbio_kb
+  - mantra_gsc_fr_emea_bigbio_kb
+  - mantra_gsc_fr_patents_bigbio_kb
+
+name: mantra_fr_benchmark
+
+dict:
+  umls:
+    lang:
+      - fr
+      - en

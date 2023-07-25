@@ -60,7 +60,9 @@ def flat_ds_to_cross_enc_dataset(flat_candidate_ds, doc_index, context_length, m
             batch.append(ScoredInputExample(texts=[mention, candidate], label=label, score=score))
         if batch:
             if use_nil:
-                batch[-1] = ScoredInputExample(texts=[mention, "[NIL]"], label=1 if not match_found else 0, score=0.0, nil=True)
+                batch[-1] = ScoredInputExample(
+                    texts=[mention, "[NIL]"], label=1 if not match_found else 0, score=0.0, nil=True
+                )
             res.append(batch)
             res_index.append(idx)
     return res, res_index
@@ -100,7 +102,12 @@ def create_cross_enc_dataset(
         candidate_ds, ground_truth, expand_abbreviations=expand_abbreviations, kb=kb
     )
     return flat_ds_to_cross_enc_dataset(
-        flat_candidate_ds, doc_index, context_length, mask_mention=masking, encode_sem_type=encode_sem_type, use_nil=use_nil
+        flat_candidate_ds,
+        doc_index,
+        context_length,
+        mask_mention=masking,
+        encode_sem_type=encode_sem_type,
+        use_nil=use_nil,
     )
 
 
@@ -270,7 +277,7 @@ class CrossEncoderReranker(Reranker):
         expand_abbreviations: bool = False,
         encode_sem_type: bool = False,
         masking: bool = False,
-        use_nil: bool = False,
+        use_nil: bool = True,
         **kwargs,
     ):
         """
@@ -284,11 +291,13 @@ class CrossEncoderReranker(Reranker):
         - expand_abbreviations: Whether to expand abbreviations in the passages.
         - encode_sem_type: Whether to include the semantic type of the concept in its representation
         - masking: Whether to mask entities in the passages.
+        - use_nil: Whether to have an option for NIL in each batch for unlinkable entities
 
         Returns:
         - IndexedDataset or IndexedDatasetDict containing the encoded passages.
         """
         print("Context length:", context_length)
+        print("Use NIL values:", use_nil)
 
         if type(candidates) == DatasetDict:
             assert type(ground_truth) == DatasetDict
@@ -302,14 +311,7 @@ class CrossEncoderReranker(Reranker):
             return res
         else:
             ds, doc_index = create_cross_enc_dataset(
-                candidates,
-                ground_truth,
-                kb,
-                context_length,
-                expand_abbreviations,
-                encode_sem_type,
-                masking,
-                use_nil
+                candidates, ground_truth, kb, context_length, expand_abbreviations, encode_sem_type, masking, use_nil
             )
             return IndexedDataset(ds, doc_index)
 
@@ -352,7 +354,9 @@ class CrossEncoderReranker(Reranker):
         if not self.model:
             self.model = ScoredCrossEncoder(training_args["model_name"], num_labels=1, max_length=max_length)
             if add_special_tokens:
-                self.model.tokenizer.add_special_tokens({"additional_special_tokens": ["[START]", "[END]", "[TITLE]", "[NIL]", "[TYPE]"]})
+                self.model.tokenizer.add_special_tokens(
+                    {"additional_special_tokens": ["[START]", "[END]", "[TITLE]", "[NIL]", "[TYPE]"]}
+                )
                 self.model.model.resize_token_embeddings(len(self.model.tokenizer))
         else:
             assert train_continue, "Training must be continued if model is set"

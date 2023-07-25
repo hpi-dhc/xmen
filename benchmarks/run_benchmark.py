@@ -209,14 +209,18 @@ def main(config) -> None:
         kb = load_kb(dict_name)
         log.info(f"Loaded {dict_name} with {len(kb.cui_to_entity)} concepts and {len(kb.alias_to_cuis)} aliases")
 
+        subsets = config.get("subsets", [])
+        if subsets:
+            log.info(f"Considering subsets: {subsets}")
+
         log.info("Loading dataset")
-        if local_dataset := config.get('local_dataset', None):
+        if local_dataset := config.get("local_dataset", None):
             splits = dataloaders.load_dataset(to_absolute_path(config.local_dataset))
         else:
             if data_dir := config.get("data_dir", None):
-                splits = dataloaders.load_dataset(config.dataset, data_dir=data_dir)
+                splits = dataloaders.load_dataset(config.dataset, data_dir=data_dir, subsets=subsets)
             else:
-                splits = dataloaders.load_dataset(config.dataset)
+                splits = dataloaders.load_dataset(config.dataset, subsets=subsets)
         log.info(f"Running on {len(splits)} splits")
         for fold, dataset in enumerate(splits):
             if sample := config.get("sample", None):
@@ -241,10 +245,6 @@ def main(config) -> None:
 
                 dataset = prepare_data(dataset, config, kb)
                 log.info(dataset)
-
-                subsets = config.get("subsets", [])
-                if subsets:
-                    log.info(f"Considering subsets: {subsets}")
 
                 global val_logger
                 val_logger = EvalLogger(
