@@ -308,22 +308,24 @@ def main(config) -> None:
 
                 rr = CrossEncoderReranker.load(output_dir, device=0)
 
-                cross_enc_pred_val = rr.rerank_batch(candidates["validation"], cross_enc_ds["validation"])
-                val_logger.eval_and_log_at_k("cross_encoder", cross_enc_pred_val)
-                cross_enc_pred_val.save_to_disk(fold_prefix + "_cross_enc_pred_val")
+                for allow_nil in [True, False]:
+                    suffix = "_no_nil" if not allow_nil else ""
+                    cross_enc_pred_val = rr.rerank_batch(candidates["validation"], cross_enc_ds["validation"], allow_nil=allow_nil)
+                    val_logger.eval_and_log_at_k(f"cross_encoder{suffix}", cross_enc_pred_val)
+                    cross_enc_pred_val.save_to_disk(fold_prefix + f"_cross_enc_pred_val{suffix}")
 
-                cross_enc_pred_test = rr.rerank_batch(candidates["test"], cross_enc_ds["test"])
-                test_logger.eval_and_log_at_k("cross_encoder", cross_enc_pred_test)
-                cross_enc_pred_test.save_to_disk(fold_prefix + "_cross_enc_pred_test")
+                    cross_enc_pred_test = rr.rerank_batch(candidates["test"], cross_enc_ds["test"])
+                    test_logger.eval_and_log_at_k(f"cross_encoder{suffix}", cross_enc_pred_test)
+                    cross_enc_pred_test.save_to_disk(fold_prefix + f"_cross_enc_pred_test{suffix}")
 
-                if thresholds := config.get("thresholds", None):
-                    for t in thresholds:
-                        log.info(f"Thresholding at {t}")
-                        cross_enc_pred_val_t = filter_and_apply_threshold(cross_enc_pred_val, k=1, threshold=t)
-                        val_logger.eval_and_log_at_k(f"cross_encoder_t_{t}", cross_enc_pred_val_t)
+                    if thresholds := config.get("thresholds", None):
+                        for t in thresholds:
+                            log.info(f"Thresholding at {t}")
+                            cross_enc_pred_val_t = filter_and_apply_threshold(cross_enc_pred_val, k=1, threshold=t)
+                            val_logger.eval_and_log_at_k(f"cross_encoder_t_{t}{suffix}", cross_enc_pred_val_t)
 
-                        cross_enc_pred_test_t = filter_and_apply_threshold(cross_enc_pred_test, k=1, threshold=t)
-                        test_logger.eval_and_log_at_k(f"cross_encoder_t_{t}", cross_enc_pred_test_t)
+                            cross_enc_pred_test_t = filter_and_apply_threshold(cross_enc_pred_test, k=1, threshold=t)
+                            test_logger.eval_and_log_at_k(f"cross_encoder_t_{t}{suffix}", cross_enc_pred_test_t)
 
             finally:
                 if run:

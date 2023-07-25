@@ -149,7 +149,7 @@ def _cross_encoder_predict(cross_encoder, cross_enc_dataset, show_progress_bar, 
     return pred_scores
 
 
-def rerank(doc, index, doc_idx, ce_dataset, ranking):
+def rerank(doc, index, doc_idx, ce_dataset, ranking, allow_nil):
     """
     Re-ranks entities in a given document based on their normalized scores.
 
@@ -180,9 +180,12 @@ def rerank(doc, index, doc_idx, ce_dataset, ranking):
             for n, r, cand in zip(e["normalized"], rank, candidates):
                 n["score"] = r
                 if cand.nil:
-                    n["db_id"] = None
+                    if allow_nil:
+                        n["db_id"] = None
+                    else:
+                        n["score"] = 0.0
             e["normalized"].sort(key=lambda k: k["score"], reverse=True)
-            if not e["normalized"][0]["db_id"]:
+            if allow_nil and not e["normalized"][0]["db_id"]:
                 e["normalized"] = []
         entities.append(e)
     return {"entities": entities}
@@ -392,7 +395,7 @@ class CrossEncoderReranker(Reranker):
             show_progress_bar=show_progress_bar,
         )
 
-    def rerank_batch(self, candidates, cross_enc_dataset, show_progress_bar=True, convert_to_numpy=True):
+    def rerank_batch(self, candidates, cross_enc_dataset, show_progress_bar=True, convert_to_numpy=True, allow_nil=True):
         """
         Re-ranks a batch of candidates using a cross encoder and returns the re-ranked candidates.
 
@@ -401,13 +404,14 @@ class CrossEncoderReranker(Reranker):
         - cross_enc_dataset: a dataset of cross-encoder inputs for scoring the candidates.
         - show_progress_bar: a boolean indicating whether to display a progress bar during prediction.
         - convert_to_numpy: a boolean indicating whether to convert predictions to numpy arrays.
+        - allow_nil: allow to produce an empty result, if NIL is the most likely option
 
         Returns:
         - A dataset of re-ranked candidates.
         """
         predictions = _cross_encoder_predict(self.model, cross_enc_dataset.dataset, show_progress_bar, convert_to_numpy)
         reranked = candidates.map(
-            lambda d, i: rerank(d, i, cross_enc_dataset.index, cross_enc_dataset.dataset, predictions),
+            lambda d, i: rerank(d, i, cross_enc_dataset.index, cross_enc_dataset.dataset, predictions, allow_nil),
             with_indices=True,
             load_from_cache_file=False,
         )
