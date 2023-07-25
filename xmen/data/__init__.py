@@ -28,7 +28,11 @@ features = Features(
         "entities": [
             {
                 "id": Value(dtype="string", id=None),
-                "long_form": Value(dtype="string", id=None),
+                "offsets": Sequence(
+                    feature=Sequence(feature=Value(dtype="int32", id=None), length=-1, id=None), length=-1, id=None
+                ),
+                "text": Sequence(feature=Value(dtype="string", id=None), length=-1, id=None),
+                "type": Value(dtype="string", id=None),
                 "normalized": [
                     {
                         "db_id": Value(dtype="string", id=None),
@@ -36,11 +40,7 @@ features = Features(
                         "score": Value(dtype="float", id=None),
                     }
                 ],
-                "offsets": Sequence(
-                    feature=Sequence(feature=Value(dtype="int64", id=None), length=-1, id=None), length=-1, id=None
-                ),
-                "text": Sequence(feature=Value(dtype="string", id=None), length=-1, id=None),
-                "type": Value(dtype="string", id=None),
+                "long_form": Value(dtype="string", id=None),
             }
         ],
         "events": [

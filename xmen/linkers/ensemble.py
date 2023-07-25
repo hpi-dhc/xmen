@@ -1,4 +1,5 @@
 from typing import Dict
+from xmen.data import features
 from xmen.linkers import EntityLinker
 from xmen.data import filter_and_apply_threshold
 from datasets import Dataset, utils, DatasetDict
@@ -81,7 +82,14 @@ class EnsembleLinker(EntityLinker):
                         linked = reuse_preds_split[linker_name].select(index)
                     else:
                         linker = linker_fn()
-                        linked = linker.predict_batch(Dataset.from_dict(batch), batch_size)
+                        for es in batch["entities"]:
+                            for e in es:
+                                for n in e["normalized"]:
+                                    if not "score" in n:
+                                        n["score"] = 0.0
+                                if not "long_form" in e:
+                                    e["long_form"] = None
+                        linked = linker.predict_batch(Dataset.from_dict(batch, features=features), batch_size)
                     mapped[linker_name] = filter_and_apply_threshold(
                         linked,
                         self.linkers_k[linker_name],
