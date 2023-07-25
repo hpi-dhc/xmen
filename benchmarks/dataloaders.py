@@ -27,8 +27,10 @@ def load_dataset(dataset: Union[str, Path], **kwargs):
 def load_bronco_diagnosis(data_dir):
     return _load_bronco("DIAGNOSIS", data_dir)
 
+
 def load_bronco_treatment(data_dir):
     return _load_bronco("TREATMENT", data_dir)
+
 
 def load_bronco_medication(data_dir):
     return _load_bronco("MEDICATION", data_dir)
@@ -133,7 +135,7 @@ def load_medmentions_st21pv():
     return _load_medmentions("medmentions_st21pv_bigbio_kb")
 
 
-def load_quaero(subsets = None):
+def load_quaero(subsets=None):
     """
     Loads the Quaero dataset.
 
@@ -152,7 +154,7 @@ def load_quaero(subsets = None):
     ]
 
 
-def load_distemist(subsets = None):
+def load_distemist(subsets=None):
     """
     Loads the DisTEMIST (EL track) dataset.
 
@@ -163,7 +165,7 @@ def load_distemist(subsets = None):
     - AssertionError: If the loaded dataset has an unexpected format.
     """
     if not subsets:
-        subsets = ["distemist_linking_bigbio_kb"] 
+        subsets = ["distemist_linking_bigbio_kb"]
     ds = _load_bigbio_dataset(
         subsets,
         "distemist",

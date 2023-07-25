@@ -214,7 +214,7 @@ def main(config) -> None:
             log.info(f"Considering subsets: {subsets}")
 
         log.info("Loading dataset")
-        if local_dataset := config.get('local_dataset', None):
+        if local_dataset := config.get("local_dataset", None):
             splits = dataloaders.load_dataset(to_absolute_path(config.local_dataset))
         else:
             if data_dir := config.get("data_dir", None):

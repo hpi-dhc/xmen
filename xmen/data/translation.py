@@ -136,7 +136,7 @@ class Translator:
                 while errors:
                     clean_text = self._remove_nested_tags_text(t, document["id"])
                     if t == clean_text:
-                        logger.debug("Cleaned document:\n" + clean_text)                
+                        logger.debug("Cleaned document:\n" + clean_text)
                         clean_texts.append(clean_text)
                         errors = False
                     t = clean_text
