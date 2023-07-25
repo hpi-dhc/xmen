@@ -18,7 +18,7 @@ lang_to_code = {
 
 def translate_dataset(dataset, src_lang, target_lang, output_dir):
     t = Translator(src_lang, target_lang)
-    translated_dataset = t._translate_batch(dataset)
+    translated_dataset = t.transform_batch(dataset)
     
     translated_dataset.save_to_disk(output_dir)
     

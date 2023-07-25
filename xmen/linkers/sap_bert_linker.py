@@ -188,22 +188,24 @@ class SapBERTLinker(EntityLinker):
                 if expand_abbreviations and mention.get("long_form", None):
                     s += " [SEP] " + mention["long_form"]
                 return s
-
-            mentions_index, mention_strings = zip(
-                *[
-                    (j, get_str(mention))
-                    for j, doc_entities in enumerate(sample["entities"])
-                    for mention in doc_entities
-                ]
-            )
-
-            concepts = self._get_concepts(list(mention_strings))
-
+            
             entities = sample["entities"]
 
-            for mi, concept_group in groupby(zip(mentions_index, concepts), key=lambda p: p[0]):
-                for j, c in enumerate(concept_group):
-                    entities[mi][j]["normalized"] = c[1]
+            mentions = tuple(zip(
+                *[
+                    (j, get_str(mention))
+                    for j, doc_entities in enumerate(entities)
+                    for mention in doc_entities
+                ]
+            ))
+            if mentions: # not empty
+                mentions_index, mention_strings = mentions
+
+                concepts = self._get_concepts(list(mention_strings))
+
+                for mi, concept_group in groupby(zip(mentions_index, concepts), key=lambda p: p[0]):
+                    for j, c in enumerate(concept_group):
+                        entities[mi][j]["normalized"] = c[1]
 
             return {"entities": entities}
 

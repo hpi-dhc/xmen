@@ -1,0 +1,14 @@
+# @package _global_
+defaults:
+  - _self_
+  - mantra
+  
+base_config: mantra.yaml
+
+name: mantra_fr_benchmark
+
+dict:
+  umls:
+    lang:
+      - de
+      - fr

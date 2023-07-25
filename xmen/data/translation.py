@@ -22,7 +22,7 @@ class Translator:
 
         logger.info("Initializing Translation Model")
 
-        self.tokenizer = AutoTokenizer.from_pretrained("facebook/nllb-200-distilled-600M", src_lang="eng_Latn")
+        self.tokenizer = AutoTokenizer.from_pretrained("facebook/nllb-200-distilled-600M", src_lang=src_lang)
 
         self.model = AutoModelForSeq2SeqLM.from_pretrained("ychenNLP/nllb-200-3.3b-easyproject")
         if cuda:
