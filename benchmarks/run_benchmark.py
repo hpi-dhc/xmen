@@ -310,7 +310,9 @@ def main(config) -> None:
 
                 for allow_nil in [True, False]:
                     suffix = "_no_nil" if not allow_nil else ""
-                    cross_enc_pred_val = rr.rerank_batch(candidates["validation"], cross_enc_ds["validation"], allow_nil=allow_nil)
+                    cross_enc_pred_val = rr.rerank_batch(
+                        candidates["validation"], cross_enc_ds["validation"], allow_nil=allow_nil
+                    )
                     val_logger.eval_and_log_at_k(f"cross_encoder{suffix}", cross_enc_pred_val)
                     cross_enc_pred_val.save_to_disk(fold_prefix + f"_cross_enc_pred_val{suffix}")
 

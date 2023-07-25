@@ -4,6 +4,9 @@ from pathlib import Path
 import pickle
 import pandas as pd
 import numpy as np
+from datasets import Value, Features, Sequence
+
+from xmen.data import features
 
 from xmen.linkers import EntityLinker
 from xmen.ext.sapbert.src.model_wrapper import Model_Wrapper
@@ -189,19 +192,23 @@ class SapBERTLinker(EntityLinker):
                     s += " [SEP] " + mention["long_form"]
                 return s
 
-            entities = sample["entities"]
+            entities = sample["entities"].copy()
 
+            for s in entities:
+                for e in s:
+                    e["normalized"] = []
             mentions = tuple(
                 zip(*[(j, get_str(mention)) for j, doc_entities in enumerate(entities) for mention in doc_entities])
             )
-            if mentions:  # not empty
-                mentions_index, mention_strings = mentions
+            if not mentions:  # empty
+                return {"entities": entities}
+            mentions_index, mention_strings = mentions
 
-                concepts = self._get_concepts(list(mention_strings))
+            concepts = self._get_concepts(list(mention_strings))
 
-                for mi, concept_group in groupby(zip(mentions_index, concepts), key=lambda p: p[0]):
-                    for j, c in enumerate(concept_group):
-                        entities[mi][j]["normalized"] = c[1]
+            for mi, concept_group in groupby(zip(mentions_index, concepts), key=lambda p: p[0]):
+                for j, c in enumerate(concept_group):
+                    entities[mi][j]["normalized"] = c[1]
 
             return {"entities": entities}
 
@@ -210,6 +217,7 @@ class SapBERTLinker(EntityLinker):
             batch_size=batch_size,
             batched=True,
             load_from_cache_file=False,
+            features=features,
         )
 
     def predict(self, unit: str, entities: dict) -> dict:
