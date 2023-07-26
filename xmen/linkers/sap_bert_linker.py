@@ -15,6 +15,7 @@ from xmen.log import logger
 
 from scipy.spatial.distance import cosine
 
+
 class SapBERTLinker(EntityLinker):
     """
     A class that performs entity linking using the SapBERT model.
