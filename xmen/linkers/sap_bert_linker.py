@@ -1,24 +1,19 @@
 from itertools import groupby
 from typing import List, Union
 from pathlib import Path
-import pickle
 import pandas as pd
-import numpy as np
-from datasets import Value, Features, Sequence
+import os
 
 from xmen.data import features, util
 
 from xmen.linkers import EntityLinker
-from xmen.ext.sapbert.src.model_wrapper import Model_Wrapper
+from .model_wrapper import Model_Wrapper, _EMBED_DIM
 
 from xmen.linkers.faiss_indexer import DenseFlatIndexer, DenseHNSWFlatIndexer
 
 from xmen.log import logger
 
 from scipy.spatial.distance import cosine
-
-_EMBED_DIM = 768
-
 
 class SapBERTLinker(EntityLinker):
     """
@@ -67,8 +62,9 @@ class SapBERTLinker(EntityLinker):
         model_name: str = CROSS_LINGUAL,
         cuda: bool = True,
         subtract_mean=True,
-        batch_size=2048 * 6,
+        batch_size=2048,
         index_buffer_size=50000,
+        write_memory_map=False,
         write_flat=False,
     ):
         """
@@ -97,30 +93,39 @@ class SapBERTLinker(EntityLinker):
         wrapper.load_model(model_name, use_cuda=cuda)
 
         logger.info(f"Computing dictionary embeddings with {model_name}")
-        candidate_dense_embeds = wrapper.embed_dense(
-            term_dict.term.tolist(),
-            agg_mode="cls",
-            use_cuda=cuda,
-            show_progress=True,
-            batch_size=batch_size,
-        )
-        if subtract_mean:
-            candidate_dense_embeds -= candidate_dense_embeds.mean(0)
-        # print('Writing embeddings to', out_embed_file)
-        # with open(out_embed_file, "wb") as f:
-        #    pickle.dump(candidate_dense_embeds, f)
+        mem_map_file = (index_base_path / "embeddings.memmap") if write_memory_map else None
+        if mem_map_file:
+            logger.info(f"Writing embeddings to temporary memory map file {mem_map_file}")
 
-        logger.info("Building FAISS Hierarchical Index")
-        hier_indexer = DenseHNSWFlatIndexer(candidate_dense_embeds.shape[1], buffer_size=index_buffer_size)
-        hier_indexer.index_data(candidate_dense_embeds, show_progress=True)
-        logger.info(f"Writing FAISS Hierarchical index to {out_faiss_hier_file}")
-        hier_indexer.serialize(str(out_faiss_hier_file))
+        try:
+            candidate_dense_embeds = wrapper.embed_dense(
+                term_dict.term.tolist(),
+                agg_mode="cls",
+                use_cuda=cuda,
+                show_progress=True,
+                batch_size=batch_size,
+                memory_map_file=mem_map_file,
+            )
+            if subtract_mean:
+                candidate_dense_embeds -= candidate_dense_embeds.mean(0)
+            # print('Writing embeddings to', out_embed_file)
+            # with open(out_embed_file, "wb") as f:
+            #    pickle.dump(candidate_dense_embeds, f)
 
-        if write_flat:
-            logger.info("Building FAISS Flat Index")
-            flat_indexer = DenseFlatIndexer(candidate_dense_embeds.shape[1])
-            flat_indexer.index_data(candidate_dense_embeds, show_progress=True)
-            flat_indexer.serialize(str(out_faiss_flat_file))
+            logger.info("Building FAISS Hierarchical Index")
+            hier_indexer = DenseHNSWFlatIndexer(candidate_dense_embeds.shape[1], buffer_size=index_buffer_size)
+            hier_indexer.index_data(candidate_dense_embeds, show_progress=True)
+            logger.info(f"Writing FAISS Hierarchical index to {out_faiss_hier_file}")
+            hier_indexer.serialize(str(out_faiss_hier_file))
+
+            if write_flat:
+                logger.info("Building FAISS Flat Index")
+                flat_indexer = DenseFlatIndexer(candidate_dense_embeds.shape[1])
+                flat_indexer.index_data(candidate_dense_embeds, show_progress=True)
+                flat_indexer.serialize(str(out_faiss_flat_file))
+        finally:
+            if mem_map_file and mem_map_file.exists():
+                os.remove(mem_map_file)
 
     def __init__(
         self,

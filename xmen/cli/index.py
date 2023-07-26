@@ -5,7 +5,7 @@ from xmen.linkers import TFIDFNGramLinker, SapBERTLinker
 from pathlib import Path
 import torch
 
-DEFAULT_BATCH_SIZE = 2048 * 6
+DEFAULT_BATCH_SIZE = 2048
 DEFAULT_INDEX_BUFFER_SIZE = 50000
 
 
@@ -27,7 +27,7 @@ def build_ngram(cfg: DictConfig, work_dir: Path, dict_dir: Path):
 
 
 def build_sapbert(
-    cfg: DictConfig, work_dir: Path, dict_dir: Path, gpu_id: int, batch_size: int, index_buffer_size: int
+    cfg: DictConfig, work_dir: Path, dict_dir: Path, gpu_id: int, batch_size: int, index_buffer_size: int, save_ram: bool
 ):
     """Builds an index of concept embeddings using SapBERT.
 
@@ -62,4 +62,5 @@ def build_sapbert(
             model_name=model_name,
             batch_size=batch_size,
             index_buffer_size=index_buffer_size,
+            write_memory_map=save_ram,
         )

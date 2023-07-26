@@ -40,6 +40,7 @@ all_help = "Build all available indicess"
 gpu_id_help = "Indicate in which cuda GPU device to generate the indices. Use `-1` to run on the CPU instead."
 batch_help = "GPU batch size to use for SapBERT"
 index_buffer_size_help = "Buffer size for use for writing SapBERT FAISS Index"
+save_ram_help = "Write temporary files to disk to save RAM for SapBERT indices."
 
 
 def get_work_dir(cfg) -> Path:

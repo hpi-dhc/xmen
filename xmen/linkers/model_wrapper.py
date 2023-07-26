@@ -1,21 +1,15 @@
-import os
-import pickle
-import logging
 import torch
 import numpy as np
-import time
 from tqdm import tqdm
-from torch import nn
-from sklearn.metrics.pairwise import cosine_similarity
-from .metric_learning import *
 
 from transformers import (
     AutoTokenizer, 
     AutoModel, 
 )
 
-LOGGER = logging.getLogger()
+# Adapted from https://github.com/cambridgeltl/sapbert/blob/main/src/model_wrapper.py
 
+_EMBED_DIM = 768
 
 class Model_Wrapper(object):
     """
@@ -28,7 +22,6 @@ class Model_Wrapper(object):
 
     def get_dense_encoder(self):
         assert (self.encoder is not None)
-
         return self.encoder
 
     def get_dense_tokenizer(self):
@@ -58,93 +51,7 @@ class Model_Wrapper(object):
 
         return self.encoder, self.tokenizer
     
-
-    def get_score_matrix(self, query_embeds, dict_embeds, cosine=False, normalise=False):
-        """
-        Return score matrix
-
-        Parameters
-        ----------
-        query_embeds : np.array
-            2d numpy array of query embeddings
-        dict_embeds : np.array
-            2d numpy array of query embeddings
-
-        Returns
-        -------
-        score_matrix : np.array
-            2d numpy array of scores
-        """
-        if cosine:
-            score_matrix = cosine_similarity(query_embeds, dict_embeds)
-        else:
-            score_matrix = np.matmul(query_embeds, dict_embeds.T)
-
-        if normalise:
-            score_matrix = (score_matrix - score_matrix.min() ) / (score_matrix.max() - score_matrix.min())
-        
-        return score_matrix
-
-    def retrieve_candidate(self, score_matrix, topk):
-        """
-        Return sorted topk idxes (descending order)
-
-        Parameters
-        ----------
-        score_matrix : np.array
-            2d numpy array of scores
-        topk : int
-            The number of candidates
-
-        Returns
-        -------
-        topk_idxs : np.array
-            2d numpy array of scores [# of query , # of dict]
-        """
-        
-        def indexing_2d(arr, cols):
-            rows = np.repeat(np.arange(0,cols.shape[0])[:, np.newaxis],cols.shape[1],axis=1)
-            return arr[rows, cols]
-
-        # get topk indexes without sorting
-        topk_idxs = np.argpartition(score_matrix,-topk)[:, -topk:]
-
-        # get topk indexes with sorting
-        topk_score_matrix = indexing_2d(score_matrix, topk_idxs)
-        topk_argidxs = np.argsort(-topk_score_matrix) 
-        topk_idxs = indexing_2d(topk_idxs, topk_argidxs)
-
-        return topk_idxs
-
-    def retrieve_candidate_cuda(self, score_matrix, topk, batch_size=128, show_progress=False):
-        """
-        Return sorted topk idxes (descending order)
-
-        Parameters
-        ----------
-        score_matrix : np.array
-            2d numpy array of scores
-        topk : int
-            The number of candidates
-
-        Returns
-        -------
-        topk_idxs : np.array
-            2d numpy array of scores [# of query , # of dict]
-        """
-
-        res = None
-        for i in tqdm(np.arange(0, score_matrix.shape[0], batch_size), disable=not show_progress):
-            score_matrix_tmp = torch.tensor(score_matrix[i:i+batch_size]).cuda()
-            matrix_sorted = torch.argsort(score_matrix_tmp, dim=1, descending=True)[:, :topk].cpu()
-            if res is None: 
-                res = matrix_sorted
-            else:
-                res = torch.cat([res, matrix_sorted], axis=0)
-
-        return res.numpy()
-
-    def embed_dense(self, names, show_progress=False, use_cuda=True, batch_size=2048, agg_mode="cls"):
+    def embed_dense(self, names, show_progress=False, use_cuda=True, batch_size=2048, agg_mode="cls", memory_map_file=None):
         """
         Embedding data into dense representations
 
@@ -160,11 +67,12 @@ class Model_Wrapper(object):
         """
         self.encoder.eval() # prevent dropout
         
+        shape = (len(names), _EMBED_DIM)
         batch_size=batch_size
-        dense_embeds = []
-
-        #print ("converting names to list...")
-        #names = names.tolist()
+        if memory_map_file:
+            dense_embeds = np.memmap(memory_map_file, dtype='float32', mode='w+', shape=shape)
+        else:
+            dense_embeds = np.zeros(shape, dtype=np.float32)
 
         with torch.no_grad():
             if show_progress:
@@ -200,7 +108,9 @@ class Model_Wrapper(object):
                     print ("no such agg_mode:", agg_mode)
 
                 batch_dense_embeds = batch_dense_embeds.cpu().detach().numpy()
-                dense_embeds.append(batch_dense_embeds)
-        dense_embeds = np.concatenate(dense_embeds, axis=0)
+                dense_embeds[start:end, :] = batch_dense_embeds
+        if memory_map_file:
+            dense_embeds.flush()
+            dense_embeds = np.memmap(memory_map_file, dtype='float32', mode='r', shape=shape)
         
         return dense_embeds
