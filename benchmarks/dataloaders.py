@@ -24,15 +24,15 @@ def load_dataset(dataset: Union[str, Path], **kwargs):
     return loader_fn(**kwargs)
 
 
-def load_bronco_diagnosis(data_dir):
+def load_bronco_diagnosis(data_dir, **kwargs):
     return _load_bronco("DIAGNOSIS", data_dir)
 
 
-def load_bronco_treatment(data_dir):
+def load_bronco_treatment(data_dir, **kwargs):
     return _load_bronco("TREATMENT", data_dir)
 
 
-def load_bronco_medication(data_dir):
+def load_bronco_medication(data_dir, **kwargs):
     return _load_bronco("MEDICATION", data_dir)
 
 
