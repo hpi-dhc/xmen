@@ -68,6 +68,7 @@ class SapBERTLinker(EntityLinker):
         cuda: bool = True,
         subtract_mean=True,
         batch_size=2048 * 6,
+        index_buffer_size=50000,
         write_flat=False,
     ):
         """
@@ -110,7 +111,7 @@ class SapBERTLinker(EntityLinker):
         #    pickle.dump(candidate_dense_embeds, f)
 
         logger.info("Building FAISS Hierarchical Index")
-        hier_indexer = DenseHNSWFlatIndexer(candidate_dense_embeds.shape[1])
+        hier_indexer = DenseHNSWFlatIndexer(candidate_dense_embeds.shape[1], buffer_size=index_buffer_size)
         hier_indexer.index_data(candidate_dense_embeds, show_progress=True)
         logger.info(f"Writing FAISS Hierarchical index to {out_faiss_hier_file}")
         hier_indexer.serialize(str(out_faiss_hier_file))

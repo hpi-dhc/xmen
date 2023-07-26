@@ -6,6 +6,7 @@ from pathlib import Path
 import torch
 
 DEFAULT_BATCH_SIZE = 2048 * 6
+DEFAULT_INDEX_BUFFER_SIZE = 50000
 
 
 def build_ngram(cfg: DictConfig, work_dir: Path, dict_dir: Path):
@@ -25,7 +26,7 @@ def build_ngram(cfg: DictConfig, work_dir: Path, dict_dir: Path):
     pass
 
 
-def build_sapbert(cfg: DictConfig, work_dir: Path, dict_dir: Path, gpu_id: int, batch_size: int):
+def build_sapbert(cfg: DictConfig, work_dir: Path, dict_dir: Path, gpu_id: int, batch_size: int, index_buffer_size : int):
     """Builds an index of concept embeddings using SapBERT.
 
     Args:
@@ -34,6 +35,7 @@ def build_sapbert(cfg: DictConfig, work_dir: Path, dict_dir: Path, gpu_id: int, 
     - dict_dir (Path): Path to the directory containing the concept dictionaries.
     - gpu_id (int): ID of the GPU to be used for training. Use -1 for CPU.
     - batch_size (int): GPU batch size
+    - index_buffer_size (int): Buffer size for use for writing SapBERT FAISS Index
     """
 
     # ensure the index folder exists
@@ -57,4 +59,5 @@ def build_sapbert(cfg: DictConfig, work_dir: Path, dict_dir: Path, gpu_id: int, 
             subtract_mean=False,
             model_name=model_name,
             batch_size=batch_size,
+            index_buffer_size=index_buffer_size,
         )
