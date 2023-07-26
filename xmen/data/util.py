@@ -1,21 +1,17 @@
 from typing import Union, List
 
 
-def clean_concepts_from_dataset(dataset):
-    """
-    Cleans the 'entities' key of a given dataset.
-
-    Args:
-    - dataset: A dataset containing dictionaries with an 'entities' key.
-
-    Returns:
-    - A cleaned dataset where each dictionary in the dataset only contains the 'id', 'spans_start', 'spans_end', and 'text' keys in its 'entities' key.
-    """
-    return dataset.map(
-        lambda i: {
-            "entities": {k: v for k, v in i["entities"].items() if k in ["id", "spans_start", "spans_end", "text"]}
-        }
-    )
+def init_schema(dataset):
+    for es in dataset["entities"]:
+        for e in es:
+            for n in e["normalized"]:
+                if not "score" in n:
+                    n["score"] = 0.0
+                if not "predicted_by" in n:
+                    n["predicted_by"] = []
+            if not "long_form" in e:
+                e["long_form"] = None
+    return dataset
 
 
 class Concept:

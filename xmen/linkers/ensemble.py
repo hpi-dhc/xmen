@@ -1,7 +1,6 @@
 from typing import Dict
-from xmen.data import features
 from xmen.linkers import EntityLinker
-from xmen.data import filter_and_apply_threshold
+from xmen.data import filter_and_apply_threshold, features, util
 from datasets import Dataset, utils, DatasetDict
 import itertools
 
@@ -73,6 +72,7 @@ class EnsembleLinker(EntityLinker):
         def merge_linkers(batch, index, reuse_preds_split=None):
             progress = utils.logging.is_progress_bar_enabled()
             try:
+                batch = util.init_schema(batch)
                 mapped = {}
                 if progress:
                     utils.logging.disable_progress_bar()
@@ -82,13 +82,6 @@ class EnsembleLinker(EntityLinker):
                         linked = reuse_preds_split[linker_name].select(index)
                     else:
                         linker = linker_fn()
-                        for es in batch["entities"]:
-                            for e in es:
-                                for n in e["normalized"]:
-                                    if not "score" in n:
-                                        n["score"] = 0.0
-                                if not "long_form" in e:
-                                    e["long_form"] = None
                         linked = linker.predict_batch(Dataset.from_dict(batch, features=features), batch_size)
                     mapped[linker_name] = filter_and_apply_threshold(
                         linked,
@@ -145,6 +138,7 @@ class EnsembleLinker(EntityLinker):
                         batched=True,
                         batch_size=batch_size,
                         load_from_cache_file=False,
+                        features=features,
                     )
                     for split in dataset.keys()
                 }
@@ -156,6 +150,7 @@ class EnsembleLinker(EntityLinker):
                 batched=True,
                 batch_size=batch_size,
                 load_from_cache_file=False,
+                features=features,
             )
 
     def predict(self, unit: str, entities: dict) -> dict:

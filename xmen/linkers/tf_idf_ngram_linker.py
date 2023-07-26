@@ -205,6 +205,7 @@ class TFIDFNGramLinker(EntityLinker):
                         predicted.append((cand.concept_id, score))
                 sorted_predicted = sorted(predicted, reverse=True, key=lambda x: x[1])
                 e["normalized"] = [
-                    {"db_id": cui, "score": score, "db_name": self.kb_name} for cui, score in sorted_predicted
+                    {"db_id": cui, "score": score, "db_name": self.kb_name, "predicted_by": ["ngram"]}
+                    for cui, score in sorted_predicted
                 ]
         return entities

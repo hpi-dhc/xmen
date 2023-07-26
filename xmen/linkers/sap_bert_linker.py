@@ -6,7 +6,7 @@ import pandas as pd
 import numpy as np
 from datasets import Value, Features, Sequence
 
-from xmen.data import features
+from xmen.data import features, util
 
 from xmen.linkers import EntityLinker
 from xmen.ext.sapbert.src.model_wrapper import Model_Wrapper
@@ -192,13 +192,9 @@ class SapBERTLinker(EntityLinker):
                     s += " [SEP] " + mention["long_form"]
                 return s
 
+            sample = util.init_schema(sample)
             entities = sample["entities"]
 
-            for s in entities:
-                for e in s:
-                    e["normalized"] = []
-                    if not "long_form" in e:
-                        e["long_form"] = None
             mentions = tuple(
                 zip(*[(j, get_str(mention)) for j, doc_entities in enumerate(entities) for mention in doc_entities])
             )
@@ -251,6 +247,6 @@ class SapBERTLinker(EntityLinker):
                         cuis.add(r.cui)
                         concepts.append((r.cui, score))
             yield [
-                {"db_id": cui, "score": score, "db_name": self.kb_name}
+                {"db_id": cui, "score": score, "db_name": self.kb_name, "predicted_by": ["sapbert"]}
                 for cui, score in sorted(concepts, key=lambda p: -p[1])
             ]
