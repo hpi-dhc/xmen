@@ -60,8 +60,9 @@ def flat_ds_to_cross_enc_dataset(flat_candidate_ds, doc_index, context_length, m
             batch.append(ScoredInputExample(texts=[mention, candidate], label=label, score=score))
         if batch:
             if use_nil:
+                label = 1 if not match_found else 0
                 batch[-1] = ScoredInputExample(
-                    texts=[mention, "[NIL]"], label=1 if not match_found else 0, score=0.0, nil=True
+                    texts=[mention, "[NIL]"], label=label, score=label, nil=True
                 )
             res.append(batch)
             res_index.append(idx)
@@ -168,7 +169,6 @@ def rerank(doc, index, doc_idx, ce_dataset, ranking, allow_nil):
     - ranking (list): A list of scores to rank the entities.
 
     Raises:
-    - AssertionError: If an entity has an empty normalized score and `reject_nil` is set to `True`.
     - AssertionError: If an entity's normalized score has a different length than its corresponding ranking score.
 
     Returns:
@@ -195,7 +195,7 @@ def rerank(doc, index, doc_idx, ce_dataset, ranking, allow_nil):
             if allow_nil and not e["normalized"][0]["db_id"]:
                 e["normalized"] = []
         entities.append(e)
-    return {"entities": entities}
+    return { "entities": entities}
 
 
 class CrossEncoderTrainingArgs:
