@@ -27,7 +27,13 @@ def build_ngram(cfg: DictConfig, work_dir: Path, dict_dir: Path):
 
 
 def build_sapbert(
-    cfg: DictConfig, work_dir: Path, dict_dir: Path, gpu_id: int, batch_size: int, index_buffer_size: int, save_ram: bool
+    cfg: DictConfig,
+    work_dir: Path,
+    dict_dir: Path,
+    gpu_id: int,
+    batch_size: int,
+    index_buffer_size: int,
+    save_ram: bool,
 ):
     """Builds an index of concept embeddings using SapBERT.
 
