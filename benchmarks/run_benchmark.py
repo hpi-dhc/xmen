@@ -238,7 +238,7 @@ def main(config) -> None:
                     dict_config = OmegaConf.to_container(config, structured_config_mode=SCMode.DICT_CONFIG)
                     log.info(dict_config)
                     run.log(dict_config)
-                    run.log({"cp_dir" : str(output_base_dir) })
+                    run.log({"cp_dir": str(output_base_dir)})
                     run.log({"hydra_dir": os.getcwd()})
                     run.log({"job_id": job_id, "hostname": hostname})
                 else:

@@ -61,9 +61,7 @@ def flat_ds_to_cross_enc_dataset(flat_candidate_ds, doc_index, context_length, m
         if batch:
             if use_nil:
                 label = 1 if not match_found else 0
-                batch[-1] = ScoredInputExample(
-                    texts=[mention, "[NIL]"], label=label, score=label, nil=True
-                )
+                batch[-1] = ScoredInputExample(texts=[mention, "[NIL]"], label=label, score=label, nil=True)
             res.append(batch)
             res_index.append(idx)
     return res, res_index
@@ -195,7 +193,7 @@ def rerank(doc, index, doc_idx, ce_dataset, ranking, allow_nil):
             if allow_nil and not e["normalized"][0]["db_id"]:
                 e["normalized"] = []
         entities.append(e)
-    return { "entities": entities}
+    return {"entities": entities}
 
 
 class CrossEncoderTrainingArgs:
