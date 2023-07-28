@@ -190,8 +190,6 @@ def main(config) -> None:
             hostname = env.hostname
 
         base_path = Path(config.work_dir)
-        output_base_dir = Path(config.output) / str(uuid.uuid4())
-        log.info(f"Writing to output dir {output_base_dir}")
 
         dict_name = base_path / f"{config.name}.jsonl"
         if not dict_name.exists():
@@ -231,13 +229,16 @@ def main(config) -> None:
             log.info(f"Fold: {fold_prefix}")
             run = None
             try:
+                output_base_dir = Path(config.output) / str(uuid.uuid4())
+                log.info(f"Writing to output dir {output_base_dir}")
                 if not config.disable_wandb:
                     log.info("Initializing Weights & Biases run")
-                    run = wandb.init(name=fold_prefix, project=config.wandb_project)
+                    run = wandb.init(name=fold_prefix, project=config.wandb_project, tags=config.get("tags", None))
                     eval_callback = run.log
                     dict_config = OmegaConf.to_container(config, structured_config_mode=SCMode.DICT_CONFIG)
                     log.info(dict_config)
                     run.log(dict_config)
+                    run.log({"cp_dir" : str(output_base_dir) })
                     run.log({"hydra_dir": os.getcwd()})
                     run.log({"job_id": job_id, "hostname": hostname})
                 else:
