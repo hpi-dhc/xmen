@@ -38,7 +38,7 @@ linker:
     training:
       learning_rate: 2e-5
       num_train_epochs: 20
-      score_regularization: 1.0
+      rank_regularization: 1.0
 
 random_seed: 42
 

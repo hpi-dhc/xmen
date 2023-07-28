@@ -216,7 +216,7 @@ class CrossEncoderTrainingArgs:
         model_name: str = "bert-base-multilingual-cased",
         fp16: bool = True,
         label_smoothing: bool = False,
-        score_regularization: bool = 1.0,
+        rank_regularization: bool = 1.0,
         train_layers: list = None,
         softmax_loss: bool = True,
         random_seed: int = 42,
@@ -227,7 +227,7 @@ class CrossEncoderTrainingArgs:
         self.args["num_train_epochs"] = num_train_epochs
         self.args["fp16"] = fp16
         self.args["label_smoothing"] = label_smoothing
-        self.args["score_regularization"] = score_regularization
+        self.args["rank_regularization"] = rank_regularization
         self.args["train_layers"] = train_layers
         self.args["softmax_loss"] = softmax_loss
         self.args["random_seed"] = random_seed
@@ -395,7 +395,7 @@ class CrossEncoderReranker(Reranker):
             optimizer_params={"lr": training_args["learning_rate"]},
             use_amp=training_args["fp16"],
             label_smoothing=training_args["label_smoothing"],
-            score_regularization=training_args["score_regularization"],
+            rank_regularization=training_args["rank_regularization"],
             train_layers=training_args["train_layers"],
             show_progress_bar=show_progress_bar,
         )
