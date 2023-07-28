@@ -220,7 +220,7 @@ class CrossEncoderTrainingArgs:
         train_layers: list = None,
         softmax_loss: bool = True,
         random_seed: int = 42,
-        learning_rate : float = 2e-5
+        learning_rate: float = 2e-5,
     ):
         self.args = {}
         self.args["model_name"] = model_name
@@ -392,7 +392,7 @@ class CrossEncoderReranker(Reranker):
             warmup_steps=100,
             output_path=output_dir,
             callback=None,
-            optimizer_params = {"lr": training_args["learning_rate"]},
+            optimizer_params={"lr": training_args["learning_rate"]},
             use_amp=training_args["fp16"],
             label_smoothing=training_args["label_smoothing"],
             score_regularization=training_args["score_regularization"],
