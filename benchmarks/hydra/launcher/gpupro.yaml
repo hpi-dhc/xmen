@@ -9,7 +9,7 @@ gpus_per_task: 1
 nodes: 1
 mem_gb: 128
 partition: gpupro
-array_parallelism: 2
+array_parallelism: 4
 name: xmen-${name}
 additional_parameters: {"mail-user": "florian.borchert@mattermost", "mail-type": "END,FAIL", "exclude": "artemis" }
   

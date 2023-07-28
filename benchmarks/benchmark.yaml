@@ -36,6 +36,7 @@ linker:
       context_length: 128
       encode_sem_type: True
     training:
+      learning_rate: 2e-5
       num_train_epochs: 20
       score_regularization: 1.0
 
