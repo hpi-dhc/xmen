@@ -317,7 +317,9 @@ def main(config) -> None:
                     val_logger.eval_and_log_at_k(f"cross_encoder{suffix}", cross_enc_pred_val)
                     cross_enc_pred_val.save_to_disk(fold_prefix + f"_cross_enc_pred_val{suffix}")
 
-                    cross_enc_pred_test = rr.rerank_batch(candidates["test"], cross_enc_ds["test"])
+                    cross_enc_pred_test = rr.rerank_batch(
+                        candidates["test"], cross_enc_ds["test"], allow_nil=allow_nil
+                    )
                     test_logger.eval_and_log_at_k(f"cross_encoder{suffix}", cross_enc_pred_test)
                     cross_enc_pred_test.save_to_disk(fold_prefix + f"_cross_enc_pred_test{suffix}")
 
