@@ -7,7 +7,7 @@ timeout_min: 4320
 cpus_per_task: 16
 gpus_per_task: 1
 nodes: 1
-mem_gb: 128
+mem_gb: 64
 partition: gpupro
 array_parallelism: 4
 name: xmen-${name}
