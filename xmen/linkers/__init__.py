@@ -50,7 +50,7 @@ from .sap_bert_linker import SapBERTLinker
 from .ensemble import EnsembleLinker
 
 
-def default_ensemble(index_base_path, k_ngram=100, k_sapbert=1000, k_ensemble=64):
+def default_ensemble(index_base_path, k_ngram=100, k_sapbert=1000):
     """
     Creates the default ensemble candidate generator consisting of equally weighted SapBERT and TF-IDF N-Gram Linker
     """

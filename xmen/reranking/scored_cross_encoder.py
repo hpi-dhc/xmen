@@ -90,16 +90,9 @@ class ScoredCrossEncoder(CrossEncoder):
 
         return tokenized, labels, scores
 
-    def rank_regularizer(self, logits, scores):  # , mean = False):
+    def rank_regularizer(self, logits, scores):
         pdist = torch.nn.PairwiseDistance(p=2)
-        dist = pdist(logits, scores)
-        # print(dist)
-        return dist
-        # sm = torch.nn.Softmax(dim=0)
-        # if mean:
-        #    return torch.mean(scores - sm(logits))
-        # else:
-        #    return torch.sum(scores - sm(logits))
+        return pdist(logits, scores)
 
     def fit_with_scores(
         self,

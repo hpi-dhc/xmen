@@ -10,7 +10,7 @@ class SemanticGroupFilter:
     - version (str, optional): The version of the semantic group mapping to use.
     """
 
-    def __init__(self, kb, version=None):
+    def __init__(self, kb, version="v03"):
         self._kb = kb
         self._sem_groups = get_semantic_groups(version).set_index("TUI")
 

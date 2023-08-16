@@ -57,7 +57,7 @@ def get_flat_candidate_ds(candidate_ds, ground_truth, expand_abbreviations, kb):
         flat_ground_truth = ground_truth.map(
             lambda e, i: get_candidates(e, i, False),
             batched=True,
-            remove_columns=candidate_ds.column_names,
+            remove_columns=ground_truth.column_names,
             with_indices=True,
             load_from_cache_file=False,
         )

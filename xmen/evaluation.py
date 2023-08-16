@@ -424,7 +424,8 @@ def _to_nel_eval(
     """
     for u in units:
         entities = sorted(u["entities"], key=lambda e: e["offsets"])
-        unit_id = u.get("corpus_id", "") + u["document_id"]
+        cid = u["corpus_id"] if "corpus_id" in u and u["corpus_id"] else ""
+        unit_id = cid + u["document_id"]
         annotations = []
         for e in entities:
             if "normalized" in e:

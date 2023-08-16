@@ -2,6 +2,14 @@ from typing import Union, List
 
 
 def init_schema(dataset):
+    """
+    Initializes the non-BigBIO elements of a dataset
+    """
+    n_docs = len(dataset["document_id"])
+    if not "corpus_id" in dataset:
+        dataset["corpus_id"] = [None] * n_docs
+    if not "lang" in dataset:
+        dataset["lang"] = [None] * n_docs
     for es in dataset["entities"]:
         for e in es:
             for n in e["normalized"]:
