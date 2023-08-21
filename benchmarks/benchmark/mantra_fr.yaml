@@ -17,3 +17,7 @@ dict:
     lang:
       - fr
       - en
+
+linker:
+  reranking:
+    pre_trained_model: /home/Florian.Borchert/runs/xmen/medmentions_fr/outputs/models/medmentions_fr/8cbffcaa-0876-4770-8956-034e947e0447/0-medmentions_fr/cross_encoder_training

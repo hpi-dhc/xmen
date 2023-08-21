@@ -37,3 +37,5 @@ dict:
       - MDRSPA
       - MDADUT
 
+data:
+  filter_semantic_groups: True

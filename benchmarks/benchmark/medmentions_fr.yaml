@@ -5,7 +5,7 @@ defaults:
 
 name: medmentions_fr
 
-local_dataset: ../medmentions/medmentions_en_fr
+local_dataset: ../data/medmentions_st21pv_en_fr
 
 base_config: medmentions_multiling.yaml
 

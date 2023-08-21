@@ -1,8 +1,15 @@
 from typing import List, Union
 from pathlib import Path
 import datasets
+from xmen.data import features
+from xmen.data.util import init_schema
 
 RANDOM_SEED = 42
+
+
+def _map_init_schema(batch):
+    batch = init_schema(batch)
+    return batch
 
 
 def load_dataset(dataset: Union[str, Path], **kwargs):
@@ -18,7 +25,9 @@ def load_dataset(dataset: Union[str, Path], **kwargs):
     import sys
 
     if Path(dataset).exists():
-        return [datasets.load_from_disk(dataset)]
+        ds = datasets.load_from_disk(dataset)
+        ds = ds.map(_map_init_schema, batch_size=128, batched=True).cast(features)
+        return [ds]
 
     loader_fn = getattr(sys.modules[__name__], f"load_{dataset}")
     return loader_fn(**kwargs)
@@ -82,9 +91,9 @@ def load_mantra_gsc(subsets=None):
             ds_dict[k] = ds_dict[k].add_column("lang", [conf.split("_")[2]] * len(ds_dict[k]))
         ds.append(ds_dict)
     output = datasets.dataset_dict.DatasetDict()
-    for s in ["train"]:
-        output[s] = datasets.concatenate_datasets([d[s] for d in ds])
-    return output
+    # Mantra only as single fold, which we use as a test set
+    output["test"] = datasets.concatenate_datasets([d["train"] for d in ds])
+    return [output]
 
 
 def _load_medmentions(config_name):

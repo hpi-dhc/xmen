@@ -1,6 +1,7 @@
 import pandas as pd
 import re
 from xmen.umls import get_semantic_groups
+from xmen.log import logger
 import os
 from pathlib import Path
 from xmen.evaluation import evaluate
@@ -41,7 +42,8 @@ def get_error_types(row, kb, sem_group_version):
     if (len(row.gt_text) == 1) and bool(re.match("[A-Z]{2,3}", row.gt_text[0])):
         return "ABBREV"
 
-    if len(get_semantic_types(gold_id).intersection(get_semantic_types(pred_id))) == 0:
+    sem_types = get_semantic_types(gold_id)
+    if sem_types and len(sem_types.intersection(get_semantic_types(pred_id))) == 0:
         return "WRONG_SEMANTIC_TYPE"
 
     if len(get_synset(gold_id).intersection(get_synset(pred_id))) > 0:
@@ -76,7 +78,8 @@ def get_category(r):
     if r.error_type == "TP":
         return "TP"
     if not r.exists:
-        assert r.pred_index == -1
+        if r.pred_index != -1:
+            logger.debug(f"{r}")
         return "MISSING_CUI"
     if r.ABREV and r.error_type != "TP":
         return "ABREV"

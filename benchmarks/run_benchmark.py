@@ -127,7 +127,7 @@ def prepare_data(dataset, config, kb):
     return dataset
 
 
-def generate_candidates(dataset, config):
+def generate_candidates(dataset, config, has_val):
     """Generate candidates with n-gram, SapBERT and Ensemble."""
     batch_size = config.linker.batch_size
     k_ngram = config.linker.candidate_generation.ngram.k
@@ -139,7 +139,8 @@ def generate_candidates(dataset, config):
     candidates_ngram = ngram_linker.predict_batch(dataset)
 
     test_logger.eval_and_log_at_k("ngram", candidates_ngram["test"])
-    val_logger.eval_and_log_at_k("ngram", candidates_ngram["validation"])
+    if has_val:
+        val_logger.eval_and_log_at_k("ngram", candidates_ngram["validation"])
 
     log.info("Generating SapBERT candidates")
     sapbert_linker = (
@@ -150,7 +151,8 @@ def generate_candidates(dataset, config):
     candidates_sapbert = sapbert_linker.predict_batch(dataset, batch_size=batch_size)
 
     test_logger.eval_and_log_at_k("sapbert", candidates_sapbert["test"])
-    val_logger.eval_and_log_at_k("sapbert", candidates_sapbert["validation"])
+    if has_val:
+        val_logger.eval_and_log_at_k("sapbert", candidates_sapbert["validation"])
 
     log.info("Generating ensemble candidates")
     ensemble_linker = EnsembleLinker()
@@ -166,7 +168,8 @@ def generate_candidates(dataset, config):
     )
 
     test_logger.eval_and_log_at_k("ensemble", candidates_ensemble["test"])
-    val_logger.eval_and_log_at_k("ensemble", candidates_ensemble["validation"])
+    if has_val:
+        val_logger.eval_and_log_at_k("ensemble", candidates_ensemble["validation"])
 
     return candidates_ensemble
 
@@ -213,7 +216,7 @@ def main(config) -> None:
 
         log.info("Loading dataset")
         if local_dataset := config.get("local_dataset", None):
-            splits = dataloaders.load_dataset(to_absolute_path(config.local_dataset))
+            splits = dataloaders.load_dataset(to_absolute_path(local_dataset))
         else:
             if data_dir := config.get("data_dir", None):
                 splits = dataloaders.load_dataset(config.dataset, data_dir=data_dir, subsets=subsets)
@@ -224,6 +227,12 @@ def main(config) -> None:
             if sample := config.get("sample", None):
                 log.info(f"Sampling {sample} examples")
                 dataset = Sampler(config.random_seed, n=sample).transform_batch(dataset)
+
+            has_train = "train" in dataset
+            if not has_train:
+                log.info("No train split, cannot train supervised model")
+            has_val = "validation" in dataset
+            assert "test" in dataset, "Test split is required"
 
             fold_prefix = f"{fold}-{config.name}"
             log.info(f"Fold: {fold_prefix}")
@@ -247,15 +256,6 @@ def main(config) -> None:
                 dataset = prepare_data(dataset, config, kb)
                 log.info(dataset)
 
-                global val_logger
-                val_logger = EvalLogger(
-                    ground_truth=dataset["validation"],
-                    file_prefix=f"{fold_prefix}",
-                    split="validation",
-                    callback=eval_callback,
-                    subsets=subsets,
-                )
-
                 global test_logger
                 test_logger = EvalLogger(
                     ground_truth=dataset["test"],
@@ -265,10 +265,20 @@ def main(config) -> None:
                     subsets=subsets,
                 )
 
+                if has_val:
+                    global val_logger
+                    val_logger = EvalLogger(
+                        ground_truth=dataset["validation"],
+                        file_prefix=f"{fold_prefix}",
+                        split="validation",
+                        callback=eval_callback,
+                        subsets=subsets,
+                    )
+
                 dataset.save_to_disk(fold_prefix + "_dataset")
 
                 log.info("Generating candidates")
-                candidates = generate_candidates(dataset, config)
+                candidates = generate_candidates(dataset, config, has_val)
 
                 if config.data.get("filter_semantic_groups", False):
                     log.info("Filtering semantic groups")
@@ -278,7 +288,8 @@ def main(config) -> None:
                 candidates = filter_and_apply_threshold(candidates, config.linker.reranking.k, 0.0)
 
                 test_logger.eval_and_log_at_k("candidates", candidates["test"])
-                val_logger.eval_and_log_at_k("candidates", candidates["validation"])
+                if has_val:
+                    val_logger.eval_and_log_at_k("candidates", candidates["validation"])
 
                 candidates.save_to_disk(fold_prefix + "_candidates")
 
@@ -288,47 +299,63 @@ def main(config) -> None:
                     candidates, dataset, kb, **config.linker.reranking.data
                 )
 
-                log.info("Training cross encoder (this might take a while...)")
-                train_args = CrossEncoderTrainingArgs(
-                    random_seed=config.random_seed, **config.linker.reranking.training
-                )
+                if pre_trained_model := config.linker.reranking.get("pre_trained_model", None):
+                    rr = CrossEncoderReranker.load(pre_trained_model, device=0)
+                elif not has_train:
+                    log.warn("No train split, cannot train supervised model")
+                    rr = None
+                else:
+                    assert has_val, "Validation split is required"
 
-                rr = CrossEncoderReranker()
-                output_dir = output_base_dir / fold_prefix / "cross_encoder_training"
-
-                rr.fit(
-                    train_dataset=cross_enc_ds["train"].dataset,
-                    val_dataset=cross_enc_ds["validation"].dataset,
-                    output_dir=output_dir,
-                    training_args=train_args,
-                    show_progress_bar=True,
-                    eval_callback=eval_callback,
-                )
-
-                log.info("Running prediction")
-
-                rr = CrossEncoderReranker.load(output_dir, device=0)
-
-                for allow_nil in [True, False]:
-                    suffix = "_no_nil" if not allow_nil else ""
-                    cross_enc_pred_val = rr.rerank_batch(
-                        candidates["validation"], cross_enc_ds["validation"], allow_nil=allow_nil
+                    log.info("Training cross encoder (this might take a while...)")
+                    train_args = CrossEncoderTrainingArgs(
+                        random_seed=config.random_seed, **config.linker.reranking.training
                     )
-                    val_logger.eval_and_log_at_k(f"cross_encoder{suffix}", cross_enc_pred_val)
-                    cross_enc_pred_val.save_to_disk(fold_prefix + f"_cross_enc_pred_val{suffix}")
+                    rr = CrossEncoderReranker()
+                    output_dir = output_base_dir / fold_prefix / "cross_encoder_training"
 
-                    cross_enc_pred_test = rr.rerank_batch(candidates["test"], cross_enc_ds["test"], allow_nil=allow_nil)
-                    test_logger.eval_and_log_at_k(f"cross_encoder{suffix}", cross_enc_pred_test)
-                    cross_enc_pred_test.save_to_disk(fold_prefix + f"_cross_enc_pred_test{suffix}")
+                    rr.fit(
+                        train_dataset=cross_enc_ds["train"].dataset,
+                        val_dataset=cross_enc_ds["validation"].dataset,
+                        output_dir=output_dir,
+                        training_args=train_args,
+                        show_progress_bar=True,
+                        eval_callback=eval_callback,
+                    )
 
-                    if thresholds := config.get("thresholds", None):
-                        for t in thresholds:
-                            log.info(f"Thresholding at {t}")
-                            cross_enc_pred_val_t = filter_and_apply_threshold(cross_enc_pred_val, k=1, threshold=t)
-                            val_logger.eval_and_log_at_k(f"cross_encoder_t_{t}{suffix}", cross_enc_pred_val_t)
+                    log.info("Running prediction")
 
-                            cross_enc_pred_test_t = filter_and_apply_threshold(cross_enc_pred_test, k=1, threshold=t)
-                            test_logger.eval_and_log_at_k(f"cross_encoder_t_{t}{suffix}", cross_enc_pred_test_t)
+                    rr = CrossEncoderReranker.load(output_dir, device=0)
+
+                if rr:
+                    for allow_nil in [True, False]:
+                        suffix = "_no_nil" if not allow_nil else ""
+                        if has_val:
+                            cross_enc_pred_val = rr.rerank_batch(
+                                candidates["validation"], cross_enc_ds["validation"], allow_nil=allow_nil
+                            )
+                            val_logger.eval_and_log_at_k(f"cross_encoder{suffix}", cross_enc_pred_val)
+                            cross_enc_pred_val.save_to_disk(fold_prefix + f"_cross_enc_pred_val{suffix}")
+
+                        cross_enc_pred_test = rr.rerank_batch(
+                            candidates["test"], cross_enc_ds["test"], allow_nil=allow_nil
+                        )
+                        test_logger.eval_and_log_at_k(f"cross_encoder{suffix}", cross_enc_pred_test)
+                        cross_enc_pred_test.save_to_disk(fold_prefix + f"_cross_enc_pred_test{suffix}")
+
+                        if thresholds := config.get("thresholds", None):
+                            for t in thresholds:
+                                log.info(f"Thresholding at {t}")
+                                if has_val:
+                                    cross_enc_pred_val_t = filter_and_apply_threshold(
+                                        cross_enc_pred_val, k=1, threshold=t
+                                    )
+                                    val_logger.eval_and_log_at_k(f"cross_encoder_t_{t}{suffix}", cross_enc_pred_val_t)
+
+                                cross_enc_pred_test_t = filter_and_apply_threshold(
+                                    cross_enc_pred_test, k=1, threshold=t
+                                )
+                                test_logger.eval_and_log_at_k(f"cross_encoder_t_{t}{suffix}", cross_enc_pred_test_t)
 
             finally:
                 if run:

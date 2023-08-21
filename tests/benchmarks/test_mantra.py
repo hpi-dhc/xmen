@@ -4,7 +4,7 @@ from dummy_linker import CopyLinker, NullLinker
 
 from benchmarks.dataloaders import load_mantra_gsc
 
-mantra_ds_raw = load_mantra_gsc()
+mantra_ds_raw = load_mantra_gsc()[0]
 mantra_ds = ConceptMerger().transform_batch(mantra_ds_raw)
 
 # "The number of final annotations was 5530" (but there are two duplicates)
@@ -14,16 +14,16 @@ ALL_METRICS = ["strict", "partial", "loose"]
 
 
 def test_stats():
-    assert len(mantra_ds_raw["train"]) == 1450
-    assert len(get_cuis(mantra_ds_raw["train"])) == 5530
-    assert len(get_cuis(mantra_ds["train"])) == NUM_CONCEPTS_MANTRA_GSC
+    assert len(mantra_ds_raw["test"]) == 1450
+    assert len(get_cuis(mantra_ds_raw["test"])) == 5530
+    assert len(get_cuis(mantra_ds["test"])) == NUM_CONCEPTS_MANTRA_GSC
 
 
 def test_evaluation_identity():
-    pred = CopyLinker().predict_batch(mantra_ds["train"])
+    pred = CopyLinker().predict_batch(mantra_ds["test"])
 
     metrics = evaluation.evaluate(
-        mantra_ds["train"], pred, allow_multiple_gold_candidates=False, metrics=ALL_METRICS, top_k_predictions=None
+        mantra_ds["test"], pred, allow_multiple_gold_candidates=False, metrics=ALL_METRICS, top_k_predictions=None
     )
 
     for m in ["strict", "partial", "loose"]:
@@ -47,9 +47,9 @@ def test_evaluation_identity():
 
 
 def test_evaluation_null_allow_multiple_gold_candidates():
-    pred = NullLinker().predict_batch(mantra_ds["train"])
+    pred = NullLinker().predict_batch(mantra_ds["test"])
 
-    metrics = evaluation.evaluate(mantra_ds["train"], pred, allow_multiple_gold_candidates=True, metrics=ALL_METRICS)
+    metrics = evaluation.evaluate(mantra_ds["test"], pred, allow_multiple_gold_candidates=True, metrics=ALL_METRICS)
 
     n_annotations_system = metrics["strict"]["n_annos_system"]
     n_annotations_gold = metrics["strict"]["n_annos_gold"]
@@ -71,9 +71,9 @@ def test_evaluation_null_allow_multiple_gold_candidates():
 
 
 def test_evaluation_null_dont_allow_multiple_gold_candidates():
-    pred = NullLinker().predict_batch(mantra_ds["train"])
+    pred = NullLinker().predict_batch(mantra_ds["test"])
 
-    metrics = evaluation.evaluate(mantra_ds["train"], pred, allow_multiple_gold_candidates=False, metrics=ALL_METRICS)
+    metrics = evaluation.evaluate(mantra_ds["test"], pred, allow_multiple_gold_candidates=False, metrics=ALL_METRICS)
 
     n_annotations_system = metrics["strict"]["n_annos_system"]
     n_annotations_gold = metrics["strict"]["n_annos_gold"]
