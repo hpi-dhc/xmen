@@ -296,7 +296,7 @@ def main(config) -> None:
                 # Prepare Dataset for Cross Encoder
                 log.info("Preparing data for cross encoder training")
                 cross_enc_ds = CrossEncoderReranker.prepare_data(
-                    candidates, dataset, kb, **config.linker.reranking.data
+                    candidates, dataset, kb, expand_abbreviations=config.data.expand_abbreviations, **config.linker.reranking.data
                 )
 
                 if pre_trained_model := config.linker.reranking.get("pre_trained_model", None):

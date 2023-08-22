@@ -2,7 +2,6 @@ from abc import ABC, abstractmethod
 from datasets.arrow_dataset import Dataset
 import numpy as np
 
-
 class Reranker(ABC):
     @abstractmethod
     def rerank_batch(self, dataset: Dataset) -> Dataset:
@@ -15,3 +14,5 @@ class Reranker(ABC):
         for k, v in concepts.items():
             result[k] = list(np.array(v)[idx])
         return result
+
+from .cross_encoder import CrossEncoderReranker
