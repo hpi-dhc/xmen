@@ -1,0 +1,23 @@
+{
+  "_data_files": [
+    {
+      "filename": "data-00000-of-00001.arrow"
+    }
+  ],
+  "_fingerprint": "0d283bf18fc1957e",
+  "_format_columns": [
+    "coreferences",
+    "corpus_id",
+    "document_id",
+    "entities",
+    "events",
+    "id",
+    "lang",
+    "passages",
+    "relations"
+  ],
+  "_format_kwargs": {},
+  "_format_type": null,
+  "_output_all_columns": false,
+  "_split": null
+}
