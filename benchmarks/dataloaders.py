@@ -25,7 +25,7 @@ def load_dataset(dataset: Union[str, Path], **kwargs):
     import sys
 
     if Path(dataset).exists():
-        ds = datasets.load_from_disk(dataset)
+        ds = datasets.load_from_disk(dataset, keep_in_memory=True)
         ds = ds.map(_map_init_schema, batch_size=128, batched=True).cast(features)
         return [ds]
 
