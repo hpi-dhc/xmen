@@ -1,0 +1,21 @@
+# @package _global_
+defaults:
+  - medmentions_multiling
+  - _self_
+
+name: medmentions_nl
+
+local_dataset: ../data/medmentions_st21pv_en_nl
+
+base_config: medmentions_multiling.yaml
+
+dict:
+  umls:
+    lang: 
+      - en
+      - nl
+
+linker:
+  reranking:
+    training:
+      model_name: ???

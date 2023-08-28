@@ -14,4 +14,4 @@ Train cross-encoder model:
 
 # Benchmark run with weakly-supervised cross-encoder
 
-`python TODO`
+`python run_benchmark.py benchmark=quaero output=~/scratch/xmen +linker.reranking.pre_trained_model=absolute/path/to/models/ce_ws_medmentions_fr`

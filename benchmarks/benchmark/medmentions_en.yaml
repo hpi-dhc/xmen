@@ -3,6 +3,8 @@ base_config: ../benchmark.yaml
 
 name: medmentions_en
 
+dataset: medmentions_st21pv
+
 dict:
   umls:
     lang: 

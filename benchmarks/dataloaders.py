@@ -124,7 +124,7 @@ def _load_medmentions(config_name):
     ]
 
 
-def load_medmentions_full():
+def load_medmentions_full(subsets=None):
     """
     Loads the full MedMentions dataset.
 
@@ -134,7 +134,7 @@ def load_medmentions_full():
     return _load_medmentions("medmentions_full_bigbio_kb")
 
 
-def load_medmentions_st21pv():
+def load_medmentions_st21pv(subsets=None):
     """
     Loads the MedMentions dataset with ST21PV subset.
 
