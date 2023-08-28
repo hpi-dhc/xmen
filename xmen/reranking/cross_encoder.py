@@ -263,6 +263,7 @@ class CrossEncoderReranker(Reranker):
         - new instance of CrossEncoderReranker.
         """
         model = CrossEncoder(checkpoint)
+        model._target_device = torch.device(device)
         model.model.to(torch.device(device))
         if not model.max_length:
             model.max_length = max_length
