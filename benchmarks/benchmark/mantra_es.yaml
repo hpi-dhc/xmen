@@ -5,17 +5,16 @@ defaults:
   
 base_config: mantra.yaml
 
-name: mantra_fr_benchmark
+name: mantra_es_benchmark
 
 subsets:
-  - mantra_gsc_fr_medline_bigbio_kb
-  - mantra_gsc_fr_emea_bigbio_kb
-  - mantra_gsc_fr_patents_bigbio_kb
+  - mantra_gsc_es_medline_bigbio_kb
+  - mantra_gsc_es_emea_bigbio_kb
 
 dict:
   umls:
     lang:
-      - fr
+      - es
       - en
 
 linker:
