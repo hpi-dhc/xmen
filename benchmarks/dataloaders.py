@@ -220,7 +220,9 @@ def _load_bigbio_dataset(config_names: List[str], dataset_name: str, lang_mapper
     # TODO: implement loading all available configs for a dataset
     assert config_names is not None, "Not implemented"
 
-    ds_map = {c: datasets.load_dataset(f"bigbio/{dataset_name}", c, data_dir) for c in config_names}
+    ds_map = {
+        c: datasets.load_dataset(f"bigbio/{dataset_name}", c, data_dir, keep_in_memory=True) for c in config_names
+    }
     ds = []
     for conf, ds_dict in ds_map.items():
         for k in ds_dict.keys():
