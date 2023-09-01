@@ -51,3 +51,8 @@ dict:
       - OMIM
       - RXNORM
       - SNOMEDCT_US
+      
+linker:
+  reranking:
+    training:
+      model_name: microsoft/BiomedNLP-PubMedBERT-base-uncased-abstract-fulltext
