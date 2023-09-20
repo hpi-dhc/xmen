@@ -18,4 +18,4 @@ dict:
 linker:
   reranking:
     training:
-      model_name: CLTL/MedRoBERTa.nl
+      model_name: xlm-roberta-base

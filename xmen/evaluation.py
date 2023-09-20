@@ -2,6 +2,7 @@ from typing import Iterable
 from itertools import groupby
 import pandas as pd
 import warnings
+import regex as re
 
 from .ext.neleval.prepare import SelectAlternatives
 from .ext.neleval.document import Document
@@ -31,8 +32,16 @@ _KEY_TO_METRIC = {
     "ner_partial": _NER_PARTIAL_EVAL_MEASURE_FMT_STRING,
 }
 
+def _get_word_len(row):
+    return len(" ".join(row.gt_text).split(" "))
 
-def entity_linking_error_analysis(
+def _get_entity_info(row):
+    res = {}
+    res["_word_len"] = _get_word_len(row)
+    res["_abbrev"] = (len(row.gt_text) == 1) and bool(re.match("[A-Z]{2,3}", row.gt_text[0]))    
+    return res
+
+def error_analysis(
     ground_truth: Iterable, prediction: Iterable, allow_multiple_gold_candidates=False
 ) -> pd.DataFrame:
     """
@@ -54,10 +63,12 @@ def entity_linking_error_analysis(
             error_df["corpus_id"] = gt["corpus_id"]
         error_df["document_id"] = gt["document_id"]
         res.append(error_df)
-    return pd.concat(res).reset_index().drop(columns="index")
+    ea_df = pd.concat(res).reset_index().drop(columns="index")
+    entity_info = pd.DataFrame(list(ea_df.apply(_get_entity_info, axis=1)))
+    return pd.concat([entity_info, ea_df], axis=1)
 
 
-def _get_error_df(gt_ents: list, pred_ents: list, allow_multiple_gold_candidates=False) -> pd.DataFrame:
+def _get_error_df(gt_ents, pred_ents, allow_multiple_gold_candidates=False) -> pd.DataFrame:
     """
     Construct a Pandas DataFrame with the error analysis results from the comparison of two lists of named entities.
 
@@ -326,6 +337,9 @@ def _get_error_df(gt_ents: list, pred_ents: list, allow_multiple_gold_candidates
 
     return pd.DataFrame(ent_res)
 
+def get_synset(kb, scui):
+    kb_ix = kb.cui_to_entity[str(scui)]
+    return set([kb_ix.canonical_name] + kb_ix.aliases)
 
 def evaluate(
     ground_truth: Iterable,
