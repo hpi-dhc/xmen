@@ -1,10 +1,6 @@
 import pandas as pd
-import re
 from xmen.umls import get_semantic_groups
-from xmen.log import logger
-import os
-from pathlib import Path
-from xmen.evaluation import evaluate
+from xmen.evaluation import get_synset
 
 
 def get_error_types(row, kb, sem_group_version, return_fn):
