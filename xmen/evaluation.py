@@ -32,18 +32,19 @@ _KEY_TO_METRIC = {
     "ner_partial": _NER_PARTIAL_EVAL_MEASURE_FMT_STRING,
 }
 
+
 def _get_word_len(row):
     return len(" ".join(row.gt_text).split(" "))
+
 
 def _get_entity_info(row):
     res = {}
     res["_word_len"] = _get_word_len(row)
-    res["_abbrev"] = (len(row.gt_text) == 1) and bool(re.match("[A-Z]{2,3}", row.gt_text[0]))    
+    res["_abbrev"] = (len(row.gt_text) == 1) and bool(re.match("[A-Z]{2,3}", row.gt_text[0]))
     return res
 
-def error_analysis(
-    ground_truth: Iterable, prediction: Iterable, allow_multiple_gold_candidates=False
-) -> pd.DataFrame:
+
+def error_analysis(ground_truth: Iterable, prediction: Iterable, allow_multiple_gold_candidates=False) -> pd.DataFrame:
     """
     Computes error analysis of entity linking predictions by comparing against the ground truth entities, assuming that the entities are aligned.
 
@@ -337,9 +338,11 @@ def _get_error_df(gt_ents, pred_ents, allow_multiple_gold_candidates=False) -> p
 
     return pd.DataFrame(ent_res)
 
+
 def get_synset(kb, scui):
     kb_ix = kb.cui_to_entity[str(scui)]
     return set([kb_ix.canonical_name] + kb_ix.aliases)
+
 
 def evaluate(
     ground_truth: Iterable,
