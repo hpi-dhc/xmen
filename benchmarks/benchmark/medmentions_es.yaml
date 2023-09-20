@@ -18,4 +18,4 @@ dict:
 linker:
   reranking:
     training:
-      model_name: PlanTL-GOB-ES/roberta-base-biomedical-clinical-es
+      model_name: xlm-roberta-base

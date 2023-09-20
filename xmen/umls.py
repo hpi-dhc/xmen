@@ -165,7 +165,7 @@ def _get_lang_code(lang):
 
 def get_umls_concepts(
     meta_path: str,
-    langs: str,
+    langs: list,
     sabs: list,
     sources: list,
     semantic_groups: list,
@@ -180,7 +180,7 @@ def get_umls_concepts(
 
     Args:
     - meta_path (str): Path to the UMLS metathesaurus directory.
-    - langs (str): A comma-separated string of language codes to include. If `None` or `'all'`, all available languages
+    - langs (list): A list of language codes to include. If `None` or `'all'`, all available languages
                    will be included.
     - sabs (list): A list of source abbreviations to include. If empty, all available sources will be included.
     - sources (list): A list of source full names to include. If empty, all available sources will be included.
