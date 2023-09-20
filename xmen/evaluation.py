@@ -475,6 +475,6 @@ def evaluate_at_k(ground_truth, pred, eval_k=[1, 2, 4, 8, 16, 32, 64], silent=Fa
     for ki in eval_k:
         eval_res = evaluate(ground_truth, pred, top_k_predictions=ki)
         if not silent:
-            print(f"Perf@{ki}", eval_res["strict"]["recall"])
+            print(f"Recall@{ki}", eval_res["strict"]["recall"])
         res[ki] = eval_res
     return res
