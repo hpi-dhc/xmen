@@ -399,7 +399,7 @@ def test_error_analysis():
             ]
         )
     ]
-    assert (evaluation.entity_linking_error_analysis(gt, pred).pred_index == 0).all()
+    assert (evaluation.error_analysis(gt, pred).pred_index == 0).all()
 
 
 def test_error_analysis_order():
@@ -419,4 +419,4 @@ def test_error_analysis_order():
             ]
         )
     ]
-    assert (evaluation.entity_linking_error_analysis(gt, pred).pred_index == 0).all()
+    assert (evaluation.error_analysis(gt, pred).pred_index == 0).all()
