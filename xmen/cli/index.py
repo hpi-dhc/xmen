@@ -5,6 +5,9 @@ from xmen.linkers import TFIDFNGramLinker, SapBERTLinker
 from pathlib import Path
 import torch
 
+DEFAULT_BATCH_SIZE = 2048
+DEFAULT_INDEX_BUFFER_SIZE = 50000
+
 
 def build_ngram(cfg: DictConfig, work_dir: Path, dict_dir: Path):
     """Build an N-Gram index for the given dictionary directory and store it in the working directory.
@@ -23,7 +26,15 @@ def build_ngram(cfg: DictConfig, work_dir: Path, dict_dir: Path):
     pass
 
 
-def build_sapbert(cfg: DictConfig, work_dir: Path, dict_dir: Path, gpu_id: int):
+def build_sapbert(
+    cfg: DictConfig,
+    work_dir: Path,
+    dict_dir: Path,
+    gpu_id: int,
+    batch_size: int,
+    index_buffer_size: int,
+    save_ram: bool,
+):
     """Builds an index of concept embeddings using SapBERT.
 
     Args:
@@ -31,6 +42,8 @@ def build_sapbert(cfg: DictConfig, work_dir: Path, dict_dir: Path, gpu_id: int):
     - work_dir (Path): Path to the working directory.
     - dict_dir (Path): Path to the directory containing the concept dictionaries.
     - gpu_id (int): ID of the GPU to be used for training. Use -1 for CPU.
+    - batch_size (int): GPU batch size
+    - index_buffer_size (int): Buffer size for use for writing SapBERT FAISS Index
     """
 
     # ensure the index folder exists
@@ -43,7 +56,7 @@ def build_sapbert(cfg: DictConfig, work_dir: Path, dict_dir: Path, gpu_id: int):
     if cfg.get("linker", {}).get("candidate_generation", {}).get("sapbert", {}).get("model_name", {}) == {}:
         model_name = SapBERTLinker.CROSS_LINGUAL  # default model
     else:
-        model_name = cfg.candidate_generation.sapbert.model_name
+        model_name = cfg.linker.candidate_generation.sapbert.model_name
 
     cuda = False if gpu_id == -1 else True
     with torch.cuda.device(gpu_id):
@@ -53,4 +66,7 @@ def build_sapbert(cfg: DictConfig, work_dir: Path, dict_dir: Path, gpu_id: int):
             cuda=cuda,
             subtract_mean=False,
             model_name=model_name,
+            batch_size=batch_size,
+            index_buffer_size=index_buffer_size,
+            write_memory_map=save_ram,
         )

@@ -24,11 +24,11 @@ def get_concept_details(cfg) -> dict:
     syst_cols[5] = "code3"
     syst = pd.read_csv(f"{path}/p1smt2017/Klassifikationsdateien/ops2017syst_kodes.txt", sep=";", names=syst_cols)
 
-    # get the codes that are only in the systematic list
-    syst_codes = list(syst["code"].unique())
-    alph_codes = list(alph["code"].unique())
-    only_syst = [code for code in syst_codes if code not in alph_codes]
-    syst = syst[syst["code"].isin(only_syst)]
+    # load 3 digit codes
+    dreisteller_cols = ["Kapitelnummer", "code1", "code", "text"]
+    dreisteller = pd.read_csv(
+        f"{path}/p1smt2017/Klassifikationsdateien/ops2017syst_dreisteller.txt", sep=";", names=dreisteller_cols
+    )
 
     # get all concepts from alphabetic (they have aliases and "s.a.", etc.)
     concept_details = {}
@@ -37,7 +37,8 @@ def get_concept_details(cfg) -> dict:
         if not sid in concept_details and not pd.isna(sid):
             concept_details[sid] = {"concept_id": sid, "canonical_name": entry.text, "types": [], "aliases": []}
         elif sid in concept_details:
-            concept_details[sid]["aliases"].append(entry.text)
+            if not entry.text in concept_details[sid]["aliases"]:
+                concept_details[sid]["aliases"].append(entry.text)
 
     # get from systematic the concepts whose codes are only there and not in alphabetic
     for _, entry in syst.iterrows():
@@ -45,12 +46,16 @@ def get_concept_details(cfg) -> dict:
         if not sid in concept_details and not pd.isna(sid):
             concept_details[sid] = {"concept_id": sid, "canonical_name": entry.text, "types": [], "aliases": []}
         elif sid in concept_details:
-            concept_details[sid]["aliases"].append(entry.text)
-        if entry.type not in concept_details[sid]["types"]:
-            concept_details[sid]["types"].append(entry.type)
+            if not entry.text in concept_details[sid]["aliases"]:
+                concept_details[sid]["aliases"].append(entry.text)
 
-    # remove all resulting duplicates
-    for k, v in concept_details.items():
-        concept_details[k]["aliases"] = list(set(v["aliases"]))
+    # get from systematic the concepts whose codes are only there and not in alphabetic
+    for _, entry in dreisteller.iterrows():
+        sid = entry.code
+        if not sid in concept_details and not pd.isna(sid):
+            concept_details[sid] = {"concept_id": sid, "canonical_name": entry.text, "types": [], "aliases": []}
+        elif sid in concept_details:
+            if not entry.text in concept_details[sid]["aliases"]:
+                concept_details[sid]["aliases"].append(entry.text)
 
     return concept_details

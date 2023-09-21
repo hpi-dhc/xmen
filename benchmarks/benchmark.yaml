@@ -1,35 +1,51 @@
 # Hydra settings
 defaults:
   - benchmark: ???
+  - override hydra/launcher: local
   - _self_
 
 base_dir: ${oc.env:HOME}/runs/xmen/
 
-hydra_work_dir: ${base_dir}/${benchmark.name}/
+# xMEN settings
+work_dir: ${base_dir}/${name}/
+
+output: ???
 
 hydra:
   job:
     chdir: True
   run:
-    dir: ${hydra_work_dir}/outputs/${now:%Y-%m-%d_%H-%M-%S}
-
-# xMEN settings
-work_dir: ${base_dir}/${name}/
+    dir: ${work_dir}/outputs/${now:%Y-%m-%d_%H-%M-%S}
+  sweep:
+    dir: ${work_dir}/outputs/${now:%Y-%m-%d_%H-%M-%S}
+    subdir: ${hydra.job.num}
 
 linker:
   batch_size: 128 
   candidate_generation:
     sapbert:
-      index_base_path: ${hydra_work_dir}/index/sapbert/
+      index_base_path: ${work_dir}/index/sapbert/
       model_name: cambridgeltl/SapBERT-UMLS-2020AB-all-lang-from-XLMR
       k: 1000
     ngram:
-      index_base_path: ${hydra_work_dir}/index/ngrams/
+      index_base_path: ${work_dir}/index/ngrams/
       k: 100
+  reranking:
+    k : 64
+    data:
+      context_length: 128
+      encode_sem_type: True
+    training:
+      learning_rate: 2e-5
+      num_train_epochs: 20
+      rank_regularization: 1.0
 
-# Benchmark settings
-save_intermediate: True
 random_seed: 42
+
+disable_wandb: False
+wandb_project: xmen
+
+thresholds: [0.01, 0.02, 0.03, 0.04, 0.05]
 
 data:
   expand_abbreviations: True

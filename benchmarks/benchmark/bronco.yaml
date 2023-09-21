@@ -1,0 +1,8 @@
+base_config: ../benchmark.yaml
+
+data_dir: ../local_files/BRONCO150
+
+linker:
+  reranking:
+    training:
+      model_name: SCAI-BIO/bio-gottbert-base

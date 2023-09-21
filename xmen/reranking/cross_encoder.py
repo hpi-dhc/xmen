@@ -10,18 +10,12 @@ from xmen.reranking import Reranker
 from xmen.reranking.scored_cross_encoder import ScoredInputExample, ScoredCrossEncoder
 from xmen.reranking.ranking_util import get_flat_candidate_ds
 
-from sentence_transformers.readers import InputExample
 from sentence_transformers.cross_encoder import CrossEncoder
-from torch.utils.data import DataLoader
 
 from transformers.trainer_utils import set_seed
 
-from sentence_transformers.cross_encoder.evaluation import (
-    CEBinaryClassificationEvaluator,
-)
-
 from datasets import DatasetDict
-from xmen.data import IndexedDatasetDict, IndexedDataset
+from xmen.data import IndexedDatasetDict, IndexedDataset, Deduplicator
 
 import logging
 from sentence_transformers import LoggingHandler
@@ -31,7 +25,7 @@ logger = logging.getLogger(__name__)
 from typing import Union, List
 
 
-def flat_ds_to_cross_enc_dataset(flat_candidate_ds, doc_index, context_length, mask_mention, encode_sem_type):
+def flat_ds_to_cross_enc_dataset(flat_candidate_ds, doc_index, context_length, mask_mention, encode_sem_type, use_nil):
     """
     Convert a flat candidate dataset to a cross-encoding dataset.
 
@@ -55,13 +49,19 @@ def flat_ds_to_cross_enc_dataset(flat_candidate_ds, doc_index, context_length, m
         l_ctx, m, r_ctx = doc["context_left"], doc["mention"], doc["context_right"]
         mention = f"{l_ctx[-context_length:] if context_length else ''} [START] {m if not mask_mention else '[MASK]'} [END] {r_ctx[:context_length] if context_length else ''}"
         batch = []
+        match_found = False
         for c, score, syns, semtype in zip(doc["candidates"], doc["scores"], doc["synonyms"], doc["types"]):
             candidate = syns[0] + " [TITLE] " + " [SEP] ".join(syns[1:])
             if encode_sem_type:
                 candidate = ",".join(semtype) + " [TYPE] " + candidate
             label = 1 if c in doc["label"] else 0
+            if label == 1:
+                match_found = True
             batch.append(ScoredInputExample(texts=[mention, candidate], label=label, score=score))
         if batch:
+            if use_nil:
+                label = 1 if not match_found else 0
+                batch[-1] = ScoredInputExample(texts=[mention, "[NIL]"], label=label, score=label, nil=True)
             res.append(batch)
             res_index.append(idx)
     return res, res_index
@@ -75,6 +75,7 @@ def create_cross_enc_dataset(
     expand_abbreviations: bool,
     encode_sem_type: bool,
     masking: bool,
+    use_nil: bool,
 ):
     """
     Create a cross-encoding dataset from a candidate dataset.
@@ -100,7 +101,12 @@ def create_cross_enc_dataset(
         candidate_ds, ground_truth, expand_abbreviations=expand_abbreviations, kb=kb
     )
     return flat_ds_to_cross_enc_dataset(
-        flat_candidate_ds, doc_index, context_length, mask_mention=masking, encode_sem_type=encode_sem_type
+        flat_candidate_ds,
+        doc_index,
+        context_length,
+        mask_mention=masking,
+        encode_sem_type=encode_sem_type,
+        use_nil=use_nil,
     )
 
 
@@ -149,7 +155,7 @@ def _cross_encoder_predict(cross_encoder, cross_enc_dataset, show_progress_bar, 
     return pred_scores
 
 
-def rerank(doc, index, doc_idx, ranking, reject_nil=False):
+def rerank(doc, index, doc_idx, ce_dataset, ranking, allow_nil):
     """
     Re-ranks entities in a given document based on their normalized scores.
 
@@ -157,11 +163,10 @@ def rerank(doc, index, doc_idx, ranking, reject_nil=False):
     - doc (dict): A dictionary containing the document to be re-ranked.
     - index (int): The index of the document.
     - doc_idx (list): A list of indices indicating the position of entities in the document.
+    - ce_dataset (list): A list of ScoredInputExamples representing the mention-candidate pairs in the document.
     - ranking (list): A list of scores to rank the entities.
-    - reject_nil (bool): A boolean value indicating whether or not to reject entities with empty normalized scores.
 
     Raises:
-    - AssertionError: If an entity has an empty normalized score and `reject_nil` is set to `True`.
     - AssertionError: If an entity's normalized score has a different length than its corresponding ranking score.
 
     Returns:
@@ -174,11 +179,19 @@ def rerank(doc, index, doc_idx, ranking, reject_nil=False):
         if mask[ranking_idx] == False:
             assert len(e["normalized"]) == 0
         else:
+            candidates = ce_dataset[ranking_idx]
             rank = ranking[ranking_idx]
             assert len(e["normalized"]) == len(rank), (len(e["normalized"]), len(rank))
-            for n, r in zip(e["normalized"], rank):
+            for n, r, cand in zip(e["normalized"], rank, candidates):
                 n["score"] = r
+                if cand.nil:
+                    if allow_nil:
+                        n["db_id"] = None
+                    else:
+                        n["score"] = 0.0
             e["normalized"].sort(key=lambda k: k["score"], reverse=True)
+            if allow_nil and not e["normalized"][0]["db_id"]:
+                e["normalized"] = []
         entities.append(e)
     return {"entities": entities}
 
@@ -203,20 +216,22 @@ class CrossEncoderTrainingArgs:
         model_name: str = "bert-base-multilingual-cased",
         fp16: bool = True,
         label_smoothing: bool = False,
-        score_regularization: bool = 1.0,
+        rank_regularization: bool = 1.0,
         train_layers: list = None,
         softmax_loss: bool = True,
         random_seed: int = 42,
+        learning_rate: float = 2e-5,
     ):
         self.args = {}
         self.args["model_name"] = model_name
         self.args["num_train_epochs"] = num_train_epochs
         self.args["fp16"] = fp16
         self.args["label_smoothing"] = label_smoothing
-        self.args["score_regularization"] = score_regularization
+        self.args["rank_regularization"] = rank_regularization
         self.args["train_layers"] = train_layers
         self.args["softmax_loss"] = softmax_loss
         self.args["random_seed"] = random_seed
+        self.args["learning_rate"] = learning_rate
 
     def __getitem__(self, key):
         return self.args[key]
@@ -248,6 +263,7 @@ class CrossEncoderReranker(Reranker):
         - new instance of CrossEncoderReranker.
         """
         model = CrossEncoder(checkpoint)
+        model._target_device = torch.device(device)
         model.model.to(torch.device(device))
         if not model.max_length:
             model.max_length = max_length
@@ -262,6 +278,7 @@ class CrossEncoderReranker(Reranker):
         expand_abbreviations: bool = False,
         encode_sem_type: bool = False,
         masking: bool = False,
+        use_nil: bool = True,
         **kwargs,
     ):
         """
@@ -275,11 +292,13 @@ class CrossEncoderReranker(Reranker):
         - expand_abbreviations: Whether to expand abbreviations in the passages.
         - encode_sem_type: Whether to include the semantic type of the concept in its representation
         - masking: Whether to mask entities in the passages.
+        - use_nil: Whether to have an option for NIL in each batch for unlinkable entities
 
         Returns:
         - IndexedDataset or IndexedDatasetDict containing the encoded passages.
         """
         print("Context length:", context_length)
+        print("Use NIL values:", use_nil)
 
         if type(candidates) == DatasetDict:
             assert type(ground_truth) == DatasetDict
@@ -287,19 +306,13 @@ class CrossEncoderReranker(Reranker):
             for split, cand in candidates.items():
                 gt = ground_truth[split]
                 ds, doc_index = create_cross_enc_dataset(
-                    cand, gt, kb, context_length, expand_abbreviations, encode_sem_type, masking
+                    cand, gt, kb, context_length, expand_abbreviations, encode_sem_type, masking, use_nil
                 )
                 res[split] = IndexedDataset(ds, doc_index)
             return res
         else:
             ds, doc_index = create_cross_enc_dataset(
-                candidates,
-                ground_truth,
-                kb,
-                context_length,
-                expand_abbreviations,
-                encode_sem_type,
-                masking,
+                candidates, ground_truth, kb, context_length, expand_abbreviations, encode_sem_type, masking, use_nil
             )
             return IndexedDataset(ds, doc_index)
 
@@ -311,7 +324,6 @@ class CrossEncoderReranker(Reranker):
         output_dir: Union[str, Path] = "./output/cross_encoder",
         train_continue=False,
         loss_fct=None,
-        callback=None,
         add_special_tokens=True,
         max_length=512,
         eval_callback=None,
@@ -328,7 +340,6 @@ class CrossEncoderReranker(Reranker):
         - train_continue (bool, optional): If True, the training will be continued from the current state of the model. Defaults to False.
         - softmax_loss (bool, optional): If True, uses CrossEntropyLoss as the loss function. Otherwise, no loss function is used. Defaults to True.
         - loss_fct (optional): The loss function to be used. If None, the function will be automatically set based on the value of softmax_loss. Defaults to None.
-        - callback (optional): A callback function to be called at the end of each epoch. Defaults to None.
         - add_special_tokens (bool, optional): If True, additional special tokens are added to the tokenizer. Defaults to True.
         - max_length (int, optional): The maximum length of the input sequence. Defaults to 512.
         - fp16 (bool, optional): If True, uses mixed-precision training. Defaults to False.
@@ -344,7 +355,9 @@ class CrossEncoderReranker(Reranker):
         if not self.model:
             self.model = ScoredCrossEncoder(training_args["model_name"], num_labels=1, max_length=max_length)
             if add_special_tokens:
-                self.model.tokenizer.add_special_tokens({"additional_special_tokens": ["[START]", "[END]", "[TITLE]"]})
+                self.model.tokenizer.add_special_tokens(
+                    {"additional_special_tokens": ["[START]", "[END]", "[TITLE]", "[NIL]", "[TYPE]"]}
+                )
                 self.model.model.resize_token_embeddings(len(self.model.tokenizer))
         else:
             assert train_continue, "Training must be continued if model is set"
@@ -379,15 +392,18 @@ class CrossEncoderReranker(Reranker):
             loss_fct=loss_fct,
             warmup_steps=100,
             output_path=output_dir,
-            callback=callback,
+            callback=None,
+            optimizer_params={"lr": training_args["learning_rate"]},
             use_amp=training_args["fp16"],
             label_smoothing=training_args["label_smoothing"],
-            score_regularization=training_args["score_regularization"],
+            rank_regularization=training_args["rank_regularization"],
             train_layers=training_args["train_layers"],
             show_progress_bar=show_progress_bar,
         )
 
-    def rerank_batch(self, candidates, cross_enc_dataset, show_progress_bar=True, convert_to_numpy=True):
+    def rerank_batch(
+        self, candidates, cross_enc_dataset, show_progress_bar=True, convert_to_numpy=True, allow_nil=True
+    ):
         """
         Re-ranks a batch of candidates using a cross encoder and returns the re-ranked candidates.
 
@@ -396,16 +412,18 @@ class CrossEncoderReranker(Reranker):
         - cross_enc_dataset: a dataset of cross-encoder inputs for scoring the candidates.
         - show_progress_bar: a boolean indicating whether to display a progress bar during prediction.
         - convert_to_numpy: a boolean indicating whether to convert predictions to numpy arrays.
+        - allow_nil: allow to produce an empty result, if NIL is the most likely option
 
         Returns:
         - A dataset of re-ranked candidates.
         """
         predictions = _cross_encoder_predict(self.model, cross_enc_dataset.dataset, show_progress_bar, convert_to_numpy)
-        return candidates.map(
-            lambda d, i: rerank(d, i, cross_enc_dataset.index, predictions),
+        reranked = candidates.map(
+            lambda d, i: rerank(d, i, cross_enc_dataset.index, cross_enc_dataset.dataset, predictions, allow_nil),
             with_indices=True,
             load_from_cache_file=False,
         )
+        return Deduplicator().transform_batch(reranked)
 
 
 class EntityLinkingEvaluator:
@@ -452,8 +470,7 @@ class EntityLinkingEvaluator:
 
             for scores, batch in zip(pred_scores, self.el_dataset):
                 labels = np.array([b.label for b in batch])
-                pred_index = scores.argmax()
-                pred_indices = scores.argsort()[-1::-1]
+                pred_indices = scores.argsort(kind="stable")[-1::-1]
                 top_k = pred_indices[0:k]
                 ground_truth = labels.argmax() if (labels > 0).any() else -1
 

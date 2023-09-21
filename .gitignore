@@ -168,3 +168,5 @@ wandb
 temp_*
 tmp_*
 temp
+**/*.out
+**/_*.ipynb

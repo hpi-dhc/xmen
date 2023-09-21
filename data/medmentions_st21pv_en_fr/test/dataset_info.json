@@ -1,0 +1,182 @@
+{
+  "citation": "@misc{mohan2019medmentions,\n      title={MedMentions: A Large Biomedical Corpus Annotated with UMLS Concepts},\n      author={Sunil Mohan and Donghui Li},\n      year={2019},\n      eprint={1902.09476},\n      archivePrefix={arXiv},\n      primaryClass={cs.CL}\n}",
+  "description": "MedMentions is a new manually annotated resource for the recognition of biomedical concepts.\nWhat distinguishes MedMentions from other annotated biomedical corpora is its size (over 4,000\nabstracts and over 350,000 linked mentions), as well as the size of the concept ontology (over\n3 million concepts from UMLS 2017) and its broad coverage of biomedical disciplines.\n\nCorpus: The MedMentions corpus consists of 4,392 papers (Titles and Abstracts) randomly selected\nfrom among papers released on PubMed in 2016, that were in the biomedical field, published in\nthe English language, and had both a Title and an Abstract.\n\nAnnotators: We recruited a team of professional annotators with rich experience in biomedical\ncontent curation to exhaustively annotate all UMLS\u00ae (2017AA full version) entity mentions in\nthese papers.\n\nAnnotation quality: We did not collect stringent IAA (Inter-annotator agreement) data. To gain\ninsight on the annotation quality of MedMentions, we randomly selected eight papers from the\nannotated corpus, containing a total of 469 concepts. Two biologists ('Reviewer') who did not\nparticipate in the annotation task then each reviewed four papers. The agreement between\nReviewers and Annotators, an estimate of the Precision of the annotations, was 97.3%.",
+  "features": {
+    "id": {
+      "dtype": "string",
+      "_type": "Value"
+    },
+    "document_id": {
+      "dtype": "string",
+      "_type": "Value"
+    },
+    "passages": [
+      {
+        "id": {
+          "dtype": "string",
+          "_type": "Value"
+        },
+        "offsets": {
+          "feature": {
+            "feature": {
+              "dtype": "int64",
+              "_type": "Value"
+            },
+            "_type": "Sequence"
+          },
+          "_type": "Sequence"
+        },
+        "text": {
+          "feature": {
+            "dtype": "string",
+            "_type": "Value"
+          },
+          "_type": "Sequence"
+        },
+        "type": {
+          "dtype": "string",
+          "_type": "Value"
+        }
+      }
+    ],
+    "entities": [
+      {
+        "id": {
+          "dtype": "string",
+          "_type": "Value"
+        },
+        "type": {
+          "dtype": "string",
+          "_type": "Value"
+        },
+        "text": {
+          "feature": {
+            "dtype": "string",
+            "_type": "Value"
+          },
+          "_type": "Sequence"
+        },
+        "offsets": {
+          "feature": [
+            {
+              "dtype": "int32",
+              "_type": "Value"
+            }
+          ],
+          "_type": "Sequence"
+        },
+        "normalized": [
+          {
+            "db_name": {
+              "dtype": "string",
+              "_type": "Value"
+            },
+            "db_id": {
+              "dtype": "string",
+              "_type": "Value"
+            }
+          }
+        ]
+      }
+    ],
+    "events": [
+      {
+        "id": {
+          "dtype": "string",
+          "_type": "Value"
+        },
+        "type": {
+          "dtype": "string",
+          "_type": "Value"
+        },
+        "trigger": {
+          "text": {
+            "feature": {
+              "dtype": "string",
+              "_type": "Value"
+            },
+            "_type": "Sequence"
+          },
+          "offsets": {
+            "feature": [
+              {
+                "dtype": "int32",
+                "_type": "Value"
+              }
+            ],
+            "_type": "Sequence"
+          }
+        },
+        "arguments": [
+          {
+            "role": {
+              "dtype": "string",
+              "_type": "Value"
+            },
+            "ref_id": {
+              "dtype": "string",
+              "_type": "Value"
+            }
+          }
+        ]
+      }
+    ],
+    "coreferences": [
+      {
+        "id": {
+          "dtype": "string",
+          "_type": "Value"
+        },
+        "entity_ids": {
+          "feature": {
+            "dtype": "string",
+            "_type": "Value"
+          },
+          "_type": "Sequence"
+        }
+      }
+    ],
+    "relations": [
+      {
+        "id": {
+          "dtype": "string",
+          "_type": "Value"
+        },
+        "type": {
+          "dtype": "string",
+          "_type": "Value"
+        },
+        "arg1_id": {
+          "dtype": "string",
+          "_type": "Value"
+        },
+        "arg2_id": {
+          "dtype": "string",
+          "_type": "Value"
+        },
+        "normalized": [
+          {
+            "db_name": {
+              "dtype": "string",
+              "_type": "Value"
+            },
+            "db_id": {
+              "dtype": "string",
+              "_type": "Value"
+            }
+          }
+        ]
+      }
+    ],
+    "corpus_id": {
+      "dtype": "string",
+      "_type": "Value"
+    },
+    "lang": {
+      "dtype": "string",
+      "_type": "Value"
+    }
+  },
+  "homepage": "https://github.com/chanzuckerberg/MedMentions",
+  "license": "Creative Commons Zero v1.0 Universal"
+}

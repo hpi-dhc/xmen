@@ -2,6 +2,7 @@ from typing import Iterable
 from itertools import groupby
 import pandas as pd
 import warnings
+import regex as re
 
 from .ext.neleval.prepare import SelectAlternatives
 from .ext.neleval.document import Document
@@ -32,9 +33,18 @@ _KEY_TO_METRIC = {
 }
 
 
-def entity_linking_error_analysis(
-    ground_truth: Iterable, prediction: Iterable, allow_multiple_gold_candidates=False
-) -> pd.DataFrame:
+def _get_word_len(row):
+    return len(" ".join(row.gt_text).split(" "))
+
+
+def _get_entity_info(row):
+    res = {}
+    res["_word_len"] = _get_word_len(row)
+    res["_abbrev"] = (len(row.gt_text) == 1) and bool(re.match("[A-Z]{2,3}", row.gt_text[0]))
+    return res
+
+
+def error_analysis(ground_truth: Iterable, prediction: Iterable, allow_multiple_gold_candidates=False) -> pd.DataFrame:
     """
     Computes error analysis of entity linking predictions by comparing against the ground truth entities, assuming that the entities are aligned.
 
@@ -54,10 +64,12 @@ def entity_linking_error_analysis(
             error_df["corpus_id"] = gt["corpus_id"]
         error_df["document_id"] = gt["document_id"]
         res.append(error_df)
-    return pd.concat(res).reset_index().drop(columns="index")
+    ea_df = pd.concat(res).reset_index().drop(columns="index")
+    entity_info = pd.DataFrame(list(ea_df.apply(_get_entity_info, axis=1)))
+    return pd.concat([entity_info, ea_df], axis=1)
 
 
-def _get_error_df(gt_ents: list, pred_ents: list, allow_multiple_gold_candidates=False) -> pd.DataFrame:
+def _get_error_df(gt_ents, pred_ents, allow_multiple_gold_candidates=False) -> pd.DataFrame:
     """
     Construct a Pandas DataFrame with the error analysis results from the comparison of two lists of named entities.
 
@@ -79,16 +91,71 @@ def _get_error_df(gt_ents: list, pred_ents: list, allow_multiple_gold_candidates
                 e["text"],
                 e["type"],
             )
-            for e in entities
+            for e in sorted(entities, key=lambda e: (e["offsets"], e["type"], e["text"]))
         ]
 
     gt_items = get_items(gt_ents)
-    pred_items = get_items(pred_ents)
+    pred_items_unmatched = get_items(pred_ents)
+
+    # If we have entities with multiple normalizations, we want to order by best match order
+    pred_items = []
+    for key, group in groupby(pred_items_unmatched, lambda x: (x[0], x[1], x[3], x[4])):
+        group = list(group)
+        if len(group) == 1:
+            pred_items.append(group[0])
+        else:
+
+            def best_match_index(pred_normalized):
+                matches = [g for g in gt_items if (g[0], g[1], g[3], g[4]) == key]
+                best_match = len(pred_normalized)
+                best_index = len(pred_normalized)
+                for i, m in enumerate(matches):
+                    for j, p in enumerate(pred_normalized):
+                        if p["db_id"] == m[2][0]["db_id"]:
+                            if j < best_index:
+                                best_index = j
+                                best_match = i
+                return best_match
+
+            best_match_indices = sorted([(pred, best_match_index(pred[2])) for pred in group], key=lambda t: t[1])
+            matched = [None] * len(best_match_indices)
+            for p, i in best_match_indices:
+                if i < len(matched) and matched[i] == None:
+                    matched[i] = p
+                else:
+                    found = False
+                    for j in range(len(matched)):
+                        if not found and matched[j] == None:
+                            matched[j] = p
+                            found = True
+                    assert found == True
+
+            pred_items.extend(matched)
+    assert len(pred_items) == len(pred_items_unmatched)
 
     ent_res = []
 
-    def record_match(pred_s, pred_e, pred_c, pred_text, pred_type, gt_s, gt_e, gt_c, gt_text, gt_type, e_match_type):
-        if not gt_c:
+    def record_match(
+        pred_s: int, pred_e: int, pred_c, pred_text, pred_type, gt_s, gt_e, gt_c, gt_text, gt_type, e_match_type
+    ):
+        if not gt_c:  # false positive
+            ent_res.append(
+                {
+                    "pred_start": pred_s,
+                    "pred_end": pred_e,
+                    "pred_text": pred_text,
+                    "gt_start": None,
+                    "gt_end": None,
+                    "gt_text": None,
+                    "entity_match_type": e_match_type,
+                    "gold_concept": None,
+                    "gold_type": None,
+                    "pred_index": -1,
+                    "pred_index_score": None,
+                    "pred_top": None,
+                    "pred_top_score": None,
+                }
+            )
             return
 
         def get_match_result(gt_concept):
@@ -158,10 +225,11 @@ def _get_error_df(gt_ents: list, pred_ents: list, allow_multiple_gold_candidates
                 pred_c,
                 pred_text,
                 pred_type,
-                gt_s,
-                gt_e,
-                gt_c,
-                gt_text,
+                -1,
+                -1,
+                None,
+                None,
+                None,
                 e_match_type,
             )
         elif not pred_items:
@@ -271,11 +339,16 @@ def _get_error_df(gt_ents: list, pred_ents: list, allow_multiple_gold_candidates
     return pd.DataFrame(ent_res)
 
 
+def get_synset(kb, scui):
+    kb_ix = kb.cui_to_entity[str(scui)]
+    return set([kb_ix.canonical_name] + kb_ix.aliases)
+
+
 def evaluate(
     ground_truth: Iterable,
     prediction: Iterable,
     allow_multiple_gold_candidates=False,
-    top_k_predictions=None,
+    top_k_predictions=1,
     threshold=None,
     ner_only=False,
     metrics=["strict"],
@@ -289,7 +362,7 @@ def evaluate(
     - allow_multiple_gold_candidates: A boolean indicating whether multiple
             gold standard candidates are allowed for each annotation. Defaults to False.
     - top_k_predictions: An integer indicating the maximum number of predicted
-            candidates to consider for each annotation. Defaults to None.
+            candidates to consider for each annotation. Defaults to 1.
     - threshold: A float indicating the minimum confidence threshold to consider
             for each predicted candidate. Defaults to None.
     - ner_only: A boolean indicating whether to only consider NER tags. Defaults to False.
@@ -367,8 +440,9 @@ def _to_nel_eval(
     - An iterable of Document objects in neleval format.
     """
     for u in units:
-        entities = u["entities"]
-        unit_id = u.get("corpus_id", "") + u["document_id"]
+        entities = sorted(u["entities"], key=lambda e: e["offsets"])
+        cid = u["corpus_id"] if "corpus_id" in u and u["corpus_id"] else ""
+        unit_id = cid + u["document_id"]
         annotations = []
         for e in entities:
             if "normalized" in e:
@@ -418,6 +492,6 @@ def evaluate_at_k(ground_truth, pred, eval_k=[1, 2, 4, 8, 16, 32, 64], silent=Fa
     for ki in eval_k:
         eval_res = evaluate(ground_truth, pred, top_k_predictions=ki)
         if not silent:
-            print(f"Perf@{ki}", eval_res["strict"]["recall"])
+            print(f"Recall@{ki}", eval_res["strict"]["recall"])
         res[ki] = eval_res
     return res

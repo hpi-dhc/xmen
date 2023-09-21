@@ -139,7 +139,7 @@ def test_multiple_candidates():
         )
     ]
 
-    metrics = evaluation.evaluate(gt, pred, metrics="all")
+    metrics = evaluation.evaluate(gt, pred, metrics="all", top_k_predictions=None)
     assert metrics["strict"]["precision"] == 0.5
     assert metrics["strict"]["recall"] == 1.0
     assert metrics["strict"]["fscore"] == 2 / 3
@@ -174,7 +174,7 @@ def test_multiple_candidates_predictions():
             ]
         )
     ]
-    metrics = evaluation.evaluate(gt, pred, metrics="all")
+    metrics = evaluation.evaluate(gt, pred, metrics="all", top_k_predictions=None)
     assert metrics["strict"]["precision"] == 0.5
     assert metrics["strict"]["recall"] == 1
     assert metrics["strict"]["fscore"] == 2 / 3
@@ -380,3 +380,43 @@ def test_multiple_candidates_top_2():
         assert metrics["strict"]["fp"] == 1, m
         assert metrics["strict"]["rtp"] == 1, m
         assert metrics["strict"]["fn"] == 0, m
+
+
+def test_error_analysis():
+    gt = [
+        make_document(
+            [
+                Entity([[11, 17]], "entity", concepts=[Concept("c1", db_name="UMLS")]),
+                Entity([[11, 17]], "entity", concepts=[Concept("c2", db_name="UMLS")]),
+            ]
+        )
+    ]
+    pred = [
+        make_document(
+            [
+                Entity([[11, 17]], "entity", concepts=[Concept("c1", db_name="UMLS")]),
+                Entity([[11, 17]], "entity", concepts=[Concept("c2", db_name="UMLS")]),
+            ]
+        )
+    ]
+    assert (evaluation.error_analysis(gt, pred).pred_index == 0).all()
+
+
+def test_error_analysis_order():
+    gt = [
+        make_document(
+            [
+                Entity([[11, 17]], "entity", concepts=[Concept("c2", db_name="UMLS")]),
+                Entity([[11, 17]], "entity", concepts=[Concept("c1", db_name="UMLS")]),
+            ]
+        )
+    ]
+    pred = [
+        make_document(
+            [
+                Entity([[11, 17]], "entity", concepts=[Concept("c1", db_name="UMLS")]),
+                Entity([[11, 17]], "entity", concepts=[Concept("c2", db_name="UMLS")]),
+            ]
+        )
+    ]
+    assert (evaluation.error_analysis(gt, pred).pred_index == 0).all()

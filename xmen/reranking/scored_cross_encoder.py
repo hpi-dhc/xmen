@@ -23,7 +23,9 @@ class ScoredInputExample:
     Structure for one input example with texts, the label and a unique id
     """
 
-    def __init__(self, guid: str = "", texts: List[str] = None, label: Union[int, float] = 0, score: float = None):
+    def __init__(
+        self, guid: str = "", texts: List[str] = None, label: Union[int, float] = 0, score: float = None, nil=False
+    ):
         """
         Creates one InputExample with the given texts, guid and label
         :param guid
@@ -34,15 +36,18 @@ class ScoredInputExample:
             the label for the example
         :score score
             prior score for the example
+        :nil nil
+            whether the example is a nil example
         """
         self.guid = guid
         self.texts = texts
         self.label = label
         self.score = score
+        self.nil = nil
 
     def __repr__(self):
-        return "<ScoredInputExample> label: {}, score: {}, texts: {}".format(
-            str(self.label), str(self.score), "; ".join(self.texts)
+        return "<ScoredInputExample> label: {}, score: {}, texts: {}, nil: {}".format(
+            str(self.label), str(self.score), "; ".join(self.texts), self.nil
         )
 
 
@@ -85,16 +90,9 @@ class ScoredCrossEncoder(CrossEncoder):
 
         return tokenized, labels, scores
 
-    def score_regularizer(self, logits, scores):  # , mean = False):
+    def rank_regularizer(self, logits, scores):
         pdist = torch.nn.PairwiseDistance(p=2)
-        dist = pdist(logits, scores)
-        # print(dist)
-        return dist
-        # sm = torch.nn.Softmax(dim=0)
-        # if mean:
-        #    return torch.mean(scores - sm(logits))
-        # else:
-        #    return torch.sum(scores - sm(logits))
+        return pdist(logits, scores)
 
     def fit_with_scores(
         self,
@@ -108,7 +106,7 @@ class ScoredCrossEncoder(CrossEncoder):
         optimizer_class: Type[Optimizer] = torch.optim.AdamW,
         optimizer_params: Dict[str, object] = {"lr": 2e-5},
         weight_decay: float = 0.01,
-        score_regularization: bool = 1.0,
+        rank_regularization: bool = 1.0,
         train_layers: list = [],
         label_smoothing: float = 0.0,
         evaluation_steps: int = 0,
@@ -116,7 +114,7 @@ class ScoredCrossEncoder(CrossEncoder):
         save_best_model: bool = True,
         max_grad_norm: float = 1,
         use_amp: bool = False,
-        callback: Callable[[float, int, int], None] = None,
+        callback: Callable[[Dict], None] = None,
         show_progress_bar: bool = True,
     ):
         """
@@ -141,8 +139,6 @@ class ScoredCrossEncoder(CrossEncoder):
         :param max_grad_norm: Used for gradient normalization.
         :param use_amp: Use Automatic Mixed Precision (AMP). Only for Pytorch >= 1.6.0
         :param callback: Callback function that is invoked after each evaluation.
-                It must accept the following three parameters in this order:
-                `score`, `epoch`, `steps`
         :param show_progress_bar: If True, output a tqdm progress bar
         """
         train_dataloader.collate_fn = self.smart_batching_collate_with_scores
@@ -207,8 +203,8 @@ class ScoredCrossEncoder(CrossEncoder):
                         if self.config.num_labels == 1:
                             logits = logits.view(-1)
                         loss_value = loss_fct(logits, labels)
-                        if score_regularization != 0:
-                            loss_value += score_regularization * self.score_regularizer(logits, scores)
+                        if rank_regularization != 0:
+                            loss_value += rank_regularization * self.rank_regularizer(logits, scores)
 
                     scale_before_step = scaler.get_scale()
                     scaler.scale(loss_value).backward()
@@ -224,8 +220,8 @@ class ScoredCrossEncoder(CrossEncoder):
                     if self.config.num_labels == 1:
                         logits = logits.view(-1)
                     loss_value = loss_fct(logits, labels)
-                    if score_regularization != 0:
-                        loss_value += score_regularization * self.score_regularizer(logits, scores)
+                    if rank_regularization != 0:
+                        loss_value += rank_regularization * self.rank_regularizer(logits, scores)
                     loss_value.backward()
                     torch.nn.utils.clip_grad_norm_(self.model.parameters(), max_grad_norm)
                     optimizer.step()

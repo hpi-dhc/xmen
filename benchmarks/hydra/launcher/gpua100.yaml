@@ -1,0 +1,15 @@
+defaults:
+  - submitit_slurm
+
+_target_: hydra_plugins.hydra_submitit_launcher.submitit_launcher.SlurmLauncher
+submitit_folder: ${hydra.sweep.dir}/.submitit/%j
+timeout_min: 4320
+cpus_per_task: 16
+gpus_per_task: 1
+nodes: 1
+mem_gb: 64
+partition: gpua100
+array_parallelism: 2
+name: xmen-${name}
+additional_parameters: {"mail-user": "florian.borchert@mattermost", "mail-type": "END,FAIL"}
+  

@@ -9,4 +9,4 @@ from .data_loader import (
 )
 
 from .metric_learning import Sap_Metric_Learning
-from .model_wrapper import Model_Wrapper
+from ....linkers.model_wrapper import Model_Wrapper

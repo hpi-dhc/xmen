@@ -1,17 +1,15 @@
+# @package _global_
 base_config: ../benchmark.yaml
 
-name: mantra_benchmark
+name: ???
 
 dataset: mantra_gsc
 
+subsets: ???
+
 dict:
   umls:
-    lang:
-      - en
-      - fr
-      - de
-      - nl
-      - es
+    lang: ???
     meta_path: ${oc.env:UMLS_HOME}/2014AB/META
     semantic_groups:
       - ANAT
@@ -39,3 +37,5 @@ dict:
       - MDRSPA
       - MDADUT
 
+data:
+  filter_semantic_groups: True

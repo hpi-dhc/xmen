@@ -1,0 +1,21 @@
+# @package _global_
+defaults:
+  - medmentions_multiling
+  - _self_
+
+name: medmentions_de
+
+local_dataset: ../data/medmentions_st21pv_en_de
+
+base_config: medmentions_multiling.yaml
+
+dict:
+  umls:
+    lang: 
+      - en
+      - de
+
+linker:
+  reranking:
+    training:
+      model_name: SCAI-BIO/bio-gottbert-base

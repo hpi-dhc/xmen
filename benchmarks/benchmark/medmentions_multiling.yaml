@@ -1,0 +1,32 @@
+# @package _global_
+# Abstract base config for non-English MedMentions translations
+base_config: ../benchmark.yaml
+
+name: ???
+
+dict:
+  umls:
+    lang: ???
+    meta_path: ${oc.env:UMLS_HOME}/2017AA/META
+    semantic_types:
+      - T005
+      - T007
+      - T017
+      - T022
+      - T031
+      - T033
+      - T037
+      - T038
+      - T058
+      - T062
+      - T074
+      - T082
+      - T091
+      - T092
+      - T097
+      - T098
+      - T103
+      - T168
+      - T170
+      - T201
+      - T204

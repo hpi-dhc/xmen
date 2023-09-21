@@ -1,25 +1,74 @@
 from typing import List, Union
 from pathlib import Path
 import datasets
+from xmen.data import features
+from xmen.data.util import init_schema
+
+RANDOM_SEED = 42
 
 
-def load_dataset(dataset: str):
+def _map_init_schema(batch):
+    batch = init_schema(batch)
+    return batch
+
+
+def load_dataset(dataset: Union[str, Path], **kwargs):
     """
     Loads a dataset using the appropriate data loader function from the xmen package.
 
     Args:
-    - dataset (str): Name of the dataset to be loaded.
+    - dataset (str | Path): Name or path of the dataset to be loaded.
 
     Returns:
     - The loaded dataset.
     """
     import sys
 
+    if Path(dataset).exists():
+        ds = datasets.load_from_disk(dataset, keep_in_memory=True)
+        ds = ds.map(_map_init_schema, batch_size=128, batched=True).cast(features)
+        return [ds]
+
     loader_fn = getattr(sys.modules[__name__], f"load_{dataset}")
-    return loader_fn()
+    return loader_fn(**kwargs)
 
 
-def load_mantra_gsc():
+def load_bronco_diagnosis(data_dir, **kwargs):
+    return _load_bronco("DIAGNOSIS", data_dir)
+
+
+def load_bronco_treatment(data_dir, **kwargs):
+    return _load_bronco("TREATMENT", data_dir)
+
+
+def load_bronco_medication(data_dir, **kwargs):
+    return _load_bronco("MEDICATION", data_dir)
+
+
+def _load_bronco(label: str, data_dir):
+    def filter_entities(bigbio_entities, valid_entities):
+        filtered_entities = []
+        for ent in bigbio_entities:
+            if ent["type"] in valid_entities:
+                filtered_entities.append(ent)
+        return filtered_entities
+
+    bronco = _load_bigbio_dataset(
+        ["bronco_bigbio_kb"], "bronco", lambda _: "de", splits=["train"], data_dir=data_dir
+    ).map(lambda row: {"entities": filter_entities(row["entities"], [label])})["train"]
+
+    res = []
+    for k_test in range(4, -1, -1):
+        k_valid = k_test - 1 if k_test > 0 else 4
+        test_split = bronco.select([k_test])
+        validation_split = bronco.select([k_valid])
+        train_split = bronco.select([i for i in range(0, 5) if i not in [k_valid, k_test]])
+        res.append(datasets.DatasetDict({"train": train_split, "validation": validation_split, "test": test_split}))
+
+    return res
+
+
+def load_mantra_gsc(subsets=None):
     """
     Loads all subsets of Mantra GSC into one dataset
 
@@ -31,9 +80,10 @@ def load_mantra_gsc():
     import bigbio
 
     mantra_path = str(Path(bigbio.__file__).parent / "biodatasets" / "mantra_gsc" / "mantra_gsc.py")
-    configs = [c for c in datasets.get_dataset_infos(mantra_path).keys() if "bigbio" in c]
+    if not subsets:
+        subsets = [c for c in datasets.get_dataset_infos(mantra_path).keys() if "bigbio" in c]
 
-    ds_map = {c: datasets.load_dataset(mantra_path, c) for c in configs}
+    ds_map = {c: datasets.load_dataset(mantra_path, c) for c in subsets}
     ds = []
     for conf, ds_dict in ds_map.items():
         for k in ds_dict.keys():
@@ -41,9 +91,9 @@ def load_mantra_gsc():
             ds_dict[k] = ds_dict[k].add_column("lang", [conf.split("_")[2]] * len(ds_dict[k]))
         ds.append(ds_dict)
     output = datasets.dataset_dict.DatasetDict()
-    for s in ["train"]:
-        output[s] = datasets.concatenate_datasets([d[s] for d in ds])
-    return output
+    # Mantra only as single fold, which we use as a test set
+    output["test"] = datasets.concatenate_datasets([d["train"] for d in ds])
+    return [output]
 
 
 def _load_medmentions(config_name):
@@ -74,7 +124,7 @@ def _load_medmentions(config_name):
     ]
 
 
-def load_medmentions_full():
+def load_medmentions_full(subsets=None):
     """
     Loads the full MedMentions dataset.
 
@@ -84,7 +134,7 @@ def load_medmentions_full():
     return _load_medmentions("medmentions_full_bigbio_kb")
 
 
-def load_medmentions_st21pv():
+def load_medmentions_st21pv(subsets=None):
     """
     Loads the MedMentions dataset with ST21PV subset.
 
@@ -94,16 +144,18 @@ def load_medmentions_st21pv():
     return _load_medmentions("medmentions_st21pv_bigbio_kb")
 
 
-def load_quaero():
+def load_quaero(subsets=None):
     """
     Loads the Quaero dataset.
 
     Returns:
     - A dataset loaded from the Quaero dataset with bigbio knowledge base.
     """
+    if not subsets:
+        subsets = ["quaero_emea_bigbio_kb", "quaero_medline_bigbio_kb"]
     return [
         _load_bigbio_dataset(
-            ["quaero_emea_bigbio_kb", "quaero_medline_bigbio_kb"],
+            subsets,
             "quaero",
             lambda _: "fr",
             splits=["train", "validation", "test"],
@@ -111,7 +163,7 @@ def load_quaero():
     ]
 
 
-def load_distemist():
+def load_distemist(subsets=None):
     """
     Loads the DisTEMIST (EL track) dataset.
 
@@ -121,8 +173,10 @@ def load_distemist():
     Raises:
     - AssertionError: If the loaded dataset has an unexpected format.
     """
+    if not subsets:
+        subsets = ["distemist_linking_bigbio_kb"]
     ds = _load_bigbio_dataset(
-        ["distemist_linking_bigbio_kb"],
+        subsets,
         "distemist",
         lambda _: "es",
         splits=["train", "test"],
@@ -138,10 +192,19 @@ def load_distemist():
     ds["train"] = ds_train
     ds["validation"] = ds_valid
 
-    return [ds]
+    def unmerge_multi_annotations(document):
+        entities = []
+        for e in document["entities"]:
+            for n in e["normalized"]:
+                en = e.copy()
+                en["normalized"] = [n]
+                entities.append(en)
+        return {"entities": entities}
+
+    return [ds.map(unmerge_multi_annotations)]
 
 
-def _load_bigbio_dataset(config_names: List[str], dataset_name: str, lang_mapper, splits):
+def _load_bigbio_dataset(config_names: List[str], dataset_name: str, lang_mapper, splits, data_dir=None):
     """
     Loads a biomedical dataset and returns a concatenated dataset for the specified splits.
 
@@ -157,7 +220,9 @@ def _load_bigbio_dataset(config_names: List[str], dataset_name: str, lang_mapper
     # TODO: implement loading all available configs for a dataset
     assert config_names is not None, "Not implemented"
 
-    ds_map = {c: datasets.load_dataset(f"bigscience-biomedical/{dataset_name}", c) for c in config_names}
+    ds_map = {
+        c: datasets.load_dataset(f"bigbio/{dataset_name}", c, data_dir, keep_in_memory=True) for c in config_names
+    }
     ds = []
     for conf, ds_dict in ds_map.items():
         for k in ds_dict.keys():

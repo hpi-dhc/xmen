@@ -1,21 +1,25 @@
 from typing import Union, List
 
 
-def clean_concepts_from_dataset(dataset):
+def init_schema(dataset):
     """
-    Cleans the 'entities' key of a given dataset.
-
-    Args:
-    - dataset: A dataset containing dictionaries with an 'entities' key.
-
-    Returns:
-    - A cleaned dataset where each dictionary in the dataset only contains the 'id', 'spans_start', 'spans_end', and 'text' keys in its 'entities' key.
+    Initializes the non-BigBIO elements of a dataset
     """
-    return dataset.map(
-        lambda i: {
-            "entities": {k: v for k, v in i["entities"].items() if k in ["id", "spans_start", "spans_end", "text"]}
-        }
-    )
+    n_docs = len(dataset["document_id"])
+    if not "corpus_id" in dataset:
+        dataset["corpus_id"] = [None] * n_docs
+    if not "lang" in dataset:
+        dataset["lang"] = [None] * n_docs
+    for es in dataset["entities"]:
+        for e in es:
+            for n in e["normalized"]:
+                if not "score" in n:
+                    n["score"] = 0.0
+                if not "predicted_by" in n:
+                    n["predicted_by"] = []
+            if not "long_form" in e:
+                e["long_form"] = None
+    return dataset
 
 
 class Concept:
@@ -109,3 +113,27 @@ def get_cuis(dataset):
     - A list of unique CUIs.
     """
     return [c["db_id"] for doc in dataset["entities"] for e in doc for c in e["normalized"]]
+
+
+def filter_and_apply_threshold(input_pred, k: int, threshold: float):
+    """
+    Filters the predicted entities based on a score threshold and returns the top k entities for each entity.
+
+    Args:
+    - input_pred (list): A list of predicted entities to be filtered and thresholded.
+    - k (int): The number of top entities to keep after filtering.
+    - threshold (float): The score threshold below which entities will be removed.
+
+    Returns:
+    - list: A list of filtered and thresholded predicted entities.
+    """
+    assert k >= 0
+
+    def apply(entry):
+        entities = entry["entities"]
+        for e in entities:
+            filtered = [n for n in e["normalized"] if "score" in n and n["score"] >= threshold]
+            e["normalized"] = sorted(filtered, key=lambda n: n["score"], reverse=True)[:k]
+        return {"entities": entities}
+
+    return input_pred.map(apply, load_from_cache_file=False)

@@ -1,0 +1,22 @@
+# @package _global_
+defaults:
+  - _self_
+  - mantra
+  
+base_config: mantra.yaml
+
+name: mantra_es_benchmark
+
+subsets:
+  - mantra_gsc_es_medline_bigbio_kb
+  - mantra_gsc_es_emea_bigbio_kb
+
+dict:
+  umls:
+    lang:
+      - es
+      - en
+
+linker:
+  reranking:
+    pre_trained_model: ../models/es_ce_medmentions

@@ -1,20 +1,19 @@
 from itertools import groupby
 from typing import List, Union
 from pathlib import Path
-import pickle
 import pandas as pd
-import numpy as np
+import os
+
+from xmen.data import features, util
 
 from xmen.linkers import EntityLinker
-from xmen.ext.sapbert.src.model_wrapper import Model_Wrapper
+from .model_wrapper import Model_Wrapper, _EMBED_DIM
 
 from xmen.linkers.faiss_indexer import DenseFlatIndexer, DenseHNSWFlatIndexer
 
 from xmen.log import logger
 
 from scipy.spatial.distance import cosine
-
-_EMBED_DIM = 768
 
 
 class SapBERTLinker(EntityLinker):
@@ -64,7 +63,9 @@ class SapBERTLinker(EntityLinker):
         model_name: str = CROSS_LINGUAL,
         cuda: bool = True,
         subtract_mean=True,
-        batch_size=2048 * 6,
+        batch_size=2048,
+        index_buffer_size=50000,
+        write_memory_map=False,
         write_flat=False,
     ):
         """
@@ -93,30 +94,39 @@ class SapBERTLinker(EntityLinker):
         wrapper.load_model(model_name, use_cuda=cuda)
 
         logger.info(f"Computing dictionary embeddings with {model_name}")
-        candidate_dense_embeds = wrapper.embed_dense(
-            term_dict.term.tolist(),
-            agg_mode="cls",
-            use_cuda=cuda,
-            show_progress=True,
-            batch_size=batch_size,
-        )
-        if subtract_mean:
-            candidate_dense_embeds -= candidate_dense_embeds.mean(0)
-        # print('Writing embeddings to', out_embed_file)
-        # with open(out_embed_file, "wb") as f:
-        #    pickle.dump(candidate_dense_embeds, f)
+        mem_map_file = (index_base_path / "embeddings.memmap") if write_memory_map else None
+        if mem_map_file:
+            logger.info(f"Writing embeddings to temporary memory map file {mem_map_file}")
 
-        logger.info("Building FAISS Hierarchical Index")
-        hier_indexer = DenseHNSWFlatIndexer(candidate_dense_embeds.shape[1])
-        hier_indexer.index_data(candidate_dense_embeds, show_progress=True)
-        logger.info(f"Writing FAISS Hierarchical index to {out_faiss_hier_file}")
-        hier_indexer.serialize(str(out_faiss_hier_file))
+        try:
+            candidate_dense_embeds = wrapper.embed_dense(
+                term_dict.term.tolist(),
+                agg_mode="cls",
+                use_cuda=cuda,
+                show_progress=True,
+                batch_size=batch_size,
+                memory_map_file=mem_map_file,
+            )
+            if subtract_mean:
+                candidate_dense_embeds -= candidate_dense_embeds.mean(0)
+            # print('Writing embeddings to', out_embed_file)
+            # with open(out_embed_file, "wb") as f:
+            #    pickle.dump(candidate_dense_embeds, f)
 
-        if write_flat:
-            logger.info("Building FAISS Flat Index")
-            flat_indexer = DenseFlatIndexer(candidate_dense_embeds.shape[1])
-            flat_indexer.index_data(candidate_dense_embeds, show_progress=True)
-            flat_indexer.serialize(str(out_faiss_flat_file))
+            logger.info("Building FAISS Hierarchical Index")
+            hier_indexer = DenseHNSWFlatIndexer(candidate_dense_embeds.shape[1], buffer_size=index_buffer_size)
+            hier_indexer.index_data(candidate_dense_embeds, show_progress=True)
+            logger.info(f"Writing FAISS Hierarchical index to {out_faiss_hier_file}")
+            hier_indexer.serialize(str(out_faiss_hier_file))
+
+            if write_flat:
+                logger.info("Building FAISS Flat Index")
+                flat_indexer = DenseFlatIndexer(candidate_dense_embeds.shape[1])
+                flat_indexer.index_data(candidate_dense_embeds, show_progress=True)
+                flat_indexer.serialize(str(out_faiss_flat_file))
+        finally:
+            if mem_map_file and mem_map_file.exists():
+                os.remove(mem_map_file)
 
     def __init__(
         self,
@@ -185,21 +195,22 @@ class SapBERTLinker(EntityLinker):
         def get_result(sample):
             def get_str(mention):
                 s = " ".join(mention["text"])
-                if expand_abbreviations and mention.get("long_form", None):
+                if expand_abbreviations and mention.get("long_form"):
                     s += " [SEP] " + mention["long_form"]
                 return s
 
-            mentions_index, mention_strings = zip(
-                *[
-                    (j, get_str(mention))
-                    for j, doc_entities in enumerate(sample["entities"])
-                    for mention in doc_entities
-                ]
+            sample = util.init_schema(sample)
+            entities = sample["entities"]
+
+            mentions = tuple(
+                zip(*[(j, get_str(mention)) for j, doc_entities in enumerate(entities) for mention in doc_entities])
             )
+            if not mentions:  # empty
+                return {"entities": entities}
+
+            mentions_index, mention_strings = mentions
 
             concepts = self._get_concepts(list(mention_strings))
-
-            entities = sample["entities"]
 
             for mi, concept_group in groupby(zip(mentions_index, concepts), key=lambda p: p[0]):
                 for j, c in enumerate(concept_group):
@@ -212,6 +223,7 @@ class SapBERTLinker(EntityLinker):
             batch_size=batch_size,
             batched=True,
             load_from_cache_file=False,
+            features=features,
         )
 
     def predict(self, unit: str, entities: dict) -> dict:
@@ -242,6 +254,6 @@ class SapBERTLinker(EntityLinker):
                         cuis.add(r.cui)
                         concepts.append((r.cui, score))
             yield [
-                {"db_id": cui, "score": score, "db_name": self.kb_name}
+                {"db_id": cui, "score": score, "db_name": self.kb_name, "predicted_by": ["sapbert"]}
                 for cui, score in sorted(concepts, key=lambda p: -p[1])
             ]

@@ -15,3 +15,6 @@ class Reranker(ABC):
         for k, v in concepts.items():
             result[k] = list(np.array(v)[idx])
         return result
+
+
+from .cross_encoder import CrossEncoderReranker

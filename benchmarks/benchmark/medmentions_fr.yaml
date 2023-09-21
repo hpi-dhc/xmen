@@ -1,0 +1,21 @@
+# @package _global_
+defaults:
+  - medmentions_multiling
+  - _self_
+
+name: medmentions_fr
+
+local_dataset: ../data/medmentions_st21pv_en_fr
+
+base_config: medmentions_multiling.yaml
+
+dict:
+  umls:
+    lang: 
+      - en
+      - fr
+
+linker:
+  reranking:
+    training:
+      model_name: Dr-BERT/DrBERT-4GB-CP-PubMedBERT

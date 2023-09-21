@@ -10,7 +10,7 @@ class SemanticGroupFilter:
     - version (str, optional): The version of the semantic group mapping to use.
     """
 
-    def __init__(self, kb, version=None):
+    def __init__(self, kb, version="v03"):
         self._kb = kb
         self._sem_groups = get_semantic_groups(version).set_index("TUI")
 
@@ -45,6 +45,8 @@ class SemanticGroupFilter:
         entities = example["entities"]
         for e in entities:
             sem_groups = e["type"]
+            if not isinstance(sem_groups, list):
+                sem_groups = [sem_groups]
             filtered = []
             for n in e["normalized"]:
                 concept_groups = self.get_sem_groups(n["db_id"])

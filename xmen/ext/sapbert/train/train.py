@@ -27,7 +27,7 @@ from src.data_loader import (
     MetricLearningDataset,
     MetricLearningDataset_pairwise,
 )
-from src.model_wrapper import (
+from xmen.linkers.model_wrapper import (
     Model_Wrapper
 )
 from src.metric_learning import (

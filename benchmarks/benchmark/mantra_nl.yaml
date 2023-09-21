@@ -1,0 +1,22 @@
+# @package _global_
+defaults:
+  - _self_
+  - mantra
+  
+base_config: mantra.yaml
+
+name: mantra_nl_benchmark
+
+subsets:
+  - mantra_gsc_nl_medline_bigbio_kb
+  - mantra_gsc_nl_emea_bigbio_kb
+
+dict:
+  umls:
+    lang:
+      - nl
+      - en
+
+linker:
+  reranking:
+    pre_trained_model: ../models/nl_ce_medmentions

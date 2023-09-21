@@ -1,7 +1,0 @@
-defaults:
-  - medmentions
-  - _self_
-
-base_config: medmentions.yaml
-
-name: medmentions_crossling

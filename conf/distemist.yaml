@@ -24,8 +24,3 @@ dict:
   distemist_umls_all:
     umls:
       meta_path: ${umls_meta_path}
-
-linker:
-  candidate_generation:
-    ngram: ~
-    sapbert: ~

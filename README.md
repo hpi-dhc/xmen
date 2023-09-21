@@ -143,14 +143,6 @@ xMEN provides implementations of different neural and non-neural candidate gener
 
 Based on the implementation from [scispaCy](https://github.com/allenai/scispacy).
 
-YAML file:
-
-```
-linker:
-  candidate_generation:
-    ngram: ~
-```
-
 Run `xmen index my_config.yaml --ngram` or `xmen index my_config.yaml --all` to create the index.
 
 To use the linker at runtime, pass the index folder as an argument:
@@ -162,13 +154,13 @@ ngram_linker = TFIDFNGramLinker(index_base_path="/path/to/my/index/ngram", k=100
 predictions = ngram_linker.predict_batch(dataset)
 ```
 
-Example usage: see [notebooks/BioASQ_DisTEMIST.ipynb](notebooks/BioASQ_DisTEMIST.ipynb)
+Example usage: see [BioASQ / DisTEMIST Notebook](notebooks/examples/01_BioASQ_DisTEMIST.ipynb)
 
 ### SapBERT
 
 Dense Retrieval based on [SapBERT](https://github.com/cambridgeltl/sapbert) embeddings.
 
-YAML file:
+YAML file (optional, if you want to configure another Transformer model):
 
 ```
 linker:
@@ -199,7 +191,7 @@ sapbert_linker = SapBERTLinker(**config)
 
 By default, SapBERT assumes a CUDA device is available. If you want to disable cuda, pass `cuda=False` to the constructor.
 
-Example usage: see [notebooks/BioASQ_DisTEMIST.ipynb](notebooks/BioASQ_DisTEMIST.ipynb)
+Example usage: see [BioASQ / DisTEMIST Notebook](notebooks/examples/01_BioASQ_DisTEMIST.ipynb)
 
 ### Ensemble
 
@@ -223,7 +215,7 @@ Sometimes, you want to compare the ensemble performance to individual linkers an
 prediction = ensemble_linker.predict_batch(dataset, 128, 100, reuse_preds={'sapbert' : predictions_sap, 'ngram' : predictions_ngram'})
 ```
 
-Example usage: see [notebooks/BioASQ_DisTEMIST.ipynb](notebooks/BioASQ_DisTEMIST.ipynb)
+Example usage: see [BioASQ / DisTEMIST Notebook](notebooks/examples/examples/01_BioASQ_DisTEMIST.ipynb)
 
 ## 🌀 Rerankers
 
@@ -268,7 +260,7 @@ rr.fit(args, cross_enc_ds['train'].dataset, cross_enc_ds['validation'].dataset)
 prediction = rr.rerank_batch(candidates['test'], cross_enc_ds['test'])
 ```
 
-Example usage: see [notebooks/BioASQ_DisTEMIST.ipynb](notebooks/BioASQ_DisTEMIST.ipynb)
+Example usage: see [BioASQ / DisTEMIST Notebook](notebooks/examples/01_BioASQ_DisTEMIST.ipynb)
 
 ### Rule-based Reranker
 
@@ -288,7 +280,7 @@ We support various optional components for transforming input data and result se
 
 xMEN provides implementations of common entity linking metrics (e.g., a wrapper for [neleval](https://github.com/wikilinks/neleval))
 
-Example usage: see [notebooks/BioASQ_DisTEMIST.ipynb](notebooks/BioASQ_DisTEMIST.ipynb)
+Example usage: see [BioASQ / DisTEMIST Notebook](notebooks/examples/01_BioASQ_DisTEMIST.ipynb)
 
 ## 📈 Benchmark Results
 
