@@ -19,7 +19,7 @@ We use [Poetry](https://python-poetry.org/) for building, testing and dependency
 
 ## 🚀 Getting Started
 
-A very simple pipeline highlighting the main components of xMEN can be found in [notebooks/Getting_Started.ipynb](notebooks/Getting_Started.ipynb)
+A very simple pipeline highlighting the main components of xMEN can be found in [notebooks/00_Getting_Started.ipynb](notebooks/00_Getting_Started.ipynb)
 
 ## 📂 Data Loading
 
@@ -127,10 +127,10 @@ dict:
   custom:
     lang: 
       - es
-    distemist_path: path/to/dictionary_distemist.tsv
+    distemist_path: local_files/dictionary_distemist.tsv
 ```
 
-Running `xmen dict conf/distemist.yaml --code dicts/distemist.py --key distemist_gazetteer` creates a `.jsonl` file from the custom DisTEMIST gazetteer.
+Running `xmen dict conf/distemist.yaml --code dicts/distemist.py` creates a `.jsonl` file from the custom DisTEMIST gazetteer (which you can download from [Zenodo](https://zenodo.org/record/6505583) and put into any folder, e.g., `local_files`).
 
 ## 🔎 Candidate Generation
 
@@ -153,8 +153,6 @@ from xmen.linkers import TFIDFNGramLinker
 ngram_linker = TFIDFNGramLinker(index_base_path="/path/to/my/index/ngram", k=100)
 predictions = ngram_linker.predict_batch(dataset)
 ```
-
-Example usage: see [BioASQ / DisTEMIST Notebook](notebooks/examples/01_BioASQ_DisTEMIST.ipynb)
 
 ### SapBERT
 
@@ -191,7 +189,6 @@ sapbert_linker = SapBERTLinker(**config)
 
 By default, SapBERT assumes a CUDA device is available. If you want to disable cuda, pass `cuda=False` to the constructor.
 
-Example usage: see [BioASQ / DisTEMIST Notebook](notebooks/examples/01_BioASQ_DisTEMIST.ipynb)
 
 ### Ensemble
 
@@ -207,6 +204,14 @@ ensemble_linker.add_linker('sapbert', sapbert_linker, k=10)
 ensemble_linker.add_linker('ngram', ngram_linker, k=10)
 ```
 
+or (as a shortcut for the combination of `TFIDFNGramLinker` and `SapBERTLinker`):
+
+```
+from xmen.linkers import default_ensemble
+
+ensemble_linker = default_ensemble("/path/to/my/index/")
+```
+
 You can call `predict_batch` on the `EnsembleLinker` just as with any other linker.
 
 Sometimes, you want to compare the ensemble performance to individual linkers and already have the candidate lists. To avoid recomputation, you can use the `reuse_preds` argument:
@@ -215,19 +220,17 @@ Sometimes, you want to compare the ensemble performance to individual linkers an
 prediction = ensemble_linker.predict_batch(dataset, 128, 100, reuse_preds={'sapbert' : predictions_sap, 'ngram' : predictions_ngram'})
 ```
 
-Example usage: see [BioASQ / DisTEMIST Notebook](notebooks/examples/examples/01_BioASQ_DisTEMIST.ipynb)
+## 🌀 Entity Rankers
 
-## 🌀 Rerankers
+### Cross-encoder Re-ranker
 
-### Cross-Encoder Reranker
+When labelled training data is available, a trainable re-ranker can improve ranking of candidate lists a lot.
 
-When labelled training data is available, a trainable reranker can improve ranking of candidate lists a lot.
-
-To train a cross-encoder, first create a dataset of mention / candidate pairs:
+To train a cross-encoder model, first create a dataset of mention / candidate pairs:
 
 ```
 from xmen.reranking.cross_encoder import CrossEncoderReranker, CrossEncoderTrainingArgs
-from xmen.kb import load_kb
+from xmen import load_kb
 
 # Load a KB from a pre-computed dictionary (jsonl) to obtain synonyms for concept encoding
 kb = load_kb('path/to/my/dictionary.jsonl')
@@ -235,14 +238,12 @@ kb = load_kb('path/to/my/dictionary.jsonl')
 # Obtain prediction from candidate generator (see above)
 candidates = linker.predict_batch(dataset)
 
-cross_enc_ds = CrossEncoderReranker.prepare_data(candidates, dataset, kb)
+ce_dataset = CrossEncoderReranker.prepare_data(candidates, dataset, kb)
 ```
 
 Then you can use this dataset to train a supervised reranking model:
 
 ```
-from xmen.reranking.cross_encoder import CrossEncoderReranker, CrossEncoderTrainingArgs
-
 # Number of epochs to train
 n_epochs = 10
 
@@ -254,21 +255,28 @@ args = CrossEncoderTrainingArgs(n_epochs, cross_encoder_model)
 rr = CrossEncoderReranker()
 
 # Fit the model
-rr.fit(args, cross_enc_ds['train'].dataset, cross_enc_ds['validation'].dataset)
+rr.fit(args, ce_dataset['train'].dataset, ce_dataset['validation'].dataset)
 
 # Predict on test set
-prediction = rr.rerank_batch(candidates['test'], cross_enc_ds['test'])
+prediction = rr.rerank_batch(candidates['test'], ce_dataset['test'])
 ```
 
-Example usage: see [BioASQ / DisTEMIST Notebook](notebooks/examples/01_BioASQ_DisTEMIST.ipynb)
+### Pre-trained Cross-encoders
 
-### Rule-based Reranker
+We provide pre-trained models, based on automatically translated versions of MedMentions (see [notebooks/01_Translation.ipynb](notebooks/01_Translation.ipynb)).
 
-TODO
+Instead of fitting the Cross-encoder model, you can just load the pre-trained model from disk, e.g., for a French model:
 
-## 💡 Pre- and Post-Processing
+```
+rr = CrossEncoderReranker.load('../models/fr_ce_medmentions', device=0)
+```
 
-We support various optional components for transforming input data and result sets:
+The pre-trained models are available here: [TODO]()
+
+
+## 💡 Pre- and Post-processing
+
+We support various optional components for transforming input data and result sets in `xmen.data`:
 
 - [Sampling](xmen/data/sampling.py)
 - [Abbrevation expansion](xmen/data/abbrevations.py)
@@ -278,9 +286,18 @@ We support various optional components for transforming input data and result se
 
 ## 📊 Evaluation
 
-xMEN provides implementations of common entity linking metrics (e.g., a wrapper for [neleval](https://github.com/wikilinks/neleval))
+xMEN provides implementations of common entity linking metrics (e.g., a wrapper for [neleval](https://github.com/wikilinks/neleval)) and utilities for error analysis.
 
-Example usage: see [BioASQ / DisTEMIST Notebook](notebooks/examples/01_BioASQ_DisTEMIST.ipynb)
+```
+from xmen.evaluation import evaluate, error_analysis
+
+# Runs the evaluation
+eval_results = evaluate(ground_truth, predictions)
+
+# Performs error analysis
+error_dataframe = error_analysis(ground_truth, predictions))
+```
+
 
 ## 📈 Benchmark Results
 
