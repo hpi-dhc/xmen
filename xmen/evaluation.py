@@ -71,6 +71,8 @@ def error_analysis(
         error_df["document_id"] = gt["document_id"]
         res.append(error_df)
     ea_df = pd.concat(res).reset_index().drop(columns="index")
+    if len(ea_df) == 0:
+        return ea_df
     entity_info = pd.DataFrame(list(ea_df.apply(_get_entity_info, axis=1)))
     return pd.concat([entity_info, ea_df], axis=1)
 
@@ -145,7 +147,7 @@ def _get_error_df(gt_ents, pred_ents, tasks, allow_multiple_gold_candidates) -> 
     def record_match(
         pred_s: int, pred_e: int, pred_c, pred_text, pred_type, gt_s, gt_e, gt_c, gt_text, gt_type, e_match_type
     ):
-        if not gt_c or e_match_type == "fp":  # false positive
+        if (not gt_c and pred_c) or e_match_type == "fp":  # false positive
             ent_res.append(
                 {
                     "pred_start": pred_s,
@@ -204,6 +206,7 @@ def _get_error_df(gt_ents, pred_ents, tasks, allow_multiple_gold_candidates) -> 
                     "pred_top_score": None,
                 }
             )
+            return
 
         if allow_multiple_gold_candidates:
             matches = [get_match_result(gt_concept) for gt_concept in gt_c]
@@ -221,7 +224,9 @@ def _get_error_df(gt_ents, pred_ents, tasks, allow_multiple_gold_candidates) -> 
                 ent_res.append(get_match_result(gt_concept))
 
     # Initialize variables
-    gt_s = gt_c = gt_e = gt_text = None
+    gt_s = gt_e = gt_text = gt_type = None
+    pred_s = pred_e = pred_text = pred_type = None
+    pred_c = gt_c = []
 
     while gt_items or pred_items:
         if not gt_items:
@@ -331,15 +336,15 @@ def _get_error_df(gt_ents, pred_ents, tasks, allow_multiple_gold_candidates) -> 
                         if pred_items and pred_items[0][0] <= gt_e:
                             pred_s, pred_e, pred_c, pred_text, pred_type = pred_items.pop(0)
                         else:
-                            if gt_items:
-                                gt_items.pop(0)
+                            # if gt_items: Why?
+                            #    gt_items.pop(0)
                             break
                     elif gt_e < pred_e:
                         if gt_items and gt_items[0][0] <= pred_e:
                             gt_s, gt_e, gt_c, gt_text, gt_type = gt_items.pop(0)
                         else:
-                            if pred_items:
-                                pred_items.pop(0)
+                            # if pred_items: Why?
+                            #    pred_items.pop(0)
                             break
                     else:
                         break
@@ -350,7 +355,10 @@ def _get_error_df(gt_ents, pred_ents, tasks, allow_multiple_gold_candidates) -> 
     if "nen" in tasks:
         res_cols += ["gold_concept", "gold_type", "pred_index", "pred_index_score", "pred_top", "pred_top_score"]
 
-    return pd.DataFrame(ent_res)[res_cols]
+    if ent_res:
+        return pd.DataFrame(ent_res)[res_cols]
+    else:
+        return pd.DataFrame(columns=res_cols)
 
 
 def get_synset(kb, scui):

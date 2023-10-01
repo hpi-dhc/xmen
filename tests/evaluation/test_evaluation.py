@@ -420,3 +420,99 @@ def test_error_analysis_order():
         )
     ]
     assert (evaluation.error_analysis(gt, pred).pred_index == 0).all()
+
+
+def test_error_analysis_ner_boundaries():
+    gt = [
+        make_document(
+            [
+                Entity([[0, 5]], "entity", concepts=[]),
+                Entity([[20, 30]], "entity", concepts=[]),
+            ]
+        )
+    ]
+    pred = [
+        make_document(
+            [
+                Entity([[1, 4]], "entity", concepts=[]),
+                Entity([[25, 35]], "entity", concepts=[]),
+            ]
+        )
+    ]
+    ea_df = evaluation.error_analysis(gt, pred)
+    assert len(ea_df) == 2
+    assert ea_df.ner_match_type.tolist() == ["be", "be"]
+
+
+def test_all_tp():
+    gt = [make_document([Entity([[0, 5]], "entity", concepts=[])])]
+    pred = [make_document([Entity([[0, 5]], "entity", concepts=[])])]
+    ea_df = evaluation.error_analysis(gt, pred)
+    assert len(ea_df) == 1
+    assert ea_df.ner_match_type.tolist() == ["tp"]
+
+
+def test_all_fp():
+    gt = [make_document([])]
+    pred = [make_document([Entity([[0, 5]], "entity", concepts=[])])]
+    ea_df = evaluation.error_analysis(gt, pred)
+    assert len(ea_df) == 1
+    assert ea_df.ner_match_type.tolist() == ["fp"]
+
+
+def test_all_fn():
+    gt = [make_document([Entity([[0, 5]], "entity", concepts=[])])]
+    pred = [make_document([])]
+    ea_df = evaluation.error_analysis(gt, pred)
+    assert len(ea_df) == 1
+    assert ea_df.ner_match_type.tolist() == ["fn"]
+
+
+def test_mixed_errors():
+    gt = [make_document([Entity([[0, 5]], "entity", concepts=[])])]
+    pred = [make_document([Entity([[0, 4]], "entity", concepts=[]), Entity([[10, 15]], "entity", concepts=[])])]
+    ea_df = evaluation.error_analysis(gt, pred)
+    assert len(ea_df) == 2
+    assert set(ea_df.ner_match_type.tolist()) == set(["be", "fp"])
+
+
+def test_all_be():
+    gt = [make_document([Entity([[0, 5]], "entity", concepts=[])])]
+    pred = [make_document([Entity([[0, 4]], "entity", concepts=[])])]
+    ea_df = evaluation.error_analysis(gt, pred)
+    assert len(ea_df) == 1
+    assert ea_df.ner_match_type.tolist() == ["be"]
+
+
+def test_no_entities():
+    gt = [make_document([])]
+    pred = [make_document([])]
+    ea_df = evaluation.error_analysis(gt, pred)
+    assert len(ea_df) == 0
+
+
+def test_multiple_same_errors():
+    gt = [make_document([Entity([[0, 5]], "entity", concepts=[]), Entity([[6, 11]], "entity", concepts=[])])]
+    pred = [make_document([Entity([[0, 4]], "entity", concepts=[]), Entity([[6, 10]], "entity", concepts=[])])]
+    ea_df = evaluation.error_analysis(gt, pred)
+    assert len(ea_df) == 2
+    assert ea_df.ner_match_type.tolist() == ["be", "be"]
+
+
+def test_multiple_tp():
+    gt = [make_document([Entity([[0, 5]], "entity", concepts=[]), Entity([[6, 11]], "entity", concepts=[])])]
+    pred = [make_document([Entity([[0, 5]], "entity", concepts=[]), Entity([[6, 11]], "entity", concepts=[])])]
+    ea_df = evaluation.error_analysis(gt, pred)
+    assert len(ea_df) == 2
+    assert ea_df.ner_match_type.tolist() == ["tp", "tp"]
+
+
+def test_multiple_types():
+    gt = [make_document([Entity([[0, 5]], "entity", concepts=[]), Entity([[10, 15]], "entity", concepts=[])])]
+    pred = [make_document([Entity([[0, 5]], "entity", concepts=[]), Entity([[15, 20]], "entity", concepts=[])])]
+    ea_df = evaluation.error_analysis(gt, pred)
+    assert ea_df.ner_match_type.tolist() == ["tp", "fn", "fp"]
+
+
+if __name__ == "__main__":
+    test_no_entities()
