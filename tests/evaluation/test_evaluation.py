@@ -513,6 +513,42 @@ def test_multiple_types():
     ea_df = evaluation.error_analysis(gt, pred)
     assert ea_df.ner_match_type.tolist() == ["tp", "fn", "fp"]
 
+def test_mixed_five_entities():
+    gt = [make_document([
+        Entity([[0, 5]], "entity", concepts=[]),
+        Entity([[10, 15]], "entity", concepts=[]),
+        Entity([[20, 25]], "entity", concepts=[]),
+        Entity([[30, 35]], "entity", concepts=[]),
+        Entity([[40, 45]], "entity", concepts=[])
+    ])]
+    pred = [make_document([
+        Entity([[0, 4]], "entity", concepts=[]),  # be
+        Entity([[11, 15]], "entity", concepts=[]),  # be
+        Entity([[20, 25]], "entity", concepts=[]),  # tp
+        Entity([[36, 40]], "entity", concepts=[]),  # fp
+        Entity([[45, 50]], "entity", concepts=[])  # fp
+    ])]
+    ea_df = evaluation.error_analysis(gt, pred)
+    assert len(ea_df) == 7
+    assert ea_df.ner_match_type.tolist() == ["be", "be", "tp", "fn", "fp", "fn", "fp"]
+
+def test_mixed_five_entities_boundaries():
+    gt = [make_document([
+        Entity([[0, 5]], "entity", concepts=[]),
+        Entity([[6, 10]], "entity", concepts=[]),
+        Entity([[11, 15]], "entity", concepts=[]),
+        Entity([[30, 35]], "entity", concepts=[]),
+        Entity([[40, 45]], "entity", concepts=[])
+    ])]
+    pred = [make_document([
+        Entity([[0, 7]], "entity", concepts=[]),  # be
+        Entity([[8, 13]], "entity", concepts=[]),  # be
+        Entity([[36, 40]], "entity", concepts=[]),  # fp
+        Entity([[45, 50]], "entity", concepts=[])  # fp
+    ])]
+    ea_df = evaluation.error_analysis(gt, pred)
+    assert len(ea_df) == 8
+    assert ea_df.ner_match_type.tolist() == ["be", "be", "be", "be", "fn", "fp", "fn", "fp"]
 
 if __name__ == "__main__":
     test_no_entities()
