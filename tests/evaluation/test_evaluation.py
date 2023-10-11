@@ -422,6 +422,28 @@ def test_error_analysis_order():
     assert (evaluation.error_analysis(gt, pred).pred_index == 0).all()
 
 
+def test_error_analysis_pred_index():
+    gt = [
+        make_document(
+            [
+                Entity([[11, 17]], "entity", concepts=[Concept("c1", db_name="UMLS")]),
+            ]
+        )
+    ]
+    pred = [
+        make_document(
+            [
+                Entity(
+                    [[11, 17]],
+                    "entity",
+                    concepts=[Concept("c1", db_name="UMLS", score=0.99), Concept("c2", db_name="UMLS", score=0.98)],
+                ),
+            ]
+        )
+    ]
+    assert (evaluation.error_analysis(gt, pred).pred_index == 0).all()
+
+
 def test_error_analysis_ner_boundaries():
     gt = [
         make_document(
@@ -567,7 +589,3 @@ def test_mixed_five_entities_boundaries():
     ea_df = evaluation.error_analysis(gt, pred)
     assert len(ea_df) == 8
     assert ea_df.ner_match_type.tolist() == ["be", "be", "be", "be", "fn", "fp", "fn", "fp"]
-
-
-if __name__ == "__main__":
-    test_no_entities()
