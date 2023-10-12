@@ -14,7 +14,6 @@ def from_spacy(docs, span_key=None, doc_id_key=None):
     Returns:
     - a Hugging Face Datasets dataset.
     """
-    ds = []
     id_range = list(range(0, len(docs)))
 
     ds_dict = {
@@ -73,7 +72,10 @@ def from_spans(
         - sentence_offsets: a list of sentence offsets. If None, sentence offsets are assigned based on sentence length.
     """
     if not document_ids:
-        document_ids = [str(i) for i in range(0, len(sentences))]
+        document_ids = [i for i in range(0, len(sentences))]
+
+    # Convert to str
+    document_ids = [str(i) for i in document_ids]
 
     if not sentence_offsets:
         sentence_offsets = []
@@ -82,7 +84,7 @@ def from_spans(
             if prev_doc_id is None or prev_doc_id != doc_id:
                 offset = 0
             sentence_offsets.append(offset)
-            offset += len(sent)
+            offset += len(sent) + 1
             prev_doc_id = doc_id
 
     ents = {d: [] for d in document_ids}
@@ -100,13 +102,25 @@ def from_spans(
                 "normalized": [],
             }
             ents[doc_id].append(ent)
-        # TODO: passages
-    out = {"id": [], "document_id": [], "entities": []}
+        passage = {
+            "text": [sentence],
+            "type": "sentence",
+            "offsets": [[sentence_start, sentence_start + len(sentence)]],
+        }
+        passages[doc_id].append(passage)
 
-    for k, v in ents.items():
-        out["id"].append(k)
-        out["document_id"].append(k)
-        out["entities"].append(v)
+    out = {"id": [], "document_id": [], "passages": [], "entities": []}
+
+    for doc_id, doc_passages in passages.items():
+        out["id"].append(doc_id)
+        out["document_id"].append(doc_id)
+
+        for i, passage in enumerate(doc_passages):
+            passage["id"] = f"{doc_id}_{i}"
+        out["passages"].append(doc_passages)
+
+        doc_ents = ents[doc_id]
+        out["entities"].append(doc_ents)
 
     n_docs = len(out["document_id"])
     out["coreferences"] = [[]] * n_docs
