@@ -1,9 +1,10 @@
 import datasets
+from typing import List, Dict
 
 
 def from_spacy(docs, span_key=None, doc_id_key=None):
     """
-    Converts a list of spaCy documents into a Hugging Face Datasets dataset.
+    Converts a list of NER-tagged spaCy documents into a Hugging Face Datasets dataset with the BigBIO schema.
 
     Args:
     - docs: a list of spaCy documents.
@@ -53,3 +54,62 @@ def from_spacy(docs, span_key=None, doc_id_key=None):
             )
         ds_dict["entities"].append(entities)
     return datasets.Dataset.from_dict(ds_dict)
+
+
+def from_spans(
+    entities: List[List[Dict]], sentences: List[str], document_ids: List[str] = None, sentence_offsets: List[int] = None
+):
+    """
+    Converts a list of spans into a Hugging Face Datasets dataset with the BigBIO schema.
+
+    Args:
+        - entities: a list of lists of entities. Each entity is a dictionary with the following keys:
+            - char_start_index: the start character index of the entity span.
+            - char_end_index: the end character index of the entity span.
+            - label: the entity type.
+            - span: the entity text span.
+        - sentences: a list of sentences.
+        - document_ids: a list of document IDs. If None, document IDs are assigned consecutively.
+        - sentence_offsets: a list of sentence offsets. If None, sentence offsets are assigned based on sentence length.
+    """
+    if not document_ids:
+        document_ids = [str(i) for i in range(0, len(sentences))]
+
+    if not sentence_offsets:
+        sentence_offsets = []
+        prev_doc_id = None
+        for doc_id, sent in zip(document_ids, sentences):
+            if prev_doc_id is None or prev_doc_id != doc_id:
+                offset = 0
+            sentence_offsets.append(offset)
+            offset += len(sent)
+            prev_doc_id = doc_id
+
+    ents = {d: [] for d in document_ids}
+    passages = {d: [] for d in document_ids}
+
+    for sentence_entities, sentence, doc_id, sentence_start in zip(entities, sentences, document_ids, sentence_offsets):
+        for entity in sentence_entities:
+            off0 = entity["char_start_index"] + sentence_start
+            off1 = entity["char_end_index"] + sentence_start
+            ent = {
+                "id": f"{doc_id}_{len(ents[doc_id])}",
+                "type": entity["label"],
+                "text": [entity["span"]],
+                "offsets": [[off0, off1]],
+                "normalized": [],
+            }
+            ents[doc_id].append(ent)
+        # TODO: passages
+    out = {"id": [], "document_id": [], "entities": []}
+
+    for k, v in ents.items():
+        out["id"].append(k)
+        out["document_id"].append(k)
+        out["entities"].append(v)
+
+    n_docs = len(out["document_id"])
+    out["coreferences"] = [[]] * n_docs
+    out["relations"] = [[]] * n_docs
+
+    return datasets.Dataset.from_dict(out)

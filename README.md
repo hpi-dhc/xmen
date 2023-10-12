@@ -34,12 +34,25 @@ dataset = load_dataset("distemist", "distemist_linking_bigbio_kb")
 
 To use xMEN with existing NER pipelines, you can also create a dataset at runtime.
 
-### spaCy
+#### [spaCy](https://spacy.io/)
 
 ```
 from xmen.data import from_spacy
 docs = ... #  list of spaCy docs with entity spans
 dataset = from_spacy(docs)
+```
+
+#### [SpanMarker](https://github.com/tomaarsen/SpanMarkerNER)
+
+```
+from span_marker import SpanMarkerModel
+
+sentences = ... # list of sentences
+model = SpanMarkerModel.from_pretrained(...)
+preds = model.predict(sentences)
+
+from xmen.data import from_spans
+dataset = from_spans(preds, sentences)
 ```
 
 ## 🔧 Configuration and CLI
@@ -48,7 +61,7 @@ xMEN provides a convenient command line interface to prepare entity linking pipe
 
 Run `xmen help` to get an overview of the available commands.
 
-Configuration is done through `.yaml` files. For examples, see the [conf](/conf) folder.
+Configuration is done through `.yaml` files. For examples, see the [/examples/conf](/examples/conf) folder.
 
 ## 📕 Creating Dictionaries
 
@@ -112,7 +125,7 @@ dict:
       - SNOMEDCT_US
 ```
 
-Running `xmen --dict conf/medmentions.yaml` creates a `.jsonl` file from the described UMLS subset.
+Running `xmen --dict examples/conf/medmentions.yaml` creates a `.jsonl` file from the described UMLS subset.
 
 ### Using Custom Dictionaries
 
@@ -130,7 +143,7 @@ dict:
     distemist_path: local_files/dictionary_distemist.tsv
 ```
 
-Running `xmen dict conf/distemist.yaml --code dicts/distemist.py` creates a `.jsonl` file from the custom DisTEMIST gazetteer (which you can download from [Zenodo](https://zenodo.org/record/6505583) and put into any folder, e.g., `local_files`).
+Running `xmen dict examples/conf/distemist.yaml --code examples/dicts/distemist.py` creates a `.jsonl` file from the custom DisTEMIST gazetteer (which you can download from [Zenodo](https://zenodo.org/record/6505583) and put into any folder, e.g., `local_files`).
 
 ## 🔎 Candidate Generation
 
@@ -300,5 +313,9 @@ error_dataframe = error_analysis(ground_truth, predictions))
 
 
 ## 📈 Benchmark Results
+
+TODO
+
+## Citation
 
 TODO
