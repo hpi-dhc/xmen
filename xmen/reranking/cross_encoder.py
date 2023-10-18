@@ -54,7 +54,7 @@ def flat_ds_to_cross_enc_dataset(flat_candidate_ds, doc_index, context_length, m
             candidate = syns[0] + " [TITLE] " + " [SEP] ".join(syns[1:])
             if encode_sem_type:
                 candidate = ",".join(semtype) + " [TYPE] " + candidate
-            label = 1 if c in doc["label"] else 0
+            label = 1 if ("label" in doc and c in doc["label"]) else 0
             if label == 1:
                 match_found = True
             batch.append(ScoredInputExample(texts=[mention, candidate], label=label, score=score))
@@ -304,7 +304,7 @@ class CrossEncoderReranker(Reranker):
             assert type(ground_truth) == DatasetDict
             res = IndexedDatasetDict()
             for split, cand in candidates.items():
-                gt = ground_truth[split]
+                gt = ground_truth[split] if ground_truth else None
                 ds, doc_index = create_cross_enc_dataset(
                     cand, gt, kb, context_length, expand_abbreviations, encode_sem_type, masking, use_nil
                 )
