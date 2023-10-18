@@ -33,7 +33,7 @@ def get_flat_candidate_ds(candidate_ds, ground_truth, expand_abbreviations, kb):
 
     Args:
     - candidate_ds: the original dataset containing candidates
-    - ground_truth: the ground truth dataset
+    - ground_truth: the ground truth dataset (can be None)
     - expand_abbreviations: a boolean flag indicating whether or not to expand abbreviations
     - kb: the knowledge base
 
@@ -54,14 +54,15 @@ def get_flat_candidate_ds(candidate_ds, ground_truth, expand_abbreviations, kb):
         doc_index = flat_candidate_ds["doc_index"]
         flat_candidate_ds = flat_candidate_ds.remove_columns(["doc_index"])
 
-        flat_ground_truth = ground_truth.map(
-            lambda e, i: get_candidates(e, i, False),
-            batched=True,
-            remove_columns=ground_truth.column_names,
-            with_indices=True,
-            load_from_cache_file=False,
-        )
-        flat_ground_truth = flat_ground_truth.rename_column("candidates", "label")
+        if ground_truth:
+            flat_ground_truth = ground_truth.map(
+                lambda e, i: get_candidates(e, i, False),
+                batched=True,
+                remove_columns=ground_truth.column_names,
+                with_indices=True,
+                load_from_cache_file=False,
+            )
+            flat_ground_truth = flat_ground_truth.rename_column("candidates", "label")
 
         synonyms = [
             [[kb.cui_to_entity[cui].canonical_name] + kb.cui_to_entity[cui].aliases for cui in entry]
@@ -73,7 +74,8 @@ def get_flat_candidate_ds(candidate_ds, ground_truth, expand_abbreviations, kb):
         flat_candidate_ds = flat_candidate_ds.add_column("synonyms", synonyms)
         flat_candidate_ds = flat_candidate_ds.add_column("types", semantic_types)
 
-        flat_candidate_ds = flat_candidate_ds.add_column("label", flat_ground_truth["label"])
+        if ground_truth:
+            flat_candidate_ds = flat_candidate_ds.add_column("label", flat_ground_truth["label"])
     finally:
         datasets.enable_progress_bar()
 

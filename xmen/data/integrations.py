@@ -1,5 +1,6 @@
 import datasets
 from typing import List, Dict
+from . import init_schema
 
 
 def from_spacy(docs, span_key=None, doc_id_key=None):
@@ -52,7 +53,12 @@ def from_spacy(docs, span_key=None, doc_id_key=None):
                 }
             )
         ds_dict["entities"].append(entities)
-    return datasets.Dataset.from_dict(ds_dict)
+
+    n_docs = len(ds_dict["document_id"])
+    ds_dict["coreferences"] = [[]] * n_docs
+    ds_dict["relations"] = [[]] * n_docs
+    ds_dict["events"] = [[]] * n_docs
+    return datasets.Dataset.from_dict(init_schema(ds_dict))
 
 
 def from_spans(
@@ -125,5 +131,5 @@ def from_spans(
     n_docs = len(out["document_id"])
     out["coreferences"] = [[]] * n_docs
     out["relations"] = [[]] * n_docs
-
-    return datasets.Dataset.from_dict(out)
+    out["events"] = [[]] * n_docs
+    return datasets.Dataset.from_dict(init_schema(out))
