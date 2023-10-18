@@ -34,12 +34,25 @@ dataset = load_dataset("distemist", "distemist_linking_bigbio_kb")
 
 To use xMEN with existing NER pipelines, you can also create a dataset at runtime.
 
-### spaCy
+#### [spaCy](https://spacy.io/)
 
 ```
 from xmen.data import from_spacy
 docs = ... #  list of spaCy docs with entity spans
 dataset = from_spacy(docs)
+```
+
+#### [SpanMarker](https://github.com/tomaarsen/SpanMarkerNER)
+
+```
+from span_marker import SpanMarkerModel
+
+sentences = ... # list of sentences
+model = SpanMarkerModel.from_pretrained(...)
+preds = model.predict(sentences)
+
+from xmen.data import from_spans
+dataset = from_spans(preds, sentences)
 ```
 
 ## 🔧 Configuration and CLI
@@ -48,7 +61,7 @@ xMEN provides a convenient command line interface to prepare entity linking pipe
 
 Run `xmen help` to get an overview of the available commands.
 
-Configuration is done through `.yaml` files. For examples, see the [conf](/conf) folder.
+Configuration is done through `.yaml` files. For examples, see the [/examples/conf](/examples/conf) folder.
 
 ## 📕 Creating Dictionaries
 
@@ -112,7 +125,7 @@ dict:
       - SNOMEDCT_US
 ```
 
-Running `xmen --dict conf/medmentions.yaml` creates a `.jsonl` file from the described UMLS subset.
+Running `xmen --dict examples/conf/medmentions.yaml` creates a `.jsonl` file from the described UMLS subset.
 
 ### Using Custom Dictionaries
 
@@ -130,7 +143,7 @@ dict:
     distemist_path: local_files/dictionary_distemist.tsv
 ```
 
-Running `xmen dict conf/distemist.yaml --code dicts/distemist.py` creates a `.jsonl` file from the custom DisTEMIST gazetteer (which you can download from [Zenodo](https://zenodo.org/record/6505583) and put into any folder, e.g., `local_files`).
+Running `xmen dict examples/conf/distemist.yaml --code examples/dicts/distemist.py` creates a `.jsonl` file from the custom DisTEMIST gazetteer (which you can download from [Zenodo](https://zenodo.org/record/6505583) and put into any folder, e.g., `local_files`).
 
 ## 🔎 Candidate Generation
 
@@ -265,13 +278,13 @@ prediction = rr.rerank_batch(candidates['test'], ce_dataset['test'])
 
 We provide pre-trained models, based on automatically translated versions of MedMentions (see [notebooks/01_Translation.ipynb](notebooks/01_Translation.ipynb)).
 
-Instead of fitting the Cross-encoder model, you can just load the pre-trained model from disk, e.g., for a French model:
+Instead of fitting the Cross-encoder model, you can just load a pre-trained model, e.g., for French:
 
 ```
-rr = CrossEncoderReranker.load('../models/fr_ce_medmentions', device=0)
+rr = CrossEncoderReranker.load('phlobo/xmen-fr-ce-medmentions', device=0)
 ```
 
-The pre-trained models are available here: [TODO]()
+The pre-trained models are available on the Hugging Face Hub: https://huggingface.co/models?library=xmen
 
 
 ## 💡 Pre- and Post-processing
@@ -298,7 +311,23 @@ eval_results = evaluate(ground_truth, predictions)
 error_dataframe = error_analysis(ground_truth, predictions))
 ```
 
+## Citation
 
-## 📈 Benchmark Results
+If you use xMen in your work, please cite the following paper:
 
-TODO
+Florian Borchert, Ignacio Llorca, Roland Roller, Bert Arnrich, and Matthieu-P Schapranow. 
+**xMEN: A Modular Toolkit for Cross-Lingual Medical Entity Normalization**. 
+arXiv preprint arXiv:2310.11275 (2023). http://arxiv.org/abs/2310.11275.
+
+BibTex:
+
+```
+@article{
+      borchert2023xmen,
+      title={{xMEN}: A Modular Toolkit for Cross-Lingual Medical Entity Normalization}, 
+      author={Florian Borchert and Ignacio Llorca and Roland Roller and Bert Arnrich and Matthieu-P. Schapranow},
+      year={2023},
+      url={https://arxiv.org/abs/2310.11275},
+      journal={arXiv preprint arXiv:2310.11275}
+}
+```

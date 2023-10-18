@@ -20,4 +20,4 @@ dict:
 
 linker:
   reranking:
-    pre_trained_model: ???
+    pre_trained_model: phlobo/xmen-fr-ce-medmentions

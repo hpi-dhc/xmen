@@ -34,23 +34,29 @@ _KEY_TO_METRIC = {
 
 
 def _get_word_len(row):
-    return len(" ".join(row.gt_text).split(" "))
+    if row.gt_text:
+        return len(" ".join(row.gt_text).split(" "))
+    else:
+        return None
 
 
 def _get_entity_info(row):
     res = {}
     res["_word_len"] = _get_word_len(row)
-    res["_abbrev"] = (len(row.gt_text) == 1) and bool(re.match("[A-Z]{2,3}", row.gt_text[0]))
+    res["_abbrev"] = (len(row.gt_text) == 1) and bool(re.match("[A-Z]{2,3}", row.gt_text[0])) if row.gt_text else None
     return res
 
 
-def error_analysis(ground_truth: Iterable, prediction: Iterable, allow_multiple_gold_candidates=False) -> pd.DataFrame:
+def error_analysis(
+    ground_truth: Iterable, prediction: Iterable, tasks: list = ["ner", "nen"], allow_multiple_gold_candidates=False
+) -> pd.DataFrame:
     """
     Computes error analysis of entity linking predictions by comparing against the ground truth entities, assuming that the entities are aligned.
 
     Args:
     - ground_truth: An iterable of dictionaries representing the ground truth entities for each document.
     - prediction: An iterable of dictionaries representing the predicted entities for each document.
+    - tasks: list of either 'ner' (for named entity recogition), 'nen' (for entity linking), or both
     - allow_multiple_gold_candidates: A boolean indicating whether multiple ground truth entities per mention are allowed. Defaults to False.
 
     Returns:
@@ -59,23 +65,26 @@ def error_analysis(ground_truth: Iterable, prediction: Iterable, allow_multiple_
 
     res = []
     for gt, pred in zip(ground_truth, prediction):
-        error_df = _get_error_df(gt["entities"], pred["entities"], allow_multiple_gold_candidates)
+        error_df = _get_error_df(gt["entities"], pred["entities"], tasks, allow_multiple_gold_candidates)
         if "corpus_id" in gt:
             error_df["corpus_id"] = gt["corpus_id"]
         error_df["document_id"] = gt["document_id"]
         res.append(error_df)
     ea_df = pd.concat(res).reset_index().drop(columns="index")
+    if len(ea_df) == 0:
+        return ea_df
     entity_info = pd.DataFrame(list(ea_df.apply(_get_entity_info, axis=1)))
     return pd.concat([entity_info, ea_df], axis=1)
 
 
-def _get_error_df(gt_ents, pred_ents, allow_multiple_gold_candidates=False) -> pd.DataFrame:
+def _get_error_df(gt_ents, pred_ents, tasks, allow_multiple_gold_candidates) -> pd.DataFrame:
     """
     Construct a Pandas DataFrame with the error analysis results from the comparison of two lists of named entities.
 
     Args:
     - gt_ents (list): A list of dictionaries, each representing a ground truth named entity.
     - pred_ents (list): A list of dictionaries, each representing a predicted named entity. Each dictionary must have the same keys as in 'gt_ents'.
+    - tasks: list of either 'ner' (for named entity recogition), 'nen' (for entity linking), or both
     - allow_multiple_gold_candidates (bool): A boolean flag indicating whether to allow multiple ground truth entities to match a single predicted entity. Defaults to False.
 
     Returns:
@@ -138,7 +147,7 @@ def _get_error_df(gt_ents, pred_ents, allow_multiple_gold_candidates=False) -> p
     def record_match(
         pred_s: int, pred_e: int, pred_c, pred_text, pred_type, gt_s, gt_e, gt_c, gt_text, gt_type, e_match_type
     ):
-        if not gt_c:  # false positive
+        if (not gt_c and pred_c) or e_match_type == "fp":  # false positive
             ent_res.append(
                 {
                     "pred_start": pred_s,
@@ -147,7 +156,7 @@ def _get_error_df(gt_ents, pred_ents, allow_multiple_gold_candidates=False) -> p
                     "gt_start": None,
                     "gt_end": None,
                     "gt_text": None,
-                    "entity_match_type": e_match_type,
+                    "ner_match_type": e_match_type,
                     "gold_concept": None,
                     "gold_type": None,
                     "pred_index": -1,
@@ -159,16 +168,17 @@ def _get_error_df(gt_ents, pred_ents, allow_multiple_gold_candidates=False) -> p
             return
 
         def get_match_result(gt_concept):
+            is_not_fn = e_match_type != "fn"
             pred_ids = [c["db_id"] for c in pred_c]
             idx = pred_ids.index(gt_concept["db_id"]) if gt_concept["db_id"] in pred_ids else -1
             return {
-                "pred_start": pred_s,
-                "pred_end": pred_e,
-                "pred_text": pred_text,
+                "pred_start": pred_s if is_not_fn else None,
+                "pred_end": pred_e if is_not_fn else None,
+                "pred_text": pred_text if is_not_fn else None,
                 "gt_start": gt_s,
                 "gt_end": gt_e,
                 "gt_text": gt_text,
-                "entity_match_type": e_match_type,
+                "ner_match_type": e_match_type,
                 "gold_concept": gt_concept,
                 "gold_type": gt_type,
                 "pred_index": int(idx),
@@ -187,7 +197,7 @@ def _get_error_df(gt_ents, pred_ents, allow_multiple_gold_candidates=False) -> p
                     "gt_start": gt_s,
                     "gt_end": gt_e,
                     "gt_text": gt_text,
-                    "entity_match_type": e_match_type,
+                    "ner_match_type": e_match_type,
                     "gold_concept": gt_c[0],
                     "gold_type": "",
                     "pred_index": -1,
@@ -196,6 +206,7 @@ def _get_error_df(gt_ents, pred_ents, allow_multiple_gold_candidates=False) -> p
                     "pred_top_score": None,
                 }
             )
+            return
 
         if allow_multiple_gold_candidates:
             matches = [get_match_result(gt_concept) for gt_concept in gt_c]
@@ -213,7 +224,9 @@ def _get_error_df(gt_ents, pred_ents, allow_multiple_gold_candidates=False) -> p
                 ent_res.append(get_match_result(gt_concept))
 
     # Initialize variables
-    gt_s = gt_c = gt_e = gt_text = None
+    gt_s = gt_e = gt_text = gt_type = None
+    pred_s = pred_e = pred_text = pred_type = None
+    pred_c = gt_c = []
 
     while gt_items or pred_items:
         if not gt_items:
@@ -323,20 +336,29 @@ def _get_error_df(gt_ents, pred_ents, allow_multiple_gold_candidates=False) -> p
                         if pred_items and pred_items[0][0] <= gt_e:
                             pred_s, pred_e, pred_c, pred_text, pred_type = pred_items.pop(0)
                         else:
-                            if gt_items:
-                                gt_items.pop(0)
+                            # if gt_items: Why?
+                            #    gt_items.pop(0)
                             break
                     elif gt_e < pred_e:
                         if gt_items and gt_items[0][0] <= pred_e:
                             gt_s, gt_e, gt_c, gt_text, gt_type = gt_items.pop(0)
                         else:
-                            if pred_items:
-                                pred_items.pop(0)
+                            # if pred_items: Why?
+                            #    pred_items.pop(0)
                             break
                     else:
                         break
 
-    return pd.DataFrame(ent_res)
+    res_cols = ["gt_start", "gt_end", "gt_text"]
+    if "ner" in tasks:
+        res_cols += ["pred_start", "pred_end", "pred_text", "ner_match_type"]
+    if "nen" in tasks:
+        res_cols += ["gold_concept", "gold_type", "pred_index", "pred_index_score", "pred_top", "pred_top_score"]
+
+    if ent_res:
+        return pd.DataFrame(ent_res)[res_cols]
+    else:
+        return pd.DataFrame(columns=res_cols)
 
 
 def get_synset(kb, scui):

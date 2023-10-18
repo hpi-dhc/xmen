@@ -19,4 +19,4 @@ dict:
 
 linker:
   reranking:
-    pre_trained_model: ../models/es_ce_medmentions
+    pre_trained_model: phlobo/xmen-es-ce-medmentions

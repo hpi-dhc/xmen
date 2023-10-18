@@ -304,7 +304,10 @@ def main(config) -> None:
                 )
 
                 if pre_trained_model := config.linker.reranking.get("pre_trained_model", None):
-                    rr = CrossEncoderReranker.load(to_absolute_path(pre_trained_model), device=0)
+                    if Path(to_absolute_path(pre_trained_model)).exists():
+                        rr = CrossEncoderReranker.load(to_absolute_path(pre_trained_model), device=0)
+                    else:  # Try loading from HF Hub
+                        rr = CrossEncoderReranker.load(pre_trained_model, device=0)
                 elif not has_train:
                     log.warn("No train split, cannot train supervised model")
                     rr = None
