@@ -278,13 +278,13 @@ prediction = rr.rerank_batch(candidates['test'], ce_dataset['test'])
 
 We provide pre-trained models, based on automatically translated versions of MedMentions (see [notebooks/01_Translation.ipynb](notebooks/01_Translation.ipynb)).
 
-Instead of fitting the Cross-encoder model, you can just load a pre-trained model, e.g., for French:
+Instead of fitting the cross-encoder model, you can just load a pre-trained model, e.g., for French:
 
 ```
 rr = CrossEncoderReranker.load('phlobo/xmen-fr-ce-medmentions', device=0)
 ```
 
-Pre-trained models are available on the Hugging Face Hub: https://huggingface.co/models?library=xmen
+Models are available on the Hugging Face Hub: https://huggingface.co/models?library=xmen
 
 
 ## 💡 Pre- and Post-processing
