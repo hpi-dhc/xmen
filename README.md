@@ -284,7 +284,7 @@ Instead of fitting the Cross-encoder model, you can just load a pre-trained mode
 rr = CrossEncoderReranker.load('phlobo/xmen-fr-ce-medmentions', device=0)
 ```
 
-The pre-trained models are available on the Hugging Face Hub: https://huggingface.co/models?library=xmen
+Pre-trained models are available on the Hugging Face Hub: https://huggingface.co/models?library=xmen
 
 
 ## 💡 Pre- and Post-processing
@@ -319,7 +319,7 @@ Florian Borchert, Ignacio Llorca, Roland Roller, Bert Arnrich, and Matthieu-P Sc
 **xMEN: A Modular Toolkit for Cross-Lingual Medical Entity Normalization**. 
 arXiv preprint arXiv:2310.11275 (2023). http://arxiv.org/abs/2310.11275.
 
-BibTex:
+BibTeX:
 
 ```
 @article{
