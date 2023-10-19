@@ -6,6 +6,7 @@ from torch import nn
 
 from tqdm.autonotebook import tqdm
 
+from xmen.data import filter_and_apply_threshold
 from xmen.reranking import Reranker
 from xmen.reranking.scored_cross_encoder import ScoredInputExample, ScoredCrossEncoder
 from xmen.reranking.ranking_util import get_flat_candidate_ds
@@ -274,6 +275,7 @@ class CrossEncoderReranker(Reranker):
         candidates,
         ground_truth,
         kb,
+        k: int = None,
         context_length: int = 128,
         expand_abbreviations: bool = False,
         encode_sem_type: bool = False,
@@ -288,6 +290,7 @@ class CrossEncoderReranker(Reranker):
         - candidates: A Dataset or DatasetDict containing the candidate passages to score.
         - ground_truth: A Dataset or DatasetDict containing the ground-truth passages.
         - kb: The knowledge base to use for context enrichment.
+        - k: Number of candidates per batch ( None if all candidates should be considered)
         - context_length: The maximum character length of the left / right context to use for scoring (default 128 chars).
         - expand_abbreviations: Whether to expand abbreviations in the passages.
         - encode_sem_type: Whether to include the semantic type of the concept in its representation
@@ -300,6 +303,9 @@ class CrossEncoderReranker(Reranker):
         print("Context length:", context_length)
         print("Use NIL values:", use_nil)
 
+        if k:
+            candidates = filter_and_apply_threshold(candidates, k, 0.0)
+            
         if type(candidates) == DatasetDict:
             assert type(ground_truth) == DatasetDict
             res = IndexedDatasetDict()
@@ -402,7 +408,7 @@ class CrossEncoderReranker(Reranker):
         )
 
     def rerank_batch(
-        self, candidates, cross_enc_dataset, show_progress_bar=True, convert_to_numpy=True, allow_nil=True
+        self, candidates, cross_enc_dataset, show_progress_bar=True, convert_to_numpy=True, allow_nil=True, k : int =None,
     ):
         """
         Re-ranks a batch of candidates using a cross encoder and returns the re-ranked candidates.
@@ -413,11 +419,14 @@ class CrossEncoderReranker(Reranker):
         - show_progress_bar: a boolean indicating whether to display a progress bar during prediction.
         - convert_to_numpy: a boolean indicating whether to convert predictions to numpy arrays.
         - allow_nil: allow to produce an empty result, if NIL is the most likely option
+        - k: Number of candidates per batch ( None if all candidates should be considered)
 
         Returns:
         - A dataset of re-ranked candidates.
         """
         predictions = _cross_encoder_predict(self.model, cross_enc_dataset.dataset, show_progress_bar, convert_to_numpy)
+        if k:
+            candidates = filter_and_apply_threshold(candidates, k, 0.0)
         reranked = candidates.map(
             lambda d, i: rerank(d, i, cross_enc_dataset.index, cross_enc_dataset.dataset, predictions, allow_nil),
             with_indices=True,
