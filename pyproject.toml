@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "xmen"
-version = "1.0.1"
+version = "1.0.2"
 description = "An extensible toolkit for Cross-lingual (x) Medical Entity Normalization."
 license = "Apache-2.0"
 authors = ["Florian Borchert <florian.borchert@hpi.de>"]
@@ -23,7 +23,7 @@ protobuf = "^3.20.0"
 omegaconf = "^2.3.0"
 langcodes = "^3.3.0"
 rich = "^12.3.0"
-torch = "^1.13.0"
+torch = ">=1.13.0,!=2.0.1, !=2.1.0" # Some version don't seem to be compatible with Poetry
 scispacy = "^0.5.2"
 sentence-transformers = "^2.2.2"
 faiss-gpu = {version = "^1.7.1", markers = 'sys_platform == "linux"'}
