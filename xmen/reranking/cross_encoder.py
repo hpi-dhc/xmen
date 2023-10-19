@@ -305,7 +305,7 @@ class CrossEncoderReranker(Reranker):
 
         if k:
             candidates = filter_and_apply_threshold(candidates, k, 0.0)
-            
+
         if type(candidates) == DatasetDict:
             assert type(ground_truth) == DatasetDict
             res = IndexedDatasetDict()
@@ -408,7 +408,13 @@ class CrossEncoderReranker(Reranker):
         )
 
     def rerank_batch(
-        self, candidates, cross_enc_dataset, show_progress_bar=True, convert_to_numpy=True, allow_nil=True, k : int =None,
+        self,
+        candidates,
+        cross_enc_dataset,
+        show_progress_bar=True,
+        convert_to_numpy=True,
+        allow_nil=True,
+        k: int = None,
     ):
         """
         Re-ranks a batch of candidates using a cross encoder and returns the re-ranked candidates.
