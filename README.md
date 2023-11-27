@@ -274,6 +274,10 @@ rr.fit(args, ce_dataset['train'].dataset, ce_dataset['validation'].dataset)
 prediction = rr.rerank_batch(candidates['test'], ce_dataset['test'])
 ```
 
+#### Note on Memory Usage
+In most examples and benchmarks, we use 64 candidates as a batch size for the cross-encoder, which usually fit into 48GB of GPU memory. 
+If you encounter memory issue, you can try reducing this number and/or using a smaller BERT model. See: [Issue #22](https://github.com/hpi-dhc/xmen/issues/22#issuecomment-1827648900)
+
 ### Pre-trained Cross-encoders
 
 We provide pre-trained models, based on automatically translated versions of MedMentions (see [notebooks/01_Translation.ipynb](notebooks/01_Translation.ipynb)).
