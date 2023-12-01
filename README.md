@@ -25,7 +25,7 @@ A very simple pipeline highlighting the main components of xMEN can be found in 
 
 Usually, BigBIO-compatible datasets can just be loaded from the Hugging Face Hub:
 
-```
+```python
 from datasets import load_dataset
 dataset = load_dataset("distemist", "distemist_linking_bigbio_kb")
 ```
@@ -36,7 +36,7 @@ To use xMEN with existing NER pipelines, you can also create a dataset at runtim
 
 #### [spaCy](https://spacy.io/)
 
-```
+```python
 from xmen.data import from_spacy
 docs = ... #  list of spaCy docs with entity spans
 dataset = from_spacy(docs)
@@ -44,9 +44,8 @@ dataset = from_spacy(docs)
 
 #### [SpanMarker](https://github.com/tomaarsen/SpanMarkerNER)
 
-```
+```python
 from span_marker import SpanMarkerModel
-
 sentences = ... # list of sentences
 model = SpanMarkerModel.from_pretrained(...)
 preds = model.predict(sentences)
@@ -73,7 +72,7 @@ Run `xmen dict` to create dictionaries to link against. Although the most common
 
 Example configuration for [Medmentions](https://github.com/chanzuckerberg/MedMentions):
 
-```
+```yaml
 name: medmentions
 
 dict:
@@ -133,7 +132,7 @@ Parsing scripts for custom dictionaries can be provided with the `--code` option
 
 Example configuration for [DisTEMIST](https://temu.bsc.es/distemist/):
 
-```
+```yaml
 name: distemist
 
 dict:
@@ -160,7 +159,7 @@ Run `xmen index my_config.yaml --ngram` or `xmen index my_config.yaml --all` to 
 
 To use the linker at runtime, pass the index folder as an argument:
 
-```
+```python
 from xmen.linkers import TFIDFNGramLinker
 
 ngram_linker = TFIDFNGramLinker(index_base_path="/path/to/my/index/ngram", k=100)
@@ -173,7 +172,7 @@ Dense Retrieval based on [SapBERT](https://github.com/cambridgeltl/sapbert) embe
 
 YAML file (optional, if you want to configure another Transformer model):
 
-```
+```yaml
 linker:
   candidate_generation:
     sapbert:
@@ -184,7 +183,7 @@ Run `xmen index my_config.yaml --sapbert` or `xmen index my_config.yaml --all` t
 
 To use the linker at runtime, pass the index folder as an argument. To make predictions on a batch of documents, you have to pass a batch size, as the SapBERT linker runs on the GPU by default:
 
-```
+```python
 from xmen.linkers import SapBERTLinker
 
 sapbert_linker = SapBERTLinker(
@@ -196,7 +195,7 @@ predictions = sapbert_linker.predict_batch(dataset, batch_size=128)
 
 If you have loaded a yaml-config as a dictionary-like object, you may also just pass it as kwargs:
 
-```
+```python
 sapbert_linker = SapBERTLinker(**config)
 ```
 
@@ -209,7 +208,7 @@ Different candidate generators often work well for different kinds of entity men
 
 In xMEN, this can be easily achieved with an `EnsembleLinker`:
 
-```
+```python
 from xmen.linkers import EnsembleLinker
 
 ensemble_linker = EnsembleLinker()
@@ -219,7 +218,7 @@ ensemble_linker.add_linker('ngram', ngram_linker, k=10)
 
 or (as a shortcut for the combination of `TFIDFNGramLinker` and `SapBERTLinker`):
 
-```
+```python
 from xmen.linkers import default_ensemble
 
 ensemble_linker = default_ensemble("/path/to/my/index/")
@@ -229,7 +228,7 @@ You can call `predict_batch` on the `EnsembleLinker` just as with any other link
 
 Sometimes, you want to compare the ensemble performance to individual linkers and already have the candidate lists. To avoid recomputation, you can use the `reuse_preds` argument:
 
-```
+```python
 prediction = ensemble_linker.predict_batch(dataset, 128, 100, reuse_preds={'sapbert' : predictions_sap, 'ngram' : predictions_ngram'})
 ```
 
@@ -241,7 +240,7 @@ When labelled training data is available, a trainable re-ranker can improve rank
 
 To train a cross-encoder model, first create a dataset of mention / candidate pairs:
 
-```
+```python
 from xmen.reranking.cross_encoder import CrossEncoderReranker, CrossEncoderTrainingArgs
 from xmen import load_kb
 
@@ -256,7 +255,7 @@ ce_dataset = CrossEncoderReranker.prepare_data(candidates, dataset, kb)
 
 Then you can use this dataset to train a supervised reranking model:
 
-```
+```python
 # Number of epochs to train
 n_epochs = 10
 
@@ -284,7 +283,7 @@ We provide pre-trained models, based on automatically translated versions of Med
 
 Instead of fitting the cross-encoder model, you can just load a pre-trained model, e.g., for French:
 
-```
+```python
 rr = CrossEncoderReranker.load('phlobo/xmen-fr-ce-medmentions', device=0)
 ```
 
@@ -305,7 +304,7 @@ We support various optional components for transforming input data and result se
 
 xMEN provides implementations of common entity linking metrics (e.g., a wrapper for [neleval](https://github.com/wikilinks/neleval)) and utilities for error analysis.
 
-```
+```python
 from xmen.evaluation import evaluate, error_analysis
 
 # Runs the evaluation
@@ -325,7 +324,7 @@ arXiv preprint arXiv:2310.11275 (2023). http://arxiv.org/abs/2310.11275.
 
 BibTeX:
 
-```
+```bibtex
 @article{
       borchert2023xmen,
       title={{xMEN}: A Modular Toolkit for Cross-Lingual Medical Entity Normalization}, 
