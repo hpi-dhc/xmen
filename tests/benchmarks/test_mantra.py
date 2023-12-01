@@ -12,13 +12,21 @@ NUM_CONCEPTS_MANTRA_GSC = 5530 - 2
 
 ALL_METRICS = ["strict", "partial", "loose"]
 
+import pytest
 
+
+@pytest.mark.skip(
+    reason="Mantra GSC not available at biosemantics.org at the moment, need to wait until hosted elsewhere"
+)
 def test_stats():
     assert len(mantra_ds_raw["test"]) == 1450
     assert len(get_cuis(mantra_ds_raw["test"])) == 5530
     assert len(get_cuis(mantra_ds["test"])) == NUM_CONCEPTS_MANTRA_GSC
 
 
+@pytest.mark.skip(
+    reason="Mantra GSC not available at biosemantics.org at the moment, need to wait until hosted elsewhere"
+)
 def test_evaluation_identity():
     pred = CopyLinker().predict_batch(mantra_ds["test"])
 
@@ -46,6 +54,9 @@ def test_evaluation_identity():
     assert metrics["loose"]["rtp"] < n_annotations
 
 
+@pytest.mark.skip(
+    reason="Mantra GSC not available at biosemantics.org at the moment, need to wait until hosted elsewhere"
+)
 def test_evaluation_null_allow_multiple_gold_candidates():
     pred = NullLinker().predict_batch(mantra_ds["test"])
 
@@ -70,6 +81,9 @@ def test_evaluation_null_allow_multiple_gold_candidates():
     assert metrics["loose"]["fn"] < n_annotations_gold
 
 
+@pytest.mark.skip(
+    reason="Mantra GSC not available at biosemantics.org at the moment, need to wait until hosted elsewhere"
+)
 def test_evaluation_null_dont_allow_multiple_gold_candidates():
     pred = NullLinker().predict_batch(mantra_ds["test"])
 
