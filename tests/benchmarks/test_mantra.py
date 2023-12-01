@@ -16,20 +16,24 @@ ALL_METRICS = ["strict", "partial", "loose"]
     reason="Mantra GSC not available at biosemantics.org at the moment, need to wait until hosted elsewhere"
 )
 class TestMantraGSC:
+    @pytest.fixture(scope="class")
+    def mantra_data(self):
+        mantra_ds_raw = load_mantra_gsc()[0]
+        mantra_ds = ConceptMerger().transform_batch(mantra_ds_raw)
+        return mantra_ds_raw, mantra_ds
 
-    mantra_ds_raw = load_mantra_gsc()[0]
-    mantra_ds = ConceptMerger().transform_batch(mantra_ds_raw)
+    def test_stats(self, mantra_data):
+        mantra_ds_raw, mantra_ds = mantra_data
+        assert len(mantra_ds_raw["test"]) == 1450
+        assert len(get_cuis(mantra_ds_raw["test"])) == 5530
+        assert len(get_cuis(mantra_ds["test"])) == NUM_CONCEPTS_MANTRA_GSC
 
-    def test_stats(self):
-        assert len(self.mantra_ds_raw["test"]) == 1450
-        assert len(get_cuis(self.mantra_ds_raw["test"])) == 5530
-        assert len(get_cuis(self.mantra_ds["test"])) == NUM_CONCEPTS_MANTRA_GSC
-
-    def test_evaluation_identity(self):
-        pred = CopyLinker().predict_batch(self.mantra_ds["test"])
+    def test_evaluation_identity(self, mantra_data):
+        _, mantra_ds = mantra_data
+        pred = CopyLinker().predict_batch(mantra_ds["test"])
 
         metrics = evaluation.evaluate(
-            self.mantra_ds["test"],
+            mantra_ds["test"],
             pred,
             allow_multiple_gold_candidates=False,
             metrics=ALL_METRICS,
@@ -55,12 +59,11 @@ class TestMantraGSC:
         assert metrics["loose"]["ptp"] < n_annotations
         assert metrics["loose"]["rtp"] < n_annotations
 
-    def test_evaluation_null_allow_multiple_gold_candidates(self):
-        pred = NullLinker().predict_batch(self.mantra_ds["test"])
+    def test_evaluation_null_allow_multiple_gold_candidates(self, mantra_data):
+        _, mantra_ds = mantra_data
+        pred = NullLinker().predict_batch(mantra_ds["test"])
 
-        metrics = evaluation.evaluate(
-            self.mantra_ds["test"], pred, allow_multiple_gold_candidates=True, metrics=ALL_METRICS
-        )
+        metrics = evaluation.evaluate(mantra_ds["test"], pred, allow_multiple_gold_candidates=True, metrics=ALL_METRICS)
 
         n_annotations_system = metrics["strict"]["n_annos_system"]
         n_annotations_gold = metrics["strict"]["n_annos_gold"]
@@ -80,11 +83,12 @@ class TestMantraGSC:
         assert metrics["partial"]["fn"] < n_annotations_gold
         assert metrics["loose"]["fn"] < n_annotations_gold
 
-    def test_evaluation_null_dont_allow_multiple_gold_candidates(self):
-        pred = NullLinker().predict_batch(self.mantra_ds["test"])
+    def test_evaluation_null_dont_allow_multiple_gold_candidates(self, mantra_data):
+        _, mantra_ds = mantra_data
+        pred = NullLinker().predict_batch(mantra_ds["test"])
 
         metrics = evaluation.evaluate(
-            self.mantra_ds["test"], pred, allow_multiple_gold_candidates=False, metrics=ALL_METRICS
+            mantra_ds["test"], pred, allow_multiple_gold_candidates=False, metrics=ALL_METRICS
         )
 
         n_annotations_system = metrics["strict"]["n_annos_system"]
