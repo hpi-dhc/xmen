@@ -1,0 +1,8 @@
+name: meddra_german
+
+dict:
+  custom:    
+    umls_meta_path: ${oc.env:UMLS_HOME}/2023AA/META
+    sabs:
+        - MDR
+        - MDRGER
