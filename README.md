@@ -316,7 +316,7 @@ error_dataframe = error_analysis(ground_truth, predictions))
 
 ## Citation
 
-If you use xMen in your work, please cite the following paper:
+If you use xMEN in your work, please cite the following paper:
 
 Florian Borchert, Ignacio Llorca, Roland Roller, Bert Arnrich, and Matthieu-P Schapranow. 
 **xMEN: A Modular Toolkit for Cross-Lingual Medical Entity Normalization**. 
