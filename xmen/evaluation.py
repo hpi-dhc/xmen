@@ -478,7 +478,6 @@ def _to_nel_eval(
             start, end = min([o[0] for o in e["offsets"]]), max([o[1] for o in e["offsets"]])
             if ner_only:
                 anno = Annotation(unit_id, start, end, [Candidate(None, None, e["type"])])
-                print(anno)
                 annotations.append(anno)
             else:
                 candidates = []
