@@ -11,10 +11,10 @@ from .ext.neleval.annotation import Annotation, Candidate
 from .ext.neleval.configs import get_measure
 
 # constants for interacting with different neleval measures
-_PARTIAL_EVAL_MEASURE_FMT_STRING = "overlap-maxmax:None:span+kbid"
+_PARTIAL_EVAL_MEASURE_FMT_STRING = "overlap-maxmax:None:span+type+kbid"
 
 # equivalent to strong_all_match
-_STRICT_EVAL_MEASURE_FMT_STRING = "sets:None:span+kbid"
+_STRICT_EVAL_MEASURE_FMT_STRING = "sets:None:span+type+kbid"
 
 _NER_STRICT_EVAL_MEASURE_FMT_STRING = "sets:None:span"
 
@@ -477,7 +477,8 @@ def _to_nel_eval(
                 e["normalized"] = []
             start, end = min([o[0] for o in e["offsets"]]), max([o[1] for o in e["offsets"]])
             if ner_only:
-                anno = Annotation(unit_id, start, end, [])
+                anno = Annotation(unit_id, start, end, [Candidate(None, None, e["type"])])
+                print(anno)
                 annotations.append(anno)
             else:
                 candidates = []
