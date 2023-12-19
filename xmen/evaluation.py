@@ -16,10 +16,10 @@ _PARTIAL_EVAL_MEASURE_FMT_STRING = "overlap-maxmax:None:span+type+kbid"
 # equivalent to strong_all_match
 _STRICT_EVAL_MEASURE_FMT_STRING = "sets:None:span+type+kbid"
 
-_NER_STRICT_EVAL_MEASURE_FMT_STRING = "sets:None:span"
+_NER_STRICT_EVAL_MEASURE_FMT_STRING = "sets:None:span+type"
 
 # constants for interacting with different neleval measures
-_NER_PARTIAL_EVAL_MEASURE_FMT_STRING = "overlap-maxmax:None:span"
+_NER_PARTIAL_EVAL_MEASURE_FMT_STRING = "overlap-maxmax:None:span+type"
 
 # Any match within the unit / sentence counts
 _LOOSE_EVAL_MEASURE_FMT_STRING = "sets:None:docid+kbid"
