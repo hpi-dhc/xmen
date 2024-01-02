@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "xmen"
-version = "1.0.2"
+version = "1.0.3"
 description = "An extensible toolkit for Cross-lingual (x) Medical Entity Normalization."
 license = "Apache-2.0"
 authors = ["Florian Borchert <florian.borchert@hpi.de>"]

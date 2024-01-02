@@ -28,8 +28,8 @@ def from_spacy(docs, span_key=None, doc_id_key=None):
         if doc_id_key:
             document_id = doc.user_data[doc_id_key]
         else:
-            document_id = id
-        ds_dict["id"].append(id)
+            document_id = str(id)
+        ds_dict["id"].append(str(id))
         ds_dict["document_id"].append(document_id)
         passages = []
         for sid, sent in enumerate(doc.sents):
