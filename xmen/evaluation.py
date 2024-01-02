@@ -77,6 +77,195 @@ def error_analysis(
     return pd.concat([entity_info, ea_df], axis=1)
 
 
+class EntityMatch:
+    """
+    Utility class for representing an entity match.
+    """
+
+    def __init__(self, offset_start, offset_end, normalized, text, type):
+        self.offset_start = offset_start
+        self.offset_end = offset_end
+        self.normalized = normalized
+        self.text = text
+        self.type = type
+
+    def __repr__(self) -> str:
+        return f"EntityMatch({self.offset_start}, {self.offset_end}, {self.normalized}, {self.text}, {self.type})"
+
+
+NULL_MATCH = EntityMatch(None, None, None, None, None)
+
+
+def _get_items(entities):
+    """
+    Helper function for turning BigBIO dictionary entities into EntityMatch objects.
+    """
+    return [
+        EntityMatch(
+            e["offsets"][0][0],
+            e["offsets"][-1][1],
+            e["normalized"] if len(e["normalized"]) > 0 else [{"db_id": "NIL"}],
+            e["text"],
+            e["type"],
+        )
+        for e in sorted(entities, key=lambda e: (e["offsets"], e["type"], e["text"]))
+    ]
+
+
+def _get_match_type(pred, gt) -> str:
+    """
+    Determines the type of match between a predicted entity and a ground truth entity.
+    """
+    if pred.offset_start == gt.offset_start and pred.offset_end == gt.offset_end:
+        return "tp" if pred.type == gt.type else "le"
+    elif (pred.offset_start >= gt.offset_start and pred.offset_start < gt.offset_end) or (
+        pred.offset_end > gt.offset_start and pred.offset_end <= gt.offset_end
+    ):
+        return "be" if pred.type == gt.type else "lbe"
+    else:
+        return "fp"
+
+
+def _find_concept_index(pred, gt):
+    """
+    Finds the index of the best matching concept in the predicted entity for the ground truth entity.
+    """
+    best_index = None
+    if gt.normalized and pred.normalized:
+        for g in gt.normalized:
+            for i, p in enumerate(pred.normalized):
+                if g["db_id"] == p["db_id"]:
+                    if not best_index or i < best_index:
+                        best_index = i
+    return best_index
+
+
+def _get_best_match(pred, gt_items) -> (str, EntityMatch, int):
+    """
+    Finds the best matching ground truth entity for a predicted entity.
+    """
+    best_match = NULL_MATCH
+    best_match_type = "fp"
+    best_match_index = -1
+    best_concept_index = None
+
+    order = ["tp", "be", "le", "lbe", "fp"]
+
+    def cmp_match_type(m1, m2):
+        return order.index(m1) - order.index(m2)
+
+    for i, gt in enumerate(gt_items):
+        match_type = _get_match_type(pred, gt)
+        if match_type == "fp":
+            continue
+        concept_index = _find_concept_index(pred, gt)
+        if (cmp_match_type(match_type, best_match_type) < 0) or (
+            cmp_match_type(match_type, best_match_type) == 0
+            and (best_concept_index is None or concept_index is not None and concept_index < best_concept_index)
+        ):
+            best_match = gt
+            best_match_type = match_type
+            best_match_index = i
+            best_concept_index = concept_index
+
+    return best_match, best_match_type, best_match_index
+
+
+def _record_match(ent_res: list, allow_multiple_gold_candidates: bool, pred, gt, e_match_type):
+    """
+    Records a match between a predicted entity and a ground truth entity.
+    """
+    pred_s = pred.offset_start
+    pred_e = pred.offset_end
+    pred_c = pred.normalized
+    pred_text = pred.text
+    pred_type = pred.type
+    gt_s = gt.offset_start
+    gt_e = gt.offset_end
+    gt_c = gt.normalized
+    gt_text = gt.text
+    gt_type = gt.type
+
+    if (not gt_c and pred_c) or e_match_type == "fp":  # false positive
+        ent_res.append(
+            {
+                "pred_start": pred_s,
+                "pred_end": pred_e,
+                "pred_text": pred_text,
+                "pred_type": pred_type,
+                "gt_start": None,
+                "gt_end": None,
+                "gt_text": None,
+                "gold_type": None,
+                "ner_match_type": e_match_type,
+                "gold_concept": None,
+                "pred_index": -1,
+                "pred_index_score": None,
+                "pred_top": None,
+                "pred_top_score": None,
+            }
+        )
+        return
+
+    def get_match_result(gt_concept):
+        is_not_fn = e_match_type != "fn"
+        pred_ids = [c["db_id"] for c in pred_c]
+        idx = pred_ids.index(gt_concept["db_id"]) if gt_concept["db_id"] in pred_ids else -1
+        return {
+            "pred_start": pred_s if is_not_fn else None,
+            "pred_end": pred_e if is_not_fn else None,
+            "pred_text": pred_text if is_not_fn else None,
+            "pred_type": pred_type if is_not_fn else None,
+            "gt_start": gt_s,
+            "gt_end": gt_e,
+            "gt_text": gt_text,
+            "ner_match_type": e_match_type,
+            "gold_concept": gt_concept,
+            "gold_type": gt_type,
+            "pred_index": int(idx),
+            "pred_index_score": pred_c[idx].get("score", None) if idx >= 0 else None,
+            "pred_top": pred_c[0]["db_id"] if len(pred_c) > 0 else None,
+            "pred_top_score": pred_c[0].get("score", None) if len(pred_c) > 0 else None,
+        }
+
+    if not pred_c and gt_c:
+        assert len(gt_c) == 1
+        ent_res.append(
+            {
+                "pred_start": pred_s,
+                "pred_end": pred_e,
+                "pred_text": pred_text,
+                "pred_type": pred_type,
+                "gt_start": gt_s,
+                "gt_end": gt_e,
+                "gt_text": gt_text,
+                "ner_match_type": e_match_type,
+                "gold_concept": gt_c[0],
+                "gold_type": "",
+                "pred_index": -1,
+                "pred_index_score": None,
+                "pred_top": None,
+                "pred_top_score": None,
+            }
+        )
+        return
+
+    if allow_multiple_gold_candidates:
+        matches = [get_match_result(gt_concept) for gt_concept in gt_c]
+        true_matches = [m["pred_index"] for m in matches if m["pred_index"] != -1]
+        if true_matches:
+            best_idx = min(true_matches)
+            best_matches = [m for m in matches if m["pred_index"] == best_idx]
+            assert len(best_matches) == 1
+            ent_res.append(best_matches[0])
+        else:  # No matches for any of the concepts
+            ent_res.append(matches[0])
+
+    else:
+        for gt_concept in gt_c:
+            ent_res.append(get_match_result(gt_concept))
+
+
 def _get_error_df(gt_ents, pred_ents, tasks, allow_multiple_gold_candidates) -> pd.DataFrame:
     """
     Construct a Pandas DataFrame with the error analysis results from the comparison of two lists of named entities.
@@ -90,273 +279,51 @@ def _get_error_df(gt_ents, pred_ents, tasks, allow_multiple_gold_candidates) -> 
     Returns:
     A Pandas DataFrame with the errors.
     """
+    gt_items = _get_items(gt_ents)
+    gt_matches = [None] * len(gt_items)
+    pred_items = _get_items(pred_ents)
 
-    def get_items(entities):
-        return [
-            (
-                e["offsets"][0][0],
-                e["offsets"][-1][1],
-                e["normalized"] if len(e["normalized"]) > 0 else [{"db_id": "NIL"}],
-                e["text"],
-                e["type"],
-            )
-            for e in sorted(entities, key=lambda e: (e["offsets"], e["type"], e["text"]))
-        ]
+    result = []
 
-    gt_items = get_items(gt_ents)
-    pred_items_unmatched = get_items(pred_ents)
+    for pred in pred_items:
+        gt, ner_match_type, gt_index = _get_best_match(pred, gt_items)
+        if ner_match_type != "fp":
+            gt_matches[gt_index] = ner_match_type
+        _record_match(result, allow_multiple_gold_candidates, pred, gt, ner_match_type)
 
-    # If we have entities with multiple normalizations, we want to order by best match order
-    pred_items = []
-    for key, group in groupby(pred_items_unmatched, lambda x: (x[0], x[1], x[3], x[4])):
-        group = list(group)
-        if len(group) == 1:
-            pred_items.append(group[0])
-        else:
+    for i, (gt, gt_match) in enumerate(zip(gt_items, gt_matches)):
+        if gt_match is None:
+            pred, ner_match_type, idx = _get_best_match(gt, pred_items)
+            gt_matches[i] = ner_match_type if idx != -1 else "fn"
+            _record_match(result, allow_multiple_gold_candidates, pred, gt, gt_matches[i])
 
-            def best_match_index(pred_normalized):
-                matches = [g for g in gt_items if (g[0], g[1], g[3], g[4]) == key]
-                best_match = len(pred_normalized)
-                best_index = len(pred_normalized)
-                for i, m in enumerate(matches):
-                    for j, p in enumerate(pred_normalized):
-                        if p["db_id"] == m[2][0]["db_id"]:
-                            if j < best_index:
-                                best_index = j
-                                best_match = i
-                return best_match
+    assert all([e is not None for e in gt_matches])
 
-            best_match_indices = sorted([(pred, best_match_index(pred[2])) for pred in group], key=lambda t: t[1])
-            matched = [None] * len(best_match_indices)
-            for p, i in best_match_indices:
-                if i < len(matched) and matched[i] == None:
-                    matched[i] = p
-                else:
-                    found = False
-                    for j in range(len(matched)):
-                        if not found and matched[j] == None:
-                            matched[j] = p
-                            found = True
-                    assert found == True
-
-            pred_items.extend(matched)
-    assert len(pred_items) == len(pred_items_unmatched)
-
-    ent_res = []
-
-    def record_match(
-        pred_s: int, pred_e: int, pred_c, pred_text, pred_type, gt_s, gt_e, gt_c, gt_text, gt_type, e_match_type
-    ):
-        if (not gt_c and pred_c) or e_match_type == "fp":  # false positive
-            ent_res.append(
-                {
-                    "pred_start": pred_s,
-                    "pred_end": pred_e,
-                    "pred_text": pred_text,
-                    "gt_start": None,
-                    "gt_end": None,
-                    "gt_text": None,
-                    "ner_match_type": e_match_type,
-                    "gold_concept": None,
-                    "gold_type": None,
-                    "pred_index": -1,
-                    "pred_index_score": None,
-                    "pred_top": None,
-                    "pred_top_score": None,
-                }
-            )
-            return
-
-        def get_match_result(gt_concept):
-            is_not_fn = e_match_type != "fn"
-            pred_ids = [c["db_id"] for c in pred_c]
-            idx = pred_ids.index(gt_concept["db_id"]) if gt_concept["db_id"] in pred_ids else -1
-            return {
-                "pred_start": pred_s if is_not_fn else None,
-                "pred_end": pred_e if is_not_fn else None,
-                "pred_text": pred_text if is_not_fn else None,
-                "gt_start": gt_s,
-                "gt_end": gt_e,
-                "gt_text": gt_text,
-                "ner_match_type": e_match_type,
-                "gold_concept": gt_concept,
-                "gold_type": gt_type,
-                "pred_index": int(idx),
-                "pred_index_score": pred_c[idx].get("score", None) if idx >= 0 else None,
-                "pred_top": pred_c[0]["db_id"] if len(pred_c) > 0 else None,
-                "pred_top_score": pred_c[0].get("score", None) if len(pred_c) > 0 else None,
-            }
-
-        if not pred_c and gt_c:
-            assert len(gt_c) == 1
-            ent_res.append(
-                {
-                    "pred_start": pred_s,
-                    "pred_end": pred_e,
-                    "pred_text": pred_text,
-                    "gt_start": gt_s,
-                    "gt_end": gt_e,
-                    "gt_text": gt_text,
-                    "ner_match_type": e_match_type,
-                    "gold_concept": gt_c[0],
-                    "gold_type": "",
-                    "pred_index": -1,
-                    "pred_index_score": None,
-                    "pred_top": None,
-                    "pred_top_score": None,
-                }
-            )
-            return
-
-        if allow_multiple_gold_candidates:
-            matches = [get_match_result(gt_concept) for gt_concept in gt_c]
-            true_matches = [m["pred_index"] for m in matches if m["pred_index"] != -1]
-            if true_matches:
-                best_idx = min(true_matches)
-                best_matches = [m for m in matches if m["pred_index"] == best_idx]
-                assert len(best_matches) == 1
-                ent_res.append(best_matches[0])
-            else:  # No matches for any of the concepts
-                ent_res.append(matches[0])
-
-        else:
-            for gt_concept in gt_c:
-                ent_res.append(get_match_result(gt_concept))
-
-    # Initialize variables
-    gt_s = gt_e = gt_text = gt_type = None
-    pred_s = pred_e = pred_text = pred_type = None
-    pred_c = gt_c = []
-
-    while gt_items or pred_items:
-        if not gt_items:
-            e_match_type = "fp"
-            pred_s, pred_e, pred_c, pred_text, pred_type = pred_items.pop()
-            record_match(
-                pred_s,
-                pred_e,
-                pred_c,
-                pred_text,
-                pred_type,
-                -1,
-                -1,
-                None,
-                None,
-                None,
-                e_match_type,
-            )
-        elif not pred_items:
-            e_match_type = "fn"
-            gt_s, gt_e, gt_c, gt_text, gt_type = gt_items.pop()
-            record_match(
-                pred_s,
-                pred_e,
-                pred_c,
-                pred_text,
-                pred_type,
-                gt_s,
-                gt_e,
-                gt_c,
-                gt_text,
-                gt_type,
-                e_match_type,
-            )
-        else:
-            pred_s, pred_e, pred_c, pred_text, pred_type = pred_items[0]
-            gt_s, gt_e, gt_c, gt_text, gt_type = gt_items[0]
-
-            if pred_s == gt_s and pred_e == gt_e:
-                e_match_type = "tp"
-                record_match(
-                    pred_s,
-                    pred_e,
-                    pred_c,
-                    pred_text,
-                    pred_type,
-                    gt_s,
-                    gt_e,
-                    gt_c,
-                    gt_text,
-                    gt_type,
-                    e_match_type,
-                )
-                gt_items.pop(0)
-                pred_items.pop(0)
-            elif pred_s >= gt_e:
-                e_match_type = "fn"
-                record_match(
-                    pred_s,
-                    pred_e,
-                    pred_c,
-                    pred_text,
-                    pred_type,
-                    gt_s,
-                    gt_e,
-                    gt_c,
-                    gt_text,
-                    gt_type,
-                    e_match_type,
-                )
-                gt_items.pop(0)
-            elif pred_e <= gt_s:
-                e_match_type = "fp"
-                record_match(
-                    pred_s,
-                    pred_e,
-                    pred_c,
-                    pred_text,
-                    pred_type,
-                    gt_s,
-                    gt_e,
-                    gt_c,
-                    gt_text,
-                    gt_type,
-                    e_match_type,
-                )
-                pred_items.pop(0)
-            else:
-                e_match_type = "be"
-                pred_s, pred_e, pred_c, pred_text, pred_type = pred_items.pop(0)
-                gt_s, gt_e, gt_c, gt_text, gt_type = gt_items.pop(0)
-                while True:
-                    record_match(
-                        pred_s,
-                        pred_e,
-                        pred_c,
-                        pred_text,
-                        pred_type,
-                        gt_s,
-                        gt_e,
-                        gt_c,
-                        gt_text,
-                        gt_type,
-                        e_match_type,
-                    )
-                    if pred_e < gt_e:
-                        if pred_items and pred_items[0][0] <= gt_e:
-                            pred_s, pred_e, pred_c, pred_text, pred_type = pred_items.pop(0)
-                        else:
-                            # if gt_items: Why?
-                            #    gt_items.pop(0)
-                            break
-                    elif gt_e < pred_e:
-                        if gt_items and gt_items[0][0] <= pred_e:
-                            gt_s, gt_e, gt_c, gt_text, gt_type = gt_items.pop(0)
-                        else:
-                            # if pred_items: Why?
-                            #    pred_items.pop(0)
-                            break
-                    else:
-                        break
-
-    res_cols = ["gt_start", "gt_end", "gt_text"]
+    res_cols = ["gt_start", "gt_end", "gt_text", "gold_type"]
     if "ner" in tasks:
-        res_cols += ["pred_start", "pred_end", "pred_text", "ner_match_type"]
+        res_cols += ["pred_start", "pred_end", "pred_text", "pred_type", "ner_match_type"]
     if "nen" in tasks:
-        res_cols += ["gold_concept", "gold_type", "pred_index", "pred_index_score", "pred_top", "pred_top_score"]
+        res_cols += ["gold_concept", "pred_index", "pred_index_score", "pred_top", "pred_top_score"]
 
-    if ent_res:
-        return pd.DataFrame(ent_res)[res_cols]
+    if result:
+        df = pd.DataFrame(result)
+        df["gold_id"] = df["gold_concept"].map(lambda d: d["db_id"] if d else None)
+        df = df.drop_duplicates(
+            subset=[
+                "gt_start",
+                "gt_end",
+                "gold_type",
+                "pred_start",
+                "pred_end",
+                "pred_type",
+                "gold_id",
+                "pred_index",
+                "pred_index_score",
+                "pred_top",
+                "pred_top_score",
+            ]
+        )
+        return df[res_cols].sort_values(["gt_start", "gt_end"])
     else:
         return pd.DataFrame(columns=res_cols)
 
