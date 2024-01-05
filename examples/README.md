@@ -3,7 +3,7 @@
 |Link|Language|Description|
 |---|---|---|
 |[01_BRONCO_German.ipynb](01_BRONCO_German.ipynb)|🇩🇪|Candidate generation and supervised re-ranking using the BRONCO corpus.<br>Shows how you can configure multiple dictionaries in the same config file.|
-|[02_GGPONC_German.ipynb](02_GGPONC_German.ipynb)|🇩🇪|Using a spaCy NER model with xMEN<br>Shows how to build a pipeline without labelled data using candidate generation, type filtering and pre-trained re-rankers|
+|[02_spaCy_German.ipynb](02_spaCy_German.ipynb)|🇩🇪|Using a spaCy NER model with xMEN<br>Shows how to build a pipeline without labelled data using candidate generation, type filtering and pre-trained re-rankers|
 |[03_SNOMED_Linking_German.ipynb](03_SNOMED_Linking_German.ipynb)|🇩🇪|Linking against codes in UMLS source vocabularies (here SNOMED CT)|
 
 ## External Links
