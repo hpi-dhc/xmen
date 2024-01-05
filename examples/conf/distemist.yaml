@@ -1,7 +1,0 @@
-name: distemist
-
-dict:
-  custom:
-    lang: 
-      - es
-    distemist_path: local_files/dictionary_distemist.tsv

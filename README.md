@@ -21,6 +21,10 @@ We use [Poetry](https://python-poetry.org/) for building, testing and dependency
 
 A very simple pipeline highlighting the main components of xMEN can be found in [notebooks/00_Getting_Started.ipynb](notebooks/00_Getting_Started.ipynb)
 
+## 🎓 Examples
+
+For more advanced use cases, check out the [examples](examples) folder. 
+
 ## 📂 Data Loading
 
 Usually, BigBIO-compatible datasets can just be loaded from the Hugging Face Hub:

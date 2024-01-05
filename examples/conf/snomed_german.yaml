@@ -1,0 +1,24 @@
+name: snomed_german
+
+cache_dir: ${oc.env:HOME}/.cache/xmen/
+
+dict:
+  custom:    
+    umls_meta_path: ${oc.env:UMLS_HOME}/2023AA/META
+    id_key: SCUI
+    sabs:
+        - SNOMEDCT_US
+    umls_extend:
+        lang: 
+          - de
+          - en
+
+linker:
+    candidate_generation:
+        k: 64
+        ngram:
+          index_base_path: ${cache_dir}/${name}/index/ngrams/
+          k: 3
+        sapbert:
+          index_base_path: ${cache_dir}/${name}/index/sapbert
+          k: 3
