@@ -3,6 +3,12 @@ name: meddra_german
 dict:
   custom:    
     umls_meta_path: ${oc.env:UMLS_HOME}/2023AA/META
+    id_key: SDUI
     sabs:
         - MDR
         - MDRGER
+    # Un-comment to add aliases from other UMLS vocabularies and languages
+    #umls_extend:
+    #  lang: 
+    #    - de
+    #    - en
