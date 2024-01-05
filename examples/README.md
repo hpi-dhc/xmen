@@ -15,7 +15,7 @@
 
 ## Benchmarks
 
-More examples for configurations can be found in the [Benchmarks](../benchmarks) folder.
+More examples for configurations can be found in the [Benchmarks](../benchmarks/benchmark) folder.
 
 |Benchmark|Language|
 |---|---|
