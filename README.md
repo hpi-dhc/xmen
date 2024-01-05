@@ -46,6 +46,8 @@ docs = ... #  list of spaCy docs with entity spans
 dataset = from_spacy(docs)
 ```
 
+for an example, see: [examples/02_spaCy_German.ipynb](examples/02_spaCy_German.ipynb)
+
 #### [SpanMarker](https://github.com/tomaarsen/SpanMarkerNER)
 
 ```python
