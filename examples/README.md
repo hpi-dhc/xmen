@@ -8,8 +8,8 @@
 
 ## External Links
 
-|Link|Description|
-|---|---|
+|Link|Language|Description|
+|---|---|---|
 | https://github.com/hpi-dhc/symptemist_biocreative_2023 | 🇪🇸 | BioCreative VIII SympTEMIST Challenge (1st place in entity linking track) |
 
 
