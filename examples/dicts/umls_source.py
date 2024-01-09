@@ -32,12 +32,24 @@ def get_concept_details(cfg):
                     logger.warn(
                         f"Skipping concept with CUI {cui} because we could not find a valid source vocabulary ID"
                     )
+
+                if not sid in concept_details:
+                    concept_details[sid] = {"concept_id": sid, "types": [], "aliases": []}
                 name = concept["STR"]
-                if sid in concept_details:
-                    concept_details[sid]["aliases"].append(name)
+
+                is_canonical = concept["TTY"] == "PT" and concept["TS"] == "P"
+
+                if not is_canonical or "canonical_name" in concept_details[sid]:
+                    # not a canonical name or a canonical name already found
+                    concept_details[sid]["aliases"].append(name)  # add it as an alias
                 else:
-                    concept_details[sid] = {"concept_id": sid, "canonical_name": name, "types": [], "aliases": []}
+                    concept_details[sid]["canonical_name"] = name  # set as canonical name
+
                 scui2cui[sid].append(cui)
+
+    for concept in concept_details.values():
+        if not "canonical_name" in concept:
+            concept["canonical_name"] = concept["aliases"].pop()
 
     if umls_extend := cfg.dict.custom.get("umls_extend"):
         # Optionally extend with UMLS synonyms
