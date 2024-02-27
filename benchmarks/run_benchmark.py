@@ -9,6 +9,7 @@ from omegaconf import OmegaConf, SCMode
 import wandb
 import submitit
 import torch
+import datasets
 from transformers.trainer_utils import enable_full_determinism
 import traceback
 import uuid
@@ -277,15 +278,19 @@ def main(config) -> None:
 
                 dataset.save_to_disk(fold_prefix + "_dataset")
 
-                log.info("Generating candidates")
-                candidates = generate_candidates(dataset, config, has_val)
+                if candidates_path := config.get("candidates_path", None):
+                    log.info(f"Loading candidates from {candidates_path}")
+                    candidates = datasets.load_from_disk(to_absolute_path(candidates_path))
+                else:
+                    log.info("Generating candidates")
+                    candidates = generate_candidates(dataset, config, has_val)
 
-                if config.data.get("filter_semantic_groups", False):
-                    log.info("Filtering semantic groups")
-                    group_filter = SemanticGroupFilter(kb, "v03")
-                    candidates = group_filter.transform_batch(candidates)
+                    if config.data.get("filter_semantic_groups", False):
+                        log.info("Filtering semantic groups")
+                        group_filter = SemanticGroupFilter(kb, "v03")
+                        candidates = group_filter.transform_batch(candidates)
 
-                candidates = filter_and_apply_threshold(candidates, config.linker.reranking.k, 0.0)
+                    candidates = filter_and_apply_threshold(candidates, config.linker.reranking.k, 0.0)
 
                 test_logger.eval_and_log_at_k("candidates", candidates["test"])
                 if has_val:

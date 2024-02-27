@@ -10,7 +10,7 @@ dict:
     lang: 
       - es
       - en
-    distemist_path: local_files/dictionary_distemist.tsv
+    gazetteer_path: local_files/dictionary_distemist.tsv
     umls_meta_path: ${oc.env:UMLS_HOME}/2022AA/META
 
 linker:
