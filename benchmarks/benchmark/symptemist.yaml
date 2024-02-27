@@ -1,0 +1,21 @@
+# @package _global_
+base_config: ../benchmark.yaml
+
+name: symptemist_benchmark
+
+dataset: symptemist
+
+dict:
+  custom:
+    lang: 
+      - es
+      - en
+    gazetteer_path: local_files/symptemist_gazetter_snomed_ES_v2.tsv
+    umls_meta_path: ${oc.env:UMLS_HOME}/2023AA/META
+
+linker:
+  reranking:
+    data:
+      use_nil: False
+    training:
+      model_name: PlanTL-GOB-ES/roberta-base-biomedical-clinical-es

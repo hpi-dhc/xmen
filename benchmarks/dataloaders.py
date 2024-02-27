@@ -163,12 +163,56 @@ def load_quaero(subsets=None):
     ]
 
 
+def load_symptemist(subsets=None):
+    """
+    Loads the SympTEMIST (EL track) dataset.
+
+    Returns:
+    - BigBIO dataset
+
+    Raises:
+    - AssertionError: If the loaded dataset has an unexpected format.
+    """
+
+    import bigbio
+
+    if not subsets:
+        subsets = ["symptemist_linking_complete_bigbio_kb"]
+
+    # TODO: Simplify when SympTEMIST is eventually on the Hugging Face Hub
+    symptemist_path = str(Path(bigbio.__file__).parent / "hub" / "hub_repos" / "symptemist" / "symptemist.py")
+
+    ds_map = {c: datasets.load_dataset(symptemist_path, c) for c in subsets}
+    ds_subsets = []
+    for conf, ds_dict in ds_map.items():
+        for k in ds_dict.keys():
+            ds_dict[k] = ds_dict[k].add_column("corpus_id", [conf] * len(ds_dict[k]))
+            ds_dict[k] = ds_dict[k].add_column("lang", [conf.split("_")[2]] * len(ds_dict[k]))
+        ds_subsets.append(ds_dict)
+
+    ds = datasets.dataset_dict.DatasetDict()
+    for s in ["train", "test"]:
+        ds[s] = datasets.concatenate_datasets([d[s] for d in ds_subsets])
+
+    # Own validation set (20% of DisTEMIST training set / EL sub-track)
+    with open(Path(__file__).parent / "benchmark" / "symptemist_validation_docs.txt", "r") as fh:
+        valid_ids = [l.strip() for l in fh.readlines()]
+
+    ds_train = ds["train"].filter(lambda d: d["document_id"] not in valid_ids)
+    ds_valid = ds["train"].filter(lambda d: d["document_id"] in valid_ids)
+
+    ds["train"] = ds_train
+    ds["validation"] = ds_valid
+
+    return [ds]
+
+
 def load_distemist(subsets=None):
     """
     Loads the DisTEMIST (EL track) dataset.
 
     Returns:
-    - A dataset loaded from the DisTEMIST Linking dataset with bigbio knowledge base.
+    - BigBIO dataset
 
     Raises:
     - AssertionError: If the loaded dataset has an unexpected format.
