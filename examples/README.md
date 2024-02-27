@@ -10,8 +10,7 @@
 
 |Link|Language|Description|
 |---|---|---|
-| https://github.com/hpi-dhc/symptemist_biocreative_2023 | 🇪🇸 | BioCreative VIII SympTEMIST Challenge (1st place in entity linking track) |
-
+| https://github.com/hpi-dhc/symptemist | 🇪🇸 | BioCreative VIII SympTEMIST + [LLM-based Entity Simplification](../xmen/data/simplification.py)  |
 
 ## Benchmarks
 
@@ -22,5 +21,6 @@ More examples for configurations can be found in the [Benchmarks](../benchmarks/
 |[Quaero](../benchmarks/benchmark/quaero.yaml)|🇫🇷|
 |[MedMentions](../benchmarks/benchmark/medmentions_en.yaml)|🇬🇧|
 |[DisTEMIST](../benchmarks/benchmark/distemist.yaml)|🇪🇸|
+|[SympTEMIST](../benchmarks/benchmark/symptemist.yaml)|🇪🇸|
 |[BRONCO](../benchmarks/benchmark/bronco.yaml)|🇩🇪|
 |[Mantra](../benchmarks/benchmark/mantra.yaml)|🇬🇧 🇫🇷 🇪🇸 🇩🇪 🇳🇱|
