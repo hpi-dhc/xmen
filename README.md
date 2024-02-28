@@ -68,9 +68,9 @@ Run `xmen help` to get an overview of the available commands.
 
 Configuration is done through `.yaml` files. For examples, see the [/examples/conf](/examples/conf) folder.
 
-## 📕 Creating Dictionaries
+## 📕 Creating Knowledge Bases / Dictionaries
 
-Run `xmen dict` to create dictionaries to link against. Although the most common use case is to create subsets of the UMLS, it also supports passing custom parser scripts for non-UMLS dictionaries.
+Run `xmen dict` to create KBs to link against. Although the most common use case is to create subsets of the UMLS, it also supports passing custom parser scripts for non-UMLS dictionaries.
 
 **Note**: Creating UMLS subsets requires a local installation of the [UMLS metathesaurus](https://www.nlm.nih.gov/research/umls/licensedcontent/umlsknowledgesources.html) (not only MRCONSO.RRF). In the examples, we assume that the environment variable `$UMLS_HOME` points to the installation path. You can either set this variable, or replace the path with your local installation.
 
@@ -132,9 +132,9 @@ dict:
 
 Running `xmen --dict examples/conf/medmentions.yaml` creates a `.jsonl` file from the described UMLS subset.
 
-### Using Custom Dictionaries
+### Using Custom KB Scripts
 
-Parsing scripts for custom dictionaries can be provided with the `--code` option (examples can be found in the [dicts](/dicts) folder).
+Parsing scripts for custom KBs can be provided with the `--code` option (examples can be found in the [dicts](/dicts) folder).
 
 Example configuration for [DisTEMIST](https://temu.bsc.es/distemist/):
 
@@ -145,10 +145,10 @@ dict:
   custom:
     lang: 
       - es
-    distemist_path: local_files/dictionary_distemist.tsv
+    gazetteer_path: local_files/dictionary_distemist.tsv
 ```
 
-Running `xmen dict examples/conf/distemist.yaml --code examples/dicts/distemist.py` creates a `.jsonl` file from the custom DisTEMIST gazetteer (which you can download from [Zenodo](https://zenodo.org/record/6505583) and put into any folder, e.g., `local_files`).
+Running `xmen dict examples/conf/distemist.yaml --code examples/dicts/bsc_gazetteer.py` creates a `.jsonl` KB file from the custom DisTEMIST gazetteer (which you can download from [Zenodo](https://zenodo.org/record/6505583) and put into any folder, e.g., `local_files`). The script `bsc_gazetteer.py` can use any custom keys like `gazetteer_path` in the example to construct the custom KB.
 
 ## 🔎 Candidate Generation
 
