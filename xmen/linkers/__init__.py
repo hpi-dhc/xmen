@@ -6,6 +6,7 @@ from pathlib import Path
 from xmen.log import logger
 
 from xmen.reranking import Reranker
+from xmen.data import from_spans
 
 
 class EntityLinker(ABC):
@@ -30,6 +31,42 @@ class EntityLinker(ABC):
     @abstractmethod
     def predict(self, passages: list, entities: list) -> list:
         pass
+
+    def predict_no_context(
+        self, entities: str | list[str], label: str | list[str] = None, batch_size: int = None
+    ) -> list:
+        """
+        Generates candidate concepts for the given entities (one or more) without any context.
+
+        Args:
+        - entities (str | list[str]): The entity or entities for which to generate candidates.
+        - label (str | list[str]): The label or labels for the entities. If a single label is provided, it will be used for all entities.
+        - batch_size (int): The batch size to use for prediction. If None, the default batch size of the model will be used.
+        """
+        is_str = False
+        if isinstance(entities, str):
+            is_str = True
+            entities = [entities]
+            assert label is None or isinstance(label, str)
+            label = [label]
+        elif label is None or isinstance(label, str):
+            label = [label] * len(entities)
+        assert len(entities) == len(label)
+
+        spans = []
+        sentences = []
+        indices = []
+        for e, l in zip(entities, label):
+            indices.append(len(sentences))
+            spans.append([{"char_start_index": 0, "char_end_index": len(e), "label": l, "span": e}])
+            sentences.append(e)
+        ds = from_spans(entities=spans, sentences=sentences)
+        result = self.predict_batch(ds, batch_size)
+        if is_str:
+            assert len(result["entities"]) == 1
+            return result["entities"][0]
+        else:
+            return result["entities"]
 
 
 class RerankedLinker(EntityLinker):
