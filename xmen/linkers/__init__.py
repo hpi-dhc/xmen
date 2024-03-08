@@ -63,10 +63,14 @@ class EntityLinker(ABC):
         ds = from_spans(entities=spans, sentences=sentences)
         result = self.predict_batch(ds, batch_size)
         if is_str:
-            assert len(result["entities"]) == 1
-            return result["entities"][0]
+            assert len(result["entities"]) == 1 and len(result["entities"][0]) == 1
+            return result["entities"][0][0]
         else:
-            return result["entities"]
+            _result = []
+            for r in result["entities"]:
+                assert len(r) == 1
+                _result.append(r[0])
+            return _result
 
 
 class RerankedLinker(EntityLinker):

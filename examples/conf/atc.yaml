@@ -1,0 +1,10 @@
+# Config for German ATC 2023 version
+name : atc
+
+dict:    
+  custom:
+    # Get 2023 version from: https://www.wido.de/publikationen-produkte/arzneimittel-klassifikation/
+    atc_path: local_files/atc2023
+    drug_bank_xml: local_files/drugbank/5.1.8/full-database.xml
+    lang:
+      - de
