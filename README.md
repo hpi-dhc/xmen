@@ -130,7 +130,7 @@ dict:
       - SNOMEDCT_US
 ```
 
-Running `xmen --dict examples/conf/medmentions.yaml` creates a `.jsonl` file from the described UMLS subset.
+Running `xmen dict examples/conf/medmentions.yaml` creates a `.jsonl` file from the described UMLS subset.
 
 ### Using Custom KB Scripts
 
