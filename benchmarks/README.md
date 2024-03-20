@@ -15,3 +15,7 @@ Train cross-encoder model:
 # Benchmark run with weakly-supervised cross-encoder
 
 `python run_benchmark.py benchmark=quaero output=~/scratch/xmen +linker.reranking.pre_trained_model=absolute/path/to/models/ce_ws_medmentions_fr`
+
+or use the model from Hugging Face:
+
+`python run_benchmark.py benchmark=quaero output=~/scratch/xmen +linker.reranking.pre_trained_model=phlobo/xmen-fr-ce-medmentions`

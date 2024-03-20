@@ -15,7 +15,5 @@ dict:
 
 linker:
   reranking:
-    data:
-      use_nil: False
     training:
       model_name: PlanTL-GOB-ES/roberta-base-biomedical-clinical-es
