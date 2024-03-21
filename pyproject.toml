@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "xmen"
-version = "1.0.6"
+version = "1.0.7"
 description = "An extensible toolkit for Cross-lingual (x) Medical Entity Normalization."
 license = "Apache-2.0"
 authors = ["Florian Borchert <florian.borchert@hpi.de>"]
@@ -11,7 +11,7 @@ repository = "https://github.com/hpi-dhc/xmen"
 xmen = "xmen.cli.cli:main"
 
 [tool.poetry.dependencies]
-python = ">=3.8,<3.11"
+python = ">=3.8,<3.12"
 datasets = "^2.0.0"
 lxml = "^4.8.0"
 transformers = "^4.17.0"
@@ -35,8 +35,6 @@ pytest = "^6.0"
 black = "^22.12.0"
 hydra-core = "^1.3.2"
 en-core-sci-sm = {url = "https://s3-us-west-2.amazonaws.com/ai2-s2-scispacy/releases/v0.5.1/en_core_sci_sm-0.5.1.tar.gz"}
-# TODO: only needed for Mantra benchmark, as dataset is not on HF hub
-bigbio = {git = "https://github.com/bigscience-workshop/biomedical.git", branch="main"}
 
 [tool.poetry.group.dev.dependencies]
 wandb = "^0.15.4"
