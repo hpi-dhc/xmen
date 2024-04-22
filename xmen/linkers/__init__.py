@@ -7,6 +7,7 @@ from xmen.log import logger
 
 from xmen.reranking import Reranker
 from xmen.data import from_spans
+from typing import Union
 
 
 class EntityLinker(ABC):
@@ -33,7 +34,7 @@ class EntityLinker(ABC):
         pass
 
     def predict_no_context(
-        self, entities: str | list[str], label: str | list[str] = None, batch_size: int = None
+        self, entities: Union[str, list[str]], label: Union[str, list[str]] = None, batch_size: int = None
     ) -> list:
         """
         Generates candidate concepts for the given entities (one or more) without any context.
