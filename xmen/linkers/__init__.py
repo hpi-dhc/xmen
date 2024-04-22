@@ -9,6 +9,7 @@ from xmen.reranking import Reranker
 from xmen.data import from_spans
 from typing import Union
 
+
 class EntityLinker(ABC):
     def predict_batch(self, dataset: Dataset, batch_size: int = None) -> Dataset:
         """Naive default implementation of batch prediction.
