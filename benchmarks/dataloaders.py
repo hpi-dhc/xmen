@@ -79,7 +79,7 @@ def load_mantra_gsc(subsets=None):
     """
     import bigbio
 
-    mantra_path = str(Path(bigbio.__file__).parent / "biodatasets" / "mantra_gsc" / "mantra_gsc.py")
+    mantra_path = str(Path(bigbio.__file__).parent / "hub" / "hub_repos" / "mantra_gsc" / "mantra_gsc.py")
     if not subsets:
         subsets = [c for c in datasets.get_dataset_infos(mantra_path).keys() if "bigbio" in c]
 
