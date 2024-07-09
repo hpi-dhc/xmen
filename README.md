@@ -1,6 +1,8 @@
 [![Build](https://github.com/hpi-dhc/xmen/actions/workflows/python-app.yml/badge.svg)](https://github.com/hpi-dhc/xmen/actions/workflows/python-app.yml)
 [![pypi Version](https://img.shields.io/pypi/v/xmen)](https://pypi.org/project/xmen/)
+[![DOI](https://zenodo.org/badge/630365891.svg)](https://zenodo.org/doi/10.5281/zenodo.12699189)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg?style=flat-square)](https://github.com/ambv/black)
+
 
 # ✖️MEN
 
