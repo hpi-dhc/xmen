@@ -42,7 +42,7 @@ To use xMEN with existing NER pipelines, you can also create a dataset at runtim
 
 #### Span-based Formats
 
-Any span-based annotation format (e.g., based on character offsets), can be converted to a xMEN-compatible dataset.
+Any span-based annotation format (i.e., based on character offsets), can be converted to a xMEN-compatible dataset.
 For instance, using [SpanMarker](https://github.com/tomaarsen/SpanMarkerNER) predictions:
 
 ```python
