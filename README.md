@@ -40,17 +40,10 @@ dataset = load_dataset("distemist", "distemist_linking_bigbio_kb")
 
 To use xMEN with existing NER pipelines, you can also create a dataset at runtime.
 
-#### [spaCy](https://spacy.io/)
+#### Span-based Formats
 
-```python
-from xmen.data import from_spacy
-docs = ... #  list of spaCy docs with entity spans
-dataset = from_spacy(docs)
-```
-
-for an example, see: [examples/02_spaCy_German.ipynb](examples/02_spaCy_German.ipynb)
-
-#### [SpanMarker](https://github.com/tomaarsen/SpanMarkerNER)
+Any span-based annotation format (e.g., based on character offsets), can be converted to a xMEN-compatible dataset.
+For instance, using [SpanMarker](https://github.com/tomaarsen/SpanMarkerNER) predictions:
 
 ```python
 from span_marker import SpanMarkerModel
@@ -61,6 +54,17 @@ preds = model.predict(sentences)
 from xmen.data import from_spans
 dataset = from_spans(preds, sentences)
 ```
+
+#### [spaCy](https://spacy.io/)
+
+```python
+from xmen.data import from_spacy
+docs = ... #  list of spaCy docs with entity spans
+dataset = from_spacy(docs)
+```
+
+for an example, see: [examples/02_spaCy_German.ipynb](examples/02_spaCy_German.ipynb)
+
 
 ## 🔧 Configuration and CLI
 
