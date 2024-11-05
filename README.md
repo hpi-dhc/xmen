@@ -15,6 +15,9 @@ xMEN is available through [PyPi](https://pypi.org/project/xmen/):
 
 `pip install xmen`
 
+**Note**:
+If you encounter issues installing `xmen` from `pip`, please see here: https://github.com/hpi-dhc/xmen/issues/37
+
 ### Development
 
 We use [Poetry](https://python-poetry.org/) for building, testing and dependency management (see [pyproject.toml](pyproject.toml)).
