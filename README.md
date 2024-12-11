@@ -15,7 +15,9 @@ xMEN is available through [PyPi](https://pypi.org/project/xmen/):
 
 `pip install xmen`
 
-The most robust way to install `xmen` is to use a `conda` environment, as binaries for some dependencies (e.g, `nmslib`, `faiss`) are available through `conda` for most platforms. 
+The most robust way to install `xmen` is to use a `conda` environment, as binaries for some dependencies (e.g, `nmslib`, `faiss`) are available through `conda` for most platforms.
+
+An example for installing xMEN within a Docker image is available [here](https://github.com/hpi-dhc/xmen-inception-recommender/blob/main/Dockerfile).
 
 **Note**:
 If you encounter issues installing `xmen` from `pip`, please see here: https://github.com/hpi-dhc/xmen/issues/37.
