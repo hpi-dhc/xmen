@@ -338,18 +338,22 @@ error_dataframe = error_analysis(ground_truth, predictions))
 If you use xMEN in your work, please cite the following paper:
 
 Florian Borchert, Ignacio Llorca, Roland Roller, Bert Arnrich, and Matthieu-P Schapranow. 
-**xMEN: A Modular Toolkit for Cross-Lingual Medical Entity Normalization**. 
-arXiv preprint arXiv:2310.11275 (2023). http://arxiv.org/abs/2310.11275.
+**xMEN: a modular toolkit for cross-lingual medical entity normalization**. 
+JAMIA Open, Volume 8, Issue 1, February 2025, ooae147, https://doi.org/10.1093/jamiaopen/ooae147
 
 BibTeX:
 
 ```bibtex
-@article{
-      borchert2023xmen,
-      title={{xMEN}: A Modular Toolkit for Cross-Lingual Medical Entity Normalization}, 
-      author={Florian Borchert and Ignacio Llorca and Roland Roller and Bert Arnrich and Matthieu-P. Schapranow},
-      year={2023},
-      url={https://arxiv.org/abs/2310.11275},
-      journal={arXiv preprint arXiv:2310.11275}
+@article{borchert2025xmen,
+    author = {Borchert, Florian and Llorca, Ignacio and Roller, Roland and Arnrich, Bert and Schapranow, Matthieu-P},
+    title = {xMEN: a modular toolkit for cross-lingual medical entity normalization},
+    journal = {JAMIA Open},
+    volume = {8},
+    number = {1},
+    pages = {ooae147},
+    year = {2024},
+    month = {12},
+    issn = {2574-2531},
+    doi = {10.1093/jamiaopen/ooae147}
 }
 ```
