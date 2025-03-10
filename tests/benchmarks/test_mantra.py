@@ -12,9 +12,6 @@ NUM_CONCEPTS_MANTRA_GSC = 5530 - 2
 ALL_METRICS = ["strict", "partial", "loose"]
 
 
-@pytest.mark.skip(
-    reason="Mantra GSC not available at biosemantics.org at the moment, need to wait until hosted elsewhere"
-)
 class TestMantraGSC:
     @pytest.fixture(scope="class")
     def mantra_data(self):
